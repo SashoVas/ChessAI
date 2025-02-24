@@ -1,5 +1,7 @@
 package Chess;
 
+import Chess.Pieces.Base.Piece;
+
 public class Move {
     public int initialRow;
     public int initialCol;
@@ -7,7 +9,9 @@ public class Move {
     public int targetCol;
     public boolean isCastle=false;
     public boolean firstMove=false;
+    public boolean isPromotion=false;
     public boolean isEnPassant=false;
+    public String promotionPiece;
     public Move(int initialRow,int initialCol,int targetRow,int targetCol){
         this.initialRow=initialRow;
         this.initialCol=initialCol;
@@ -34,6 +38,7 @@ public class Move {
     public String toString(){
         String from=(char)('a'+initialCol)+Integer.toString( 8-initialRow);
         String to=(char)('a'+targetCol)+Integer.toString( 8-targetRow);
-        return from+to;
+        String promotion=isPromotion?promotionPiece:"";
+        return from+to+promotion;
     }
 }

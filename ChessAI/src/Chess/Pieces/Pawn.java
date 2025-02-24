@@ -13,6 +13,17 @@ public class Pawn extends NonSlidingPiece {
     public Pawn(int color, int row, int col) {
         super(color, row, col);
     }
+    private List<Move>getPromotions(Move move){
+        String[] pieceInitials={color==0?"n":"N",color==0?"r":"R",color==0?"b":"B",color==0?"q":"Q"};
+        List<Move>moves=new ArrayList<>();
+        for(String initial:pieceInitials){
+            Move newMove=new Move(move.initialRow,move.initialCol,move.targetRow,move.targetCol);
+            newMove.isPromotion=true;
+            newMove.promotionPiece=initial;
+            moves.add(newMove);
+        }
+        return moves;
+    }
 
     private List<Move> generateEnPassantMoves(Board board){
         List<Move>moves=new ArrayList<>();
@@ -78,7 +89,13 @@ public class Pawn extends NonSlidingPiece {
             if(isValid()){
                 Piece pieceAtPosition=board.getAt(row,col);
                 if(pieceAtPosition!=null && pieceAtPosition.color!=color){
-                    moves.add(new Move(initialRow,initialCol,row,col));
+                    Move move=new Move(initialRow,initialCol,row,col);
+                    if(row==0 || row==7) {
+                        moves.addAll(getPromotions(move));
+                    }
+                    else{
+                        moves.add(move);
+                    }
                 }
             }
             row=initialRow;
@@ -91,7 +108,13 @@ public class Pawn extends NonSlidingPiece {
         int moveDirection=color==1?-1:1;
         //Generate standard one-step move
         if(board.getAt(row+ moveDirection,col)==null){
-            moves.add(new Move(row,col,row+moveDirection,col));
+            Move move=new Move(row,col,row+moveDirection,col);
+            if(row+moveDirection==0 || row+moveDirection==7){
+                moves.addAll(getPromotions(move));
+            }
+            else{
+                moves.add(move);
+            }
         }
 
         //Generating two move up if at second row

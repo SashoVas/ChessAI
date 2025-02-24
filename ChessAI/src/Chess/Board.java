@@ -39,7 +39,7 @@ public class Board {
                 int currentMoves = search(1 - color, depth - 1);
                 movesCount += currentMoves;
                 undoMove();
-                //if (depth==1){
+                //if (depth==4){
                 //    String moveString=move.toString();
                 //    System.out.print(moveString);
                 //    System.out.print(": ");
@@ -73,14 +73,14 @@ public class Board {
 
             }
             if (move.initialCol<4
-                    && (isAttacked(move.initialRow,1,color)
-                    || isAttacked(move.initialRow,2,color)
+                    && ( isAttacked(move.initialRow,2,color)
                     || isAttacked(move.initialRow,3,color))){
                 return false;
 
             }
-            else if( isAttacked(move.initialRow,5,color)
-                    || isAttacked(move.initialRow,6,color)){
+            else if(move.initialCol>4
+                    && (isAttacked(move.initialRow,5,color)
+                    || isAttacked(move.initialRow,6,color))){
                 return false;
 
             }
@@ -112,6 +112,19 @@ public class Board {
                 return true;
             }
         }
+        //Checks if is attacked by pawn
+        if (color==0 && row<7){
+            if((col>0 && board[row+1][col-1] instanceof Pawn && board[row+1][col-1].color!=color) ||
+                (col<7 && board[row+1][col+1] instanceof Pawn && board[row+1][col+1].color!=color)){
+                return true;
+            }
+        }
+        else if(color==1 && row>0){
+            if((col>0 && board[row-1][col-1] instanceof Pawn && board[row-1][col-1].color!=color) ||
+                    (col<7 && board[row-1][col+1] instanceof Pawn && board[row-1][col+1].color!=color)){
+                return true;
+            }
+        }
         return false;
     }
     private void moveAPiece(Move move){
@@ -132,7 +145,7 @@ public class Board {
             }
             board[king.row][king.col]=king;
             board[king.row][kingColumn]=null;
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,null,true,false,true);
+            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,null,true,false,true,false);
             reverseMoves.push(reverseMove);
             return;
         }
@@ -145,18 +158,28 @@ public class Board {
         board[move.targetRow][move.targetCol]=piece;
         boolean isFirstMove=!piece.isMoved;
         piece.move(move.targetRow,move.targetCol);
-        if(!move.isEnPassant){
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,isFirstMove);
-            reverseMoves.push(reverseMove);
-        }
-        else{
+
+        if(move.isEnPassant){
             Piece takenPawn=getAt(move.initialRow,move.targetCol);
             pieces.remove(takenPawn);
 
             board[move.initialRow][move.targetCol]=null;
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,takenPawn,false,true,true);
+            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,takenPawn,false,true,true,false);
             reverseMoves.push(reverseMove);
+            return;
         }
+        if(move.isPromotion){
+            Piece promotionPiece=pieceFactory(move.promotionPiece,move.targetRow,move.targetCol);
+            promotionPiece.isMoved=true;
+            pieces.remove(piece);
+            pieces.add(promotionPiece);
+            board[move.targetRow][move.targetCol]=promotionPiece;
+            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,false,true);
+            reverseMoves.push(reverseMove);
+            return;
+        }
+        ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,isFirstMove,false);
+        reverseMoves.push(reverseMove);
     }
     private void undoMove(){
         ReverseMove revMove=reverseMoves.pop();
@@ -189,6 +212,14 @@ public class Board {
         }
         if(revMove.isEnPassant){
             board[revMove.targetRow][revMove.initialCol]=revMove.takenPiece;
+        }
+        if(revMove.isPromotion){
+            Piece oldPawn=pieceFactory(movedPiece.color==0?"p":"P",revMove.targetRow,revMove.targetCol);
+            oldPawn.isMoved=true;
+            pieces.remove(movedPiece);
+            pieces.add(oldPawn);
+            board[revMove.targetRow][revMove.targetCol]=oldPawn;
+
         }
     }
     public List<Piece> getPiece(String initial){
@@ -275,5 +306,31 @@ public class Board {
             }
         }
         return board;
+    }
+    public static Piece pieceFactory(String initial,int row,int col){
+        Piece piece;
+        switch (initial.toLowerCase().charAt(0)) {
+            case 'k':
+                piece = new King(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            case 'n':
+                piece = new Knight(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            case 'r':
+                piece = new Rook(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            case 'b':
+                piece = new Bishop(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            case 'q':
+                piece = new Queen(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            case 'p':
+                piece = new Pawn(initial.charAt(0) < 'Z' ? 1 : 0, row, col);
+                break;
+            default:
+                piece = new King(-1, -1, -1);
+        }
+        return piece;
     }
 }
