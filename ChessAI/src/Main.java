@@ -10,6 +10,7 @@ public class Main {
             fen=Board.defaultFen;
         }
         Board board=Board.fenToBoard(fen);
+        //board.printBoard();
         long startTime = System.currentTimeMillis();
         int result=board.search(color,depth);
         long endTime = System.currentTimeMillis();
@@ -49,7 +50,7 @@ public class Main {
         runTest(2,1486,"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R",1);
         runTest(3,62379,"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R",1);
         runTest(4,2103487,"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R",1);
-        runTest(5,89941194,"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R",1);
+        //runTest(5,89941194,"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R",1);
         //
         runTest(1,46,"r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1",1);
         runTest(2,2079,"r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1",1);

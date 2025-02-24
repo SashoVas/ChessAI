@@ -127,26 +127,68 @@ public class Board {
         }
         return false;
     }
+    private void moveAPieceWhenCastle(Move move){
+        int kingColumn=4;
+        Piece rook=getAt(move.initialRow,move.initialCol);
+        Piece king=getAt(move.initialRow,kingColumn);
+        rook.move(move.targetRow,move.targetCol);
+        board[move.initialRow][move.initialCol]=null;
+        board[move.targetRow][move.targetCol]=rook;
+        if (move.initialCol<king.col){
+            king.move(king.row,king.col-2);
+        }
+        else{
+            king.move(king.row,king.col+2);
+        }
+        board[king.row][king.col]=king;
+        board[king.row][kingColumn]=null;
+        ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,null,true,false,true,false);
+        reverseMoves.push(reverseMove);
+    }
+    private void moveAPieceWhenEnPassant(Move move){
+        Piece piece=getAt(move.initialRow,move.initialCol);
+        board[move.initialRow][move.initialCol]=null;
+        board[move.targetRow][move.targetCol]=piece;
+        piece.move(move.targetRow,move.targetCol);
+
+        Piece takenPawn=getAt(move.initialRow,move.targetCol);
+        pieces.remove(takenPawn);
+
+        board[move.initialRow][move.targetCol]=null;
+        ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,takenPawn,false,true,true,false);
+        reverseMoves.push(reverseMove);
+    }
+    private void moveAPieceWhenPromotion(Move move){
+        Piece piece=getAt(move.initialRow,move.initialCol);
+        board[move.initialRow][move.initialCol]=null;
+        Piece oldPiece=board[move.targetRow][move.targetCol];
+        if (oldPiece!=null){
+            pieces.remove(oldPiece);
+        }
+        board[move.targetRow][move.targetCol]=piece;
+        piece.move(move.targetRow,move.targetCol);
+        Piece promotionPiece=pieceFactory(move.promotionPiece,move.targetRow,move.targetCol);
+        promotionPiece.isMoved=true;
+        pieces.remove(piece);
+        pieces.add(promotionPiece);
+        board[move.targetRow][move.targetCol]=promotionPiece;
+        ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,false,true);
+        reverseMoves.push(reverseMove);
+
+    }
     private void moveAPiece(Move move){
         //TODO: Implement promotions
         //This method does not validate the move!
         if (move.isCastle){
-            int kingColumn=4;
-            Piece rook=getAt(move.initialRow,move.initialCol);
-            Piece king=getAt(move.initialRow,kingColumn);
-            rook.move(move.targetRow,move.targetCol);
-            board[move.initialRow][move.initialCol]=null;
-            board[move.targetRow][move.targetCol]=rook;
-            if (move.initialCol<king.col){
-                king.move(king.row,king.col-2);
-            }
-            else{
-                king.move(king.row,king.col+2);
-            }
-            board[king.row][king.col]=king;
-            board[king.row][kingColumn]=null;
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,null,true,false,true,false);
-            reverseMoves.push(reverseMove);
+            moveAPieceWhenCastle(move);
+            return;
+        }
+        if(move.isEnPassant){
+            moveAPieceWhenEnPassant(move);
+            return;
+        }
+        if(move.isPromotion){
+            moveAPieceWhenPromotion(move);
             return;
         }
         Piece piece=getAt(move.initialRow,move.initialCol);
@@ -158,68 +200,51 @@ public class Board {
         board[move.targetRow][move.targetCol]=piece;
         boolean isFirstMove=!piece.isMoved;
         piece.move(move.targetRow,move.targetCol);
-
-        if(move.isEnPassant){
-            Piece takenPawn=getAt(move.initialRow,move.targetCol);
-            pieces.remove(takenPawn);
-
-            board[move.initialRow][move.targetCol]=null;
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,takenPawn,false,true,true,false);
-            reverseMoves.push(reverseMove);
-            return;
-        }
-        if(move.isPromotion){
-            Piece promotionPiece=pieceFactory(move.promotionPiece,move.targetRow,move.targetCol);
-            promotionPiece.isMoved=true;
-            pieces.remove(piece);
-            pieces.add(promotionPiece);
-            board[move.targetRow][move.targetCol]=promotionPiece;
-            ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,false,true);
-            reverseMoves.push(reverseMove);
-            return;
-        }
         ReverseMove reverseMove=new ReverseMove(move.targetRow,move.targetCol,move.initialRow,move.initialCol,oldPiece,false,false,isFirstMove,false);
         reverseMoves.push(reverseMove);
     }
+    private void returnKingWhenUndoCastle(ReverseMove revMove){
+        Piece king;
+        if(revMove.targetCol==0){
+            king = board[revMove.initialRow][2];
+            board[revMove.initialRow][4]=king;
+            board[revMove.initialRow][2]=null;
+        }
+        else{
+            king = board[revMove.initialRow][6];
+            board[revMove.initialRow][4]=king;
+            board[revMove.initialRow][6]=null;
+        }
+        king.move(revMove.initialRow,4);
+        king.isMoved=false;
+    }
+    private void returnPawnWhenUndoPromotion(ReverseMove revMove,Piece movedPiece){
+        Piece oldPawn=pieceFactory(movedPiece.color==0?"p":"P",revMove.targetRow,revMove.targetCol);
+        oldPawn.isMoved=true;
+        pieces.remove(movedPiece);
+        pieces.add(oldPawn);
+        board[revMove.targetRow][revMove.targetCol]=oldPawn;
+    }
     private void undoMove(){
         ReverseMove revMove=reverseMoves.pop();
-        //moveAPiece(revMove);
         moveAPiece(new Move(revMove.initialRow,revMove.initialCol,revMove.targetRow,revMove.targetCol));
         reverseMoves.pop();
         Piece movedPiece=getAt(revMove.targetRow,revMove.targetCol);
         movedPiece.isMoved=!revMove.firstMove;
-        if(!revMove.isEnPassant){
-            board[revMove.initialRow][revMove.initialCol]=revMove.takenPiece;
-        }
         if (revMove.takenPiece!=null){
             pieces.add(revMove.takenPiece);
         }
-        if (revMove.isCastle){
-            if(revMove.targetCol==0){
-                Piece king=board[revMove.initialRow][2];
-                board[revMove.initialRow][4]=king;
-                board[revMove.initialRow][2]=null;
-                king.move(revMove.initialRow,4);
-                king.isMoved=false;
-            }
-            else{
-                Piece king=board[revMove.initialRow][6];
-                board[revMove.initialRow][4]=king;
-                board[revMove.initialRow][6]=null;
-                king.move(revMove.initialRow,4);
-                king.isMoved=false;
-            }
-        }
         if(revMove.isEnPassant){
             board[revMove.targetRow][revMove.initialCol]=revMove.takenPiece;
+            return;
+        }
+
+        board[revMove.initialRow][revMove.initialCol]=revMove.takenPiece;
+        if (revMove.isCastle){
+            returnKingWhenUndoCastle(revMove);
         }
         if(revMove.isPromotion){
-            Piece oldPawn=pieceFactory(movedPiece.color==0?"p":"P",revMove.targetRow,revMove.targetCol);
-            oldPawn.isMoved=true;
-            pieces.remove(movedPiece);
-            pieces.add(oldPawn);
-            board[revMove.targetRow][revMove.targetCol]=oldPawn;
-
+            returnPawnWhenUndoPromotion(revMove,movedPiece);
         }
     }
     public List<Piece> getPiece(String initial){
@@ -262,44 +287,19 @@ public class Board {
     }
 
     public static Board fenToBoard(String fen){
-
-        String fenToIterate=fen.toLowerCase();
-
         Board board=new Board();
         int row=0;
         int col=0;
         for (int i=0;i<fen.length();i++){
-            if(fenToIterate.charAt(i)=='/'){
+            if(fen.charAt(i)=='/'){
                 row++;
                 col=0;
             }
-            else if(fenToIterate.charAt(i)<='9'){
-                col+=fenToIterate.charAt(i)-'0';
+            else if(fen.charAt(i)<='9'){
+                col+=fen.charAt(i)-'0';
             }
             else{
-                Piece piece;
-                switch (fenToIterate.charAt(i)) {
-                    case 'k':
-                        piece = new King(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    case 'n':
-                        piece = new Knight(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    case 'r':
-                        piece = new Rook(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    case 'b':
-                        piece = new Bishop(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    case 'q':
-                        piece = new Queen(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    case 'p':
-                        piece = new Pawn(fen.charAt(i) < 'Z' ? 1 : 0, row, col);
-                        break;
-                    default:
-                        piece = new King(-1, -1, -1);
-                }
+                Piece piece=pieceFactory(Character.toString((fen.charAt(i))),row,col);
                 board.board[row][col]=piece;
                 board.pieces.add(piece);
                 col++;
