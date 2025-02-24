@@ -1,0 +1,125 @@
+package Chess.Pieces;
+
+
+import Chess.Board;
+import Chess.Move;
+import Chess.Pieces.Base.NonSlidingPiece;
+import Chess.Pieces.Base.Piece;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Pawn extends NonSlidingPiece {
+    public Pawn(int color, int row, int col) {
+        super(color, row, col);
+    }
+
+    private List<Move> generateEnPassantMoves(Board board){
+        List<Move>moves=new ArrayList<>();
+        if (color==0 && row==4){
+            Piece left=col==0?null:board.getAt(4, col - 1);
+            Piece right=col==7?null:board.getAt(4, col + 1);
+            if(left!=null && left.color!=color && col>0 && left instanceof Pawn){
+                Move lastMove=board.getLastMove();
+                Piece lastMoved=board.getAt(lastMove.targetRow,lastMove.targetCol);
+                if(lastMove.initialRow==row+2 && lastMove.initialCol==col-1 && board.getAt(row+1,col-1)==null && lastMoved instanceof Pawn){
+
+                    Move move=new Move(row,col,row+1,col-1);
+                    move.isEnPassant=true;
+                    moves.add(move);
+                }
+            }
+            if(right!=null && right.color!=color&& col<7 && right instanceof Pawn){
+                Move lastMove=board.getLastMove();
+                Piece lastMoved=board.getAt(lastMove.targetRow,lastMove.targetCol);
+
+                if(lastMove.initialRow==row+2 && lastMove.initialCol==col+1 && board.getAt(row+1,col+1)==null && lastMoved instanceof Pawn ){
+                    Move move=new Move(row,col,row+1,col+1);
+                    move.isEnPassant=true;
+                    moves.add(move);
+                }
+            }
+        }
+        else if(color==1&& row==3){
+            Piece left=col==0?null:board.getAt(3, col - 1);
+            Piece right=col==7?null:board.getAt(3, col + 1);
+            if(left!=null && left.color!=color && col>0 && left instanceof Pawn){
+                Move lastMove=board.getLastMove();
+                Piece lastMoved=board.getAt(lastMove.targetRow,lastMove.targetCol);
+
+                if(lastMove.initialRow==row-2 && lastMove.initialCol==col-1 && board.getAt(row-1,col-1)==null && lastMoved instanceof Pawn){
+                    Move move=new Move(row,col,row-1,col-1);
+                    move.isEnPassant=true;
+                    moves.add(move);
+                }
+            }
+            if(right!=null && right.color!=color&& col<7 && right instanceof Pawn){
+                Move lastMove=board.getLastMove();
+                Piece lastMoved=board.getAt(lastMove.targetRow,lastMove.targetCol);
+
+                if(lastMove.initialRow==row-2 && lastMove.initialCol==col+1 && board.getAt(row-1,col+1)==null && lastMoved instanceof Pawn){
+                    Move move=new Move(row,col,row-1,col+1);
+                    move.isEnPassant=true;
+                    moves.add(move);
+                }
+            }
+        }
+        return moves;
+    }
+    private List<Move> generateAttackingMoves(Board board){
+        List<Move>moves=new ArrayList<>();
+        int moveDirection=color==1?-1:1;
+        int[][] attackDirections={{moveDirection,1},{moveDirection,-1}};
+        int initialRow=row;
+        int initialCol=col;
+        for(int[] direction: attackDirections){
+            row+=direction[0];
+            col+=direction[1];
+            if(isValid()){
+                Piece pieceAtPosition=board.getAt(row,col);
+                if(pieceAtPosition!=null && pieceAtPosition.color!=color){
+                    moves.add(new Move(initialRow,initialCol,row,col));
+                }
+            }
+            row=initialRow;
+            col=initialCol;
+        }
+        return moves;
+    }
+    private List<Move> generateNonAttackingMoves(Board board){
+        List<Move>moves=new ArrayList<>();
+        int moveDirection=color==1?-1:1;
+        //Generate standard one-step move
+        if(board.getAt(row+ moveDirection,col)==null){
+            moves.add(new Move(row,col,row+moveDirection,col));
+        }
+
+        //Generating two move up if at second row
+        if(color==1 && row==6 && board.getAt(5,col)==null && board.getAt(4,col)==null){
+            int[][] doubleMove={{-2,0}};
+            moves.addAll(generateMoves(doubleMove,board));
+        }
+        else if(color==0 && row==1&& board.getAt(2,col)==null&& board.getAt(3,col)==null){
+            int[][] doubleMove={{2,0}};
+            moves.addAll(generateMoves(doubleMove,board));
+        }
+        return moves;
+    }
+    @Override
+    public List<Move> getMoves(Board board) {
+        //TODO: Implement en passant
+
+        List<Move>moves=new ArrayList<>();
+        moves.addAll(generateNonAttackingMoves(board));
+        moves.addAll(generateAttackingMoves(board));
+        moves.addAll(generateEnPassantMoves(board));
+
+        return moves;
+    }
+
+
+    @Override
+    public String getInitial() {
+        return color==0?"p":"P";
+    }
+}
