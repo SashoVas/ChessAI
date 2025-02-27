@@ -19,6 +19,12 @@ public class Knight extends NonSlidingPiece {
         return moves;
     }
 
+    @Override
+    public List<Move> getPseudoMoves(Board board) {
+        int[][] directions={{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}};
+        List<Move>moves=generatePseudoMoves(directions,board);
+        return moves;
+    }
 
     @Override
     public String getInitial() {

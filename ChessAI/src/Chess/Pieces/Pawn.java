@@ -140,6 +140,40 @@ public class Pawn extends NonSlidingPiece {
         return moves;
     }
 
+    private List<Move> generatePseudoAttackingMoves(Board board){
+        List<Move>moves=new ArrayList<>();
+        int moveDirection=color==1?-1:1;
+        int[][] attackDirections={{moveDirection,1},{moveDirection,-1}};
+        int initialRow=row;
+        int initialCol=col;
+        for(int[] direction: attackDirections){
+            row+=direction[0];
+            col+=direction[1];
+            if(isValid()){
+                Piece pieceAtPosition=board.getAt(row,col);
+
+                Move move=new Move(initialRow,initialCol,row,col);
+                if(row==0 || row==7) {
+                    moves.addAll(getPromotions(move));
+                }
+                else{
+                    moves.add(move);
+                }
+
+            }
+            row=initialRow;
+            col=initialCol;
+        }
+        return moves;
+    }
+    @Override
+    public List<Move> getPseudoMoves(Board board) {
+        //TODO: Implement en passant
+
+        List<Move>moves=generatePseudoAttackingMoves(board);
+
+        return moves;
+    }
 
     @Override
     public String getInitial() {

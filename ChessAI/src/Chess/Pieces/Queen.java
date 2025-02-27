@@ -20,6 +20,13 @@ public class Queen extends SlidingPiece {
     }
 
     @Override
+    public List<Move> getPseudoMoves(Board board) {
+        int [][] directions={{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}};
+        List<Move>moves=generatePseudoMoves(directions,board);
+        return moves;
+    }
+
+    @Override
     public String getInitial() {
         return color==0?"q":"Q";
     }

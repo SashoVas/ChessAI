@@ -23,6 +23,16 @@ public class Rook extends SlidingPiece {
         }
         return moves;
     }
+    @Override
+    public List<Move> getPseudoMoves(Board board) {
+        //TODO: Implement Castle
+        int [][] directions={{1,0},{-1,0},{0,1},{0,-1}};
+        List<Move>moves=generatePseudoMoves(directions,board);
+        if (canCastle(board)){
+            moves.add(getCastleMove(board));
+        }
+        return moves;
+    }
 
     @Override
     public String getInitial() {

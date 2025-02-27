@@ -17,7 +17,12 @@ public class Bishop extends SlidingPiece {
         List<Move>moves=generateMoves(directions,board);
         return moves;
     }
-
+    @Override
+    public List<Move> getPseudoMoves(Board board) {
+        int [][] directions={{1,1},{-1,1},{1,-1},{-1,-1}};
+        List<Move>moves=generatePseudoMoves(directions,board);
+        return moves;
+    }
     @Override
     public String getInitial() {
         return this.color==0?"b":"B";

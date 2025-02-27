@@ -31,4 +31,25 @@ public abstract class NonSlidingPiece extends Piece{
 
         return moves;
     }
+
+    @Override
+    protected List<Move> generatePseudoMoves(int[][]directions,Board board){
+        List<Move>moves=new ArrayList<>() ;
+        int initialRow=row;
+        int initialCol=col;
+        for(int[] direction:directions){
+            row+=direction[0];
+            col+=direction[1];
+            if(isValid()){
+                Piece pieceAtPosition=board.getAt(row,col);
+                moves.add(new Move(initialRow,initialCol,row,col));
+
+            }
+
+            row=initialRow;
+            col=initialCol;
+        }
+
+        return moves;
+    }
 }

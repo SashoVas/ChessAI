@@ -20,7 +20,13 @@ public class King extends NonSlidingPiece {
         return moves;
     }
 
-
+    @Override
+    public List<Move> getPseudoMoves(Board board) {
+        //TODO: Implement Castle
+        int [][] directions={{1,0},{-1,0},{0,1},{0,-1},{1,1},{-1,1},{1,-1},{-1,-1}};
+        List<Move>moves=generatePseudoMoves(directions,board);
+        return moves;
+    }
     @Override
     public String getInitial() {
         return color==0?"k":"K";
