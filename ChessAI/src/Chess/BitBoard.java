@@ -9,16 +9,16 @@ import java.util.List;
 public class BitBoard {
     public static final String defaultFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
-    long wk,wq,wn,wb,wr,wp=0L;
-    long bk,bq,bn,bb,br,bp=0L;
+    public long wk,wq,wn,wb,wr,wp=0L;
+    public long bk,bq,bn,bb,br,bp=0L;
 
-  static final long[] FILE_MASKS = new long[8];
+    static final long[] FILE_MASKS = new long[8];
     static final long[] RANK_MASKS = new long[8];
     public static long empty;
     public static long blackToTake;
     private BitBoard(){
         for (int i = 7; i >= 0; i--) {
-            FILE_MASKS[7-i] = 0x0101010101010101L << i;
+            FILE_MASKS[i] = 0x0101010101010101L << i;
             RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
@@ -53,14 +53,40 @@ public class BitBoard {
         }
         return result;
     }
-    public List<String> generateMovesW(){
+    public List<String> generateMovesW(List<String>history){
         //Optimize using int instead of string
         empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
         blackToTake=bq|bn|bb|br|bp;
         List<String> moves=new ArrayList<>();
-        moves.addAll(generatePawnMovesW());
-
+        //moves.addAll(generatePawnMovesW());
+        moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
         return moves;
+    }
+    public List<String>generateEnPassantMoves(long pawns,long toTake,List<String> movesHistory){
+        List<String> result=new ArrayList<>();
+        if(movesHistory.size()<3){
+            return result;
+        }
+        String lastMove=movesHistory.get(movesHistory.size()-1);
+        if(lastMove.charAt(1)!=lastMove.charAt(3) ||Math.abs(lastMove.charAt(0)-lastMove.charAt(2))!=2 ){
+            return result;
+        }
+        int file=lastMove.charAt(1)-'0';
+
+        //en passant right
+        long moves=pawns<<1 & toTake & RANK_MASKS[4] & ~FILE_MASKS[0] & FILE_MASKS[file];
+        if(moves!=0){
+            long index=Long.numberOfTrailingZeros(moves);
+            result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8);
+        }
+
+        //en passant left
+        moves=pawns>>1 & toTake & RANK_MASKS[4] & ~FILE_MASKS[7] & FILE_MASKS[file];
+        if(moves!=0){
+            long index=Long.numberOfTrailingZeros(moves);
+            result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8);
+        }
+        return result;
     }
     public List<String> generatePawnMovesW(){
         //TODO: Implement en-passant

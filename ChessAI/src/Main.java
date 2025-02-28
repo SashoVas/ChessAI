@@ -3,6 +3,7 @@ import Chess.Board;
 import Chess.Move;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -79,9 +80,14 @@ public class Main {
         //System.out.println(board.search(1,4));
 
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        BitBoard board=BitBoard.createBoardFromFen("8/8/8/8/3pp3/2P1P3/8/8");
+        BitBoard board=BitBoard.createBoardFromFen("8/8/8/3pPp2/8/8/8/8");
         board.printBoard();
-        List<String>moves=board.generateMovesW();
+        List<String>history=new ArrayList<>();
+        history.add("1234");
+        history.add("1234");
+        history.add("1234");
+        history.add("1333");
+        List<String>moves=board.generateMovesW(history);
         System.out.println(moves.size());
     }
 }
