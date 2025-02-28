@@ -1,3 +1,4 @@
+import Chess.BitBoard;
 import Chess.Board;
 import Chess.Move;
 
@@ -64,8 +65,9 @@ public class Main {
         runTest(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R",1);
         //runTest(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R",1);
     }
+
     public static void main(String[] args) {
-        runTests();
+        //runTests();
         //runTestsStandard();
         //Board board=Board.fenToBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R");
         //Move move=new Move(3,3,2,3);
@@ -75,5 +77,8 @@ public class Main {
         //board.printBoard();
         //List<Move>moves=board.getMoves(1);
         //System.out.println(board.search(1,4));
+
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        board.printBoard();
     }
 }
