@@ -78,7 +78,10 @@ public class Main {
         //List<Move>moves=board.getMoves(1);
         //System.out.println(board.search(1,4));
 
-        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        BitBoard board=BitBoard.createBoardFromFen("8/8/8/8/3pp3/2P1P3/8/8");
         board.printBoard();
+        List<String>moves=board.generateMovesW();
+        System.out.println(moves.size());
     }
 }
