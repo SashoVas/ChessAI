@@ -1,8 +1,5 @@
 package Chess;
 
-import Chess.Pieces.*;
-import Chess.Pieces.Base.Piece;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +11,20 @@ public class BitBoard {
 
     static final long[] FILE_MASKS = new long[8];
     static final long[] RANK_MASKS = new long[8];
+    public final long[] DIAGONALS_MASKS= {
+            0x1L, 0x102L, 0x10204L, 0x1020408L, 0x102040810L, 0x10204081020L,
+            0x1020408102040L, 0x102040810204080L, 0x204081020408000L, 0x408102040800000L,
+            0x810204080000000L, 0x1020408000000000L, 0x2040800000000000L, 0x4080000000000000L,
+            0x800000000000000L
+    };
+    public final long[] ANTI_DIAGONALS_MASKS= {
+            0x80L, 0x8040L, 0x804020L, 0x80402010L, 0x8040201008L, 0x804020100804L,
+            0x80402010080402L, 0x8040201008040201L, 0x4020100804020100L, 0x2010080402010000L,
+            0x1008040201000000L, 0x804020100000000L, 0x402010000000000L, 0x201000000000000L,
+            0x100000000000000L
+    };
     public static long empty;
+    public static long occupied;
     public static long blackToTake;
     private BitBoard(){
         for (int i = 7; i >= 0; i--) {
