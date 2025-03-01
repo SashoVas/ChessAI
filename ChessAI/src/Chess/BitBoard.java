@@ -24,9 +24,11 @@ public class BitBoard {
             0x1008040201000000L, 0x804020100000000L, 0x402010000000000L, 0x201000000000000L,
             0x100000000000000L
     };
+    public static final long KNIGHT_MOVES_MASK=43234889994L;
     public static long empty;
     public static long occupied;
     public static long blackToTake;
+    public static long notWhiteToMove;
     private BitBoard(){
         for (int i = 7; i >= 0; i--) {
             FILE_MASKS[i] = 0x0101010101010101L << i;
@@ -69,13 +71,14 @@ public class BitBoard {
         empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
         blackToTake=bq|bn|bb|br|bp;
         occupied=~empty;
+        notWhiteToMove=~(wk|wq|wn|wb|wr|wp|bk);
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesW());
         //moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
-        moves.addAll(generateBishopMovesW());
-        moves.addAll(generateQueenMovesW());
-        moves.addAll(generateRookMovesW());
-
+        //moves.addAll(generateBishopMovesW());
+        //moves.addAll(generateQueenMovesW());
+        //moves.addAll(generateRookMovesW());
+        moves.addAll(generateKnightsMovesW());
         return moves;
     }
     public long generateHorAndVertPMovesW(int pos){
@@ -89,6 +92,41 @@ public class BitBoard {
         long diagonal=((occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2 * binaryPos))^Long.reverse(Long.reverse(occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2*Long.reverse(binaryPos)));
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
+    }
+    public List<String> generateKnightsMovesW(){
+        //TODO: Test performance with function as parameter
+        List<String> result=new ArrayList<>();
+        long wbc=wn;
+        long i=wbc&~(wbc-1);
+        long moves;
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+
+            if(bishopIndex>18){
+                moves=KNIGHT_MOVES_MASK<<(bishopIndex-18);
+            }
+            else{
+                moves=KNIGHT_MOVES_MASK>>(18-bishopIndex);
+            }
+            //printMask(moves);
+            if(bishopIndex%8<4){
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notWhiteToMove;
+            }
+            else{
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notWhiteToMove;
+            }
+            j=moves&~(moves-1);
+            while(j!=0){
+                int moveIndex=Long.numberOfTrailingZeros(j);
+                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
+                moves&=~j;
+                j=moves&~(moves-1);
+            }
+            wbc&=~i;
+            i=wbc&~(wbc-1);
+        }
+        return result;
     }
     public List<String> generateQueenMovesW(){
         //TODO: Test performance with function as parameter
