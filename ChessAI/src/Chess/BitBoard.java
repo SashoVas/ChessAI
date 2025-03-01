@@ -71,7 +71,11 @@ public class BitBoard {
         occupied=~empty;
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesW());
-        moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
+        //moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
+        moves.addAll(generateBishopMovesW());
+        moves.addAll(generateQueenMovesW());
+        moves.addAll(generateRookMovesW());
+
         return moves;
     }
     public long generateHorAndVertPMovesW(int pos){
@@ -85,6 +89,74 @@ public class BitBoard {
         long diagonal=((occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2 * binaryPos))^Long.reverse(Long.reverse(occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2*Long.reverse(binaryPos)));
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
+    }
+    public List<String> generateQueenMovesW(){
+        //TODO: Test performance with function as parameter
+        List<String> result=new ArrayList<>();
+        long wbc=wq;
+        long i=wbc&~(wbc-1);
+        long moves;
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateDiagonalMoves(bishopIndex) |generateHorAndVertPMovesW(bishopIndex)  & (blackToTake | empty);
+            j=moves&~(moves-1);
+            while(j!=0){
+                int moveIndex=Long.numberOfTrailingZeros(j);
+                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
+                moves&=~j;
+                j=moves&~(moves-1);
+            }
+            wbc&=~i;
+            i=wbc&~(wbc-1);
+        }
+        return result;
+    }
+    public List<String> generateRookMovesW(){
+        //TODO: Test performance with function as parameter
+
+        List<String> result=new ArrayList<>();
+        long wbc=wr;
+        long i=wbc&~(wbc-1);
+        long moves;
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateHorAndVertPMovesW(bishopIndex) & (blackToTake | empty);
+            j=moves&~(moves-1);
+            while(j!=0){
+                int moveIndex=Long.numberOfTrailingZeros(j);
+                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
+                moves&=~j;
+                j=moves&~(moves-1);
+            }
+            wbc&=~i;
+            i=wbc&~(wbc-1);
+        }
+        return result;
+    }
+    public List<String> generateBishopMovesW(){
+        //TODO: Test performance with function as parameter
+
+        List<String> result=new ArrayList<>();
+        long wbc=wb;
+        long i=wbc&~(wbc-1);
+        long moves;
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateDiagonalMoves(bishopIndex) & (blackToTake | empty);
+            j=moves&~(moves-1);
+            while(j!=0){
+                int moveIndex=Long.numberOfTrailingZeros(j);
+                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
+                moves&=~j;
+                j=moves&~(moves-1);
+            }
+            wbc&=~i;
+            i=wbc&~(wbc-1);
+        }
+        return result;
     }
     public List<String>generateEnPassantMoves(long pawns,long toTake,List<String> movesHistory){
         List<String> result=new ArrayList<>();
@@ -146,6 +218,28 @@ public class BitBoard {
         return result;
     }
 
+    public static void visualizeMoves(List<String>moves){
+        String[][] result=new String[8][8];
+        for(String move:moves){
+            result[move.charAt(2)-'0'][move.charAt(3)-'0']="#";
+        }
+
+        for(int i=0;i<8;i++){
+            System.out.println("");
+            System.out.print("|");
+            for(int j=0;j<8;j++){
+                if(result[i][j]==null){
+                    System.out.print(" |");
+                }
+                else{
+                    System.out.print(result[i][j]+"|");
+
+                }
+            }
+        }
+        System.out.println("");
+
+    }
     public static void printMask(long mask){
         for(int i=0;i<64;i++){
             if(i%8==0){
