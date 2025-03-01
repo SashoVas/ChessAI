@@ -1,5 +1,6 @@
 package Chess;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class BitBoard {
             0x1L, 0x102L, 0x10204L, 0x1020408L, 0x102040810L, 0x10204081020L,
             0x1020408102040L, 0x102040810204080L, 0x204081020408000L, 0x408102040800000L,
             0x810204080000000L, 0x1020408000000000L, 0x2040800000000000L, 0x4080000000000000L,
-            0x800000000000000L
+            0x8000000000000000L
     };
     public final long[] ANTI_DIAGONALS_MASKS= {
             0x80L, 0x8040L, 0x804020L, 0x80402010L, 0x8040201008L, 0x804020100804L,
@@ -67,10 +68,23 @@ public class BitBoard {
         //Optimize using int instead of string
         empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
         blackToTake=bq|bn|bb|br|bp;
+        occupied=~empty;
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesW());
         moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
         return moves;
+    }
+    public long generateHorAndVertPMovesW(int pos){
+        long binaryPos=1L<<pos;
+        long hor=(occupied - 2* binaryPos)^Long.reverse(Long.reverse(occupied)-2*Long.reverse(binaryPos));
+        long vert=((occupied&FILE_MASKS[pos%8])-2*binaryPos)^ Long.reverse(Long.reverse(occupied&FILE_MASKS[pos%8])- (2* Long.reverse(binaryPos)));
+        return (hor & RANK_MASKS[7-pos/8]) | (vert & FILE_MASKS[pos%8]);
+    }
+    public long generateDiagonalMoves(int pos){
+        long binaryPos=1L<<pos;
+        long diagonal=((occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2 * binaryPos))^Long.reverse(Long.reverse(occupied&DIAGONALS_MASKS[(pos/8)+(pos%8)])-(2*Long.reverse(binaryPos)));
+        long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
+        return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
     }
     public List<String>generateEnPassantMoves(long pawns,long toTake,List<String> movesHistory){
         List<String> result=new ArrayList<>();
@@ -132,7 +146,21 @@ public class BitBoard {
         return result;
     }
 
-
+    public static void printMask(long mask){
+        for(int i=0;i<64;i++){
+            if(i%8==0){
+                System.out.println("");
+                System.out.print("|");
+            }
+            if(((mask>>i)&1)==1){
+                System.out.print("#|");
+            }
+            else{
+                System.out.print(" |");
+            }
+        }
+        System.out.println("");
+    }
     public void printBoard(){
         for(int i=0;i<64;i++){
             if(i%8==0){

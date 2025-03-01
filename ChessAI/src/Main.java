@@ -80,7 +80,7 @@ public class Main {
         //System.out.println(board.search(1,4));
 
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        BitBoard board=BitBoard.createBoardFromFen("8/8/8/3pPp2/8/8/8/8");
+        BitBoard board=BitBoard.createBoardFromFen("8/8/8/4R3/1R2Q1B1/8/2R3P1/8");
         board.printBoard();
         List<String>history=new ArrayList<>();
         history.add("1234");
@@ -88,6 +88,11 @@ public class Main {
         history.add("1234");
         history.add("1333");
         List<String>moves=board.generateMovesW(history);
-        System.out.println(moves.size());
+
+        BitBoard.printMask(board.generateDiagonalMoves(36));
+        //for(long mask: board.ANTI_DIAGONALS_MASKS){
+        //    BitBoard.printMask(mask);
+        //    System.out.println("=====");
+        //}
     }
 }
