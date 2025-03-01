@@ -80,7 +80,7 @@ public class Main {
         //System.out.println(board.search(1,4));
 
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        BitBoard board=BitBoard.createBoardFromFen("8/8/8/8/2R1b3/3K4/3P4/8");
+        BitBoard board=BitBoard.createBoardFromFen("8/8/3r4/2p1P3/1PP1b3/3N1P2/3P4/8");
         board.printBoard();
         List<String>history=new ArrayList<>();
         history.add("1234");

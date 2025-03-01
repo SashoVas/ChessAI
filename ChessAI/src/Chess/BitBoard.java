@@ -3,6 +3,7 @@ package Chess;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class BitBoard {
     public static final String defaultFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -74,17 +75,18 @@ public class BitBoard {
         blackToTake=bq|bn|bb|br|bp;
         occupied=~empty;
         notWhiteToMove=~(wk|wq|wn|wb|wr|wp|bk);
+        long blackOrEmpty=blackToTake|empty;
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesW());
         //moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
-        //moves.addAll(generateBishopMovesW());
-        //moves.addAll(generateQueenMovesW());
-        //moves.addAll(generateRookMovesW());
-        //moves.addAll(generateKnightsMovesW());
-        moves.addAll(generateKingMovesW());
+        //moves.addAll(generateBishopMoves(wb,blackOrEmpty));
+        //moves.addAll(generateQueenMoves(wq,blackOrEmpty));
+        //moves.addAll(generateRookMoves(wr,blackOrEmpty));
+        moves.addAll(generateKnightsMoves(wn,notWhiteToMove));
+        //moves.addAll(generateKingMoves(wk,notWhiteToMove));
         return moves;
     }
-    public long generateHorAndVertPMovesW(int pos){
+    public long generateHorAndVertPMoves(int pos){
         long binaryPos=1L<<pos;
         long hor=(occupied - 2* binaryPos)^Long.reverse(Long.reverse(occupied)-2*Long.reverse(binaryPos));
         long vert=((occupied&FILE_MASKS[pos%8])-2*binaryPos)^ Long.reverse(Long.reverse(occupied&FILE_MASKS[pos%8])- (2* Long.reverse(binaryPos)));
@@ -96,11 +98,10 @@ public class BitBoard {
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
     }
-    public List<String> generateKingMovesW(){
+    public List<String> generateKingMoves(long king,long notMyColorToTake){
         //TODO: Test performance with function as parameter
         List<String> result=new ArrayList<>();
-        long wbc=wk;
-        long i=wbc&~(wbc-1);
+        long i=king&~(king-1);
         long moves;
         long j;
         while(i!=0){
@@ -114,10 +115,10 @@ public class BitBoard {
             }
             //printMask(moves);
             if(bishopIndex%8<4){
-                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notWhiteToMove;
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notMyColorToTake;
             }
             else{
-                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notWhiteToMove;
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notMyColorToTake;
             }
             j=moves&~(moves-1);
             while(j!=0){
@@ -126,16 +127,15 @@ public class BitBoard {
                 moves&=~j;
                 j=moves&~(moves-1);
             }
-            wbc&=~i;
-            i=wbc&~(wbc-1);
+            king&=~i;
+            i=king&~(king-1);
         }
         return result;
     }
-    public List<String> generateKnightsMovesW(){
+    public List<String> generateKnightsMoves(long knights,long notMyColorToTake){
         //TODO: Test performance with function as parameter
         List<String> result=new ArrayList<>();
-        long wbc=wn;
-        long i=wbc&~(wbc-1);
+        long i=knights&~(knights-1);
         long moves;
         long j;
         while(i!=0){
@@ -149,10 +149,10 @@ public class BitBoard {
             }
             //printMask(moves);
             if(bishopIndex%8<4){
-                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notWhiteToMove;
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notMyColorToTake;
             }
             else{
-                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notWhiteToMove;
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notMyColorToTake;
             }
             j=moves&~(moves-1);
             while(j!=0){
@@ -161,21 +161,20 @@ public class BitBoard {
                 moves&=~j;
                 j=moves&~(moves-1);
             }
-            wbc&=~i;
-            i=wbc&~(wbc-1);
+            knights&=~i;
+            i=knights&~(knights-1);
         }
         return result;
     }
-    public List<String> generateQueenMovesW(){
+    public List<String> generateQueenMoves(long queens,long toTakeAndEmpty){
         //TODO: Test performance with function as parameter
         List<String> result=new ArrayList<>();
-        long wbc=wq;
-        long i=wbc&~(wbc-1);
+        long i=queens&~(queens-1);
         long moves;
         long j;
         while(i!=0){
             int bishopIndex=Long.numberOfTrailingZeros(i);
-            moves=generateDiagonalMoves(bishopIndex) |generateHorAndVertPMovesW(bishopIndex)  & (blackToTake | empty);
+            moves=(generateDiagonalMoves(bishopIndex) | generateHorAndVertPMoves(bishopIndex))  & toTakeAndEmpty;
             j=moves&~(moves-1);
             while(j!=0){
                 int moveIndex=Long.numberOfTrailingZeros(j);
@@ -183,45 +182,21 @@ public class BitBoard {
                 moves&=~j;
                 j=moves&~(moves-1);
             }
-            wbc&=~i;
-            i=wbc&~(wbc-1);
+            queens&=~i;
+            i=queens&~(queens-1);
         }
         return result;
     }
-    public List<String> generateRookMovesW(){
-        //TODO: Test performance with function as parameter
-
-        List<String> result=new ArrayList<>();
-        long wbc=wr;
-        long i=wbc&~(wbc-1);
-        long moves;
-        long j;
-        while(i!=0){
-            int bishopIndex=Long.numberOfTrailingZeros(i);
-            moves=generateHorAndVertPMovesW(bishopIndex) & (blackToTake | empty);
-            j=moves&~(moves-1);
-            while(j!=0){
-                int moveIndex=Long.numberOfTrailingZeros(j);
-                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
-                moves&=~j;
-                j=moves&~(moves-1);
-            }
-            wbc&=~i;
-            i=wbc&~(wbc-1);
-        }
-        return result;
-    }
-    public List<String> generateBishopMovesW(){
+    public List<String> generateRookMoves(long rooks,long toTakeAndEmpty){
         //TODO: Test performance with function as parameter
 
         List<String> result=new ArrayList<>();
-        long wbc=wb;
-        long i=wbc&~(wbc-1);
+        long i=rooks&~(rooks-1);
         long moves;
         long j;
         while(i!=0){
             int bishopIndex=Long.numberOfTrailingZeros(i);
-            moves=generateDiagonalMoves(bishopIndex) & (blackToTake | empty);
+            moves=generateHorAndVertPMoves(bishopIndex) & toTakeAndEmpty;
             j=moves&~(moves-1);
             while(j!=0){
                 int moveIndex=Long.numberOfTrailingZeros(j);
@@ -229,8 +204,30 @@ public class BitBoard {
                 moves&=~j;
                 j=moves&~(moves-1);
             }
-            wbc&=~i;
-            i=wbc&~(wbc-1);
+            rooks&=~i;
+            i=rooks&~(rooks-1);
+        }
+        return result;
+    }
+    public List<String> generateBishopMoves(long bishops,long toTakeAndEmpty){
+        //TODO: Test performance with function as parameter
+
+        List<String> result=new ArrayList<>();
+        long i=bishops&~(bishops-1);
+        long moves;
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateDiagonalMoves(bishopIndex) & toTakeAndEmpty;
+            j=moves&~(moves-1);
+            while(j!=0){
+                int moveIndex=Long.numberOfTrailingZeros(j);
+                result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
+                moves&=~j;
+                j=moves&~(moves-1);
+            }
+            bishops&=~i;
+            i=bishops&~(bishops-1);
         }
         return result;
     }
