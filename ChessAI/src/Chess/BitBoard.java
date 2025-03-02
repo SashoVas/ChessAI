@@ -50,7 +50,7 @@ public class BitBoard {
             System.out.println("================================");
         }
     }
-    private List<String>generateMovesFromBitBoard(long bitBoard,long startRowIncrement,long startColIncrement,boolean isPromotion){
+    private List<String>generateMovesFromBitBoard(long bitBoard,long startRowIncrement,long startColIncrement,boolean isPromotion,boolean isWhite){
         List<String> result=new ArrayList<>();
         long first=bitBoard & ~(bitBoard-1);
         while(first!=0){
@@ -58,11 +58,17 @@ public class BitBoard {
             if(!isPromotion){
                 result.add(""+(index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8);
             }
-            else{
+            else if(isWhite){
                 result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"Q");
                 result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"R");
                 result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"B");
                 result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"N");
+            }
+            else if(!isWhite){
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"q");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"r");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"b");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"n");
             }
             bitBoard&=~first;
             first=bitBoard & ~(bitBoard-1);
@@ -266,6 +272,69 @@ public class BitBoard {
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
     }
+    public long makeAMove(String move){
+        long result=0L;
+        wk=makeAMoveOnBoard(wk,move,'K');
+        wq=makeAMoveOnBoard(wq,move,'Q');
+        wn=makeAMoveOnBoard(wn,move,'N');
+        wb=makeAMoveOnBoard(wb,move,'B');
+        wr=makeAMoveOnBoard(wr,move,'R');
+        wp=makeAMoveOnBoard(wp,move,'P');
+        bk=makeAMoveOnBoard(bk,move,'k');
+        bq=makeAMoveOnBoard(bq,move,'q');
+        bn=makeAMoveOnBoard(bn,move,'n');
+        bb=makeAMoveOnBoard(bb,move,'b');
+        br=makeAMoveOnBoard(br,move,'r');
+        bp=makeAMoveOnBoard(bp,move,'p');
+
+        return result;
+    }
+    public long makeAMoveOnBoard(long board,String move,char pieceBoard){
+        int start=(move.charAt(0)-'0')*8+(move.charAt(1)-'0');
+        int end=(move.charAt(2)-'0')*8+(move.charAt(3)-'0');
+        if (Character.isDigit(move.charAt(move.length()-1))){
+            if(((board>>>start)&1)==1){
+                board&=~(1L<<start);
+                board|=(1L<<end);
+            }
+            else{
+                board&=~(1L<<end);
+            }
+        }
+        else if(move.charAt(move.length()-1)=='E'){
+            if(((board>>>start)&1)==1){
+                board&=~(1L<<start);
+                board|=(1L<<end);
+            }
+            else{
+                board&=~(1L<<end);
+            }
+            int toRemove;
+            if(move.charAt(1)-move.charAt(3)==1){
+                toRemove=(move.charAt(0)-'0')*8+(move.charAt(1)-'0'-1);
+            }
+            else{
+                toRemove=(move.charAt(0)-'0')*8+(move.charAt(1)-'0'+1);
+            }
+            if(((board>>>toRemove)&1)==1){
+                board&=~(1L<<toRemove);
+            }
+        }
+        else {
+            if(((board>>>start)&1)==1){
+                board&=~(1L<<start);
+            }
+            else{
+                board&=~(1L<<end);
+            }
+
+            if(move.charAt(move.length()-1)==pieceBoard){
+                board|=(1L<<end);
+            }
+        }
+
+        return board;
+    }
 
     public List<String> generateKingMoves(long king,long notMyColorToTake){
         //TODO: Test performance with function as parameter
@@ -414,14 +483,14 @@ public class BitBoard {
         long moves=pawns>>1 & toTake & RANK_MASKS[3] & ~FILE_MASKS[0] & FILE_MASKS[file];
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
-            result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8);
+            result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8+"E");
         }
 
         //en passant left
         moves=pawns<<1 & toTake & RANK_MASKS[3] & ~FILE_MASKS[7] & FILE_MASKS[file];
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
-            result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8);
+            result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8+"E");
         }
         return result;
     }
@@ -456,30 +525,30 @@ public class BitBoard {
         List<String> result=new ArrayList<>();
         //capture right
         long moves=pieces>>7 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,1,-1,false));
+        result.addAll(generateMovesFromBitBoard(moves,1,-1,false,true));
         //capture left
         moves= pieces>>9 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,1,1,false));
+        result.addAll(generateMovesFromBitBoard(moves,1,1,false,true));
 
         //move one up
         moves=pieces>>8 & empty & ~RANK_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,1,0,false));
+        result.addAll(generateMovesFromBitBoard(moves,1,0,false,true));
 
         //move two up
         moves=(pieces>>16) & empty &(empty>>8) & RANK_MASKS[3];
-        result.addAll(generateMovesFromBitBoard(moves,2,0,false));
+        result.addAll(generateMovesFromBitBoard(moves,2,0,false,true));
 
         //promotion attack right
         moves=pieces>>7 & toTake & RANK_MASKS[7] & ~FILE_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,1,-1,true));
+        result.addAll(generateMovesFromBitBoard(moves,1,-1,true,true));
 
         //promotion attack left
         moves=pieces>>9 & toTake & RANK_MASKS[7] & ~FILE_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,1,1,true));
+        result.addAll(generateMovesFromBitBoard(moves,1,1,true,true));
 
         //promotion move one up
         moves=pieces>>8 & empty & RANK_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,1,0,true));
+        result.addAll(generateMovesFromBitBoard(moves,1,0,true,true));
 
         //en passant moves
         return result;
@@ -489,30 +558,30 @@ public class BitBoard {
         List<String> result=new ArrayList<>();
         //capture right
         long moves=pieces<<7 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,-1,1,false));
+        result.addAll(generateMovesFromBitBoard(moves,-1,1,false,false));
         //capture left
         moves= pieces<<9 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,-1,-1,false));
+        result.addAll(generateMovesFromBitBoard(moves,-1,-1,false,false));
 
         //move one up
         moves=pieces<<8 & empty & ~RANK_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,-1,0,false));
+        result.addAll(generateMovesFromBitBoard(moves,-1,0,false,false));
 
         //move two up
         moves=(pieces<<16) & empty &(empty<<8) & RANK_MASKS[4];
-        result.addAll(generateMovesFromBitBoard(moves,-2,0,false));
+        result.addAll(generateMovesFromBitBoard(moves,-2,0,false,false));
 
         //promotion attack right
         moves=pieces<<7 & toTake & RANK_MASKS[0] & ~FILE_MASKS[7];
-        result.addAll(generateMovesFromBitBoard(moves,-1,1,true));
+        result.addAll(generateMovesFromBitBoard(moves,-1,1,true,false));
 
         //promotion attack left
         moves=pieces<<9 & toTake & RANK_MASKS[0] & ~FILE_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,-1,-1,true));
+        result.addAll(generateMovesFromBitBoard(moves,-1,-1,true,false));
 
         //promotion move one up
         moves=pieces<<8 & empty & RANK_MASKS[0];
-        result.addAll(generateMovesFromBitBoard(moves,-1,0,true));
+        result.addAll(generateMovesFromBitBoard(moves,-1,0,true,false));
 
         //en passant moves
         return result;
