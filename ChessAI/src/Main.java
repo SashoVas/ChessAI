@@ -80,16 +80,16 @@ public class Main {
         //System.out.println(board.search(1,4));
 
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        BitBoard board=BitBoard.createBoardFromFen("8/8/8/8/1Pp5/8/8/8");
+        BitBoard board=BitBoard.createBoardFromFen("8/8/2B5/3p4/1pK3P1/3p4/6R1/3r1P2");
         board.printBoard();
         List<String>history=new ArrayList<>();
         history.add("1234");
         history.add("1234");
         history.add("1234");
         history.add("6141");
-        List<String>moves=board.generateMovesB(history);
+        List<String>moves=board.generateMovesW(history);
         System.out.println(moves.size());
-        BitBoard.visualizeMoves(moves);
+        //BitBoard.visualizeMoves(moves);
         //BitBoard.printMask(BitBoard.KNIGHT_MOVES_MASK);
         //for(long mask: board.ANTI_DIAGONALS_MASKS){
         //    BitBoard.printMask(mask);

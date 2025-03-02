@@ -78,12 +78,13 @@ public class BitBoard {
         long blackOrEmpty=blackToTake|empty;
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesW(wp,blackToTake));
-        moves.addAll(generateEnPassantMovesW(wp,blackToTake,history));
+        //moves.addAll(generateEnPassantMovesW(wp,blackToTake,history));
         //moves.addAll(generateBishopMoves(wb,blackOrEmpty));
         //moves.addAll(generateQueenMoves(wq,blackOrEmpty));
         //moves.addAll(generateRookMoves(wr,blackOrEmpty));
         //moves.addAll(generateKnightsMoves(wn,notWhiteToMove));
         //moves.addAll(generateKingMoves(wk,notWhiteToMove));
+        attackedByWhite(wk, wq, wn, wb, wr, wp);
         return moves;
     }
     public List<String> generateMovesB(List<String>history){
@@ -104,6 +105,83 @@ public class BitBoard {
         //moves.addAll(generateKingMoves(bk,notBlackToMove));
         return moves;
     }
+    public long attackedByWhite(long wk,long wq,long wn,long wb,long wr,long wp){
+        long result=0L;
+        //pawns
+        result|=wp>>7  & ~FILE_MASKS[0];
+        result|=wp>>9 & ~FILE_MASKS[7];
+
+        //knights
+        long i=wn&~(wn-1);
+        long moves;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+
+            if(bishopIndex>18){
+                moves=KNIGHT_MOVES_MASK<<(bishopIndex-18);
+            }
+            else{
+                moves=KNIGHT_MOVES_MASK>>(18-bishopIndex);
+            }
+            if(bishopIndex%8<4){
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7]);
+            }
+            else{
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1]);
+            }
+            result|=moves;
+            wn&=~i;
+            i=wn&~(wn-1);
+        }
+
+        //bishop and queen
+        long bishopOrQueen=wb|wq;
+        i=bishopOrQueen&~(bishopOrQueen-1);
+        long j;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateDiagonalMoves(bishopIndex) ;
+            result|=moves;
+            bishopOrQueen&=~i;
+            i=bishopOrQueen&~(bishopOrQueen-1);
+        }
+        //rook and queen
+        long rookOrQueen=wr|wq;
+        i=rookOrQueen&~(rookOrQueen-1);
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateHorAndVertPMoves(bishopIndex);
+            result|=moves;
+            rookOrQueen&=~i;
+            i=rookOrQueen&~(rookOrQueen-1);
+        }
+        //king
+        i=wk&~(wk-1);
+
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+
+            if(bishopIndex>9){
+                moves=KING_MOVES_MASK<<(bishopIndex-9);
+            }
+            else{
+                moves=KING_MOVES_MASK>>(9-bishopIndex);
+            }
+            if(bishopIndex%8<4){
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7]);
+            }
+            else{
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1]);
+            }
+            result|=moves;
+            wk&=~i;
+            i=wk&~(wk-1);
+        }
+
+        printMask(result);
+        return result;
+
+    }
     public long generateHorAndVertPMoves(int pos){
         long binaryPos=1L<<pos;
         long hor=(occupied - 2* binaryPos)^Long.reverse(Long.reverse(occupied)-2*Long.reverse(binaryPos));
@@ -116,6 +194,7 @@ public class BitBoard {
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
     }
+
     public List<String> generateKingMoves(long king,long notMyColorToTake){
         //TODO: Test performance with function as parameter
         List<String> result=new ArrayList<>();
@@ -131,7 +210,6 @@ public class BitBoard {
             else{
                 moves=KING_MOVES_MASK>>(9-bishopIndex);
             }
-            //printMask(moves);
             if(bishopIndex%8<4){
                 moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notMyColorToTake;
             }
