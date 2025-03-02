@@ -79,17 +79,21 @@ public class Main {
         //List<Move>moves=board.getMoves(1);
         //System.out.println(board.search(1,4));
 
-        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        BitBoard board=BitBoard.createBoardFromFen("8/8/8/1pP5/8/8/8/8");
+       //BitBoard board=BitBoard.createBoardFromFen("8/8/8/pP6/8/8/8/8");
+       //List<String>moves=board.generateMovesW("1030");
+       //System.out.println(moves.size());
+       //BitBoard.visualizeMoves(moves);
+
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         board.printBoard();
-        List<String>history=new ArrayList<>();
-        history.add("1234");
-        history.add("1234");
-        history.add("1234");
-        history.add("6141");
-        //List<String>moves=board.generateMovesB(history);
-        //System.out.println(moves.size());
-        board.makeAMove("3221E");
-        board.printBoard();
+        System.out.println(board.perft(6,1));
+        System.out.println(BitBoard.enPassants-258);
+
+
+
+        //for(int i=0;i<8;i++){
+        //    BitBoard.printMask(BitBoard.RANK_MASKS[i]);
+        //}
+
     }
 }
