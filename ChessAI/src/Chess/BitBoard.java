@@ -77,8 +77,8 @@ public class BitBoard {
         notWhiteToMove=~(wk|wq|wn|wb|wr|wp|bk);
         long blackOrEmpty=blackToTake|empty;
         List<String> moves=new ArrayList<>();
-        moves.addAll(generatePawnMovesW(wp,blackToTake));
-        //moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
+        //moves.addAll(generatePawnMovesW(wp,blackToTake));
+        moves.addAll(generateEnPassantMovesW(wp,blackToTake,history));
         //moves.addAll(generateBishopMoves(wb,blackOrEmpty));
         //moves.addAll(generateQueenMoves(wq,blackOrEmpty));
         //moves.addAll(generateRookMoves(wr,blackOrEmpty));
@@ -95,12 +95,13 @@ public class BitBoard {
         long whiteOrEmpty=whiteToTake|empty;
         List<String> moves=new ArrayList<>();
         //moves.addAll(generatePawnMovesB(bp,whiteToTake));
+        moves.addAll(generateEnPassantMovesB(bp,whiteToTake,history));
         //moves.addAll(generateEnPassantMoves(bp,whiteToTake,history));
         //moves.addAll(generateBishopMoves(bb,whiteOrEmpty));
         //moves.addAll(generateQueenMoves(bq,whiteOrEmpty));
         //moves.addAll(generateRookMoves(br,whiteOrEmpty));
         //moves.addAll(generateKnightsMoves(bn,notBlackToMove));
-        moves.addAll(generateKingMoves(bk,notBlackToMove));
+        //moves.addAll(generateKingMoves(bk,notBlackToMove));
         return moves;
     }
     public long generateHorAndVertPMoves(int pos){
@@ -248,7 +249,33 @@ public class BitBoard {
         }
         return result;
     }
-    public List<String>generateEnPassantMoves(long pawns,long toTake,List<String> movesHistory){
+    public List<String>generateEnPassantMovesB(long pawns,long toTake,List<String> movesHistory){
+        List<String> result=new ArrayList<>();
+        if(movesHistory.size()<3){
+            return result;
+        }
+        String lastMove=movesHistory.get(movesHistory.size()-1);
+        if(lastMove.charAt(1)!=lastMove.charAt(3) ||Math.abs(lastMove.charAt(0)-lastMove.charAt(2))!=2 ){
+            return result;
+        }
+        int file=lastMove.charAt(1)-'0';
+
+        //en passant right
+        long moves=pawns>>1 & toTake & RANK_MASKS[3] & ~FILE_MASKS[0] & FILE_MASKS[file];
+        if(moves!=0){
+            long index=Long.numberOfTrailingZeros(moves);
+            result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8);
+        }
+
+        //en passant left
+        moves=pawns<<1 & toTake & RANK_MASKS[3] & ~FILE_MASKS[7] & FILE_MASKS[file];
+        if(moves!=0){
+            long index=Long.numberOfTrailingZeros(moves);
+            result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8);
+        }
+        return result;
+    }
+    public List<String>generateEnPassantMovesW(long pawns,long toTake,List<String> movesHistory){
         List<String> result=new ArrayList<>();
         if(movesHistory.size()<3){
             return result;
@@ -263,14 +290,14 @@ public class BitBoard {
         long moves=pawns<<1 & toTake & RANK_MASKS[4] & ~FILE_MASKS[0] & FILE_MASKS[file];
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
-            result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8);
+            result.add(""+index/8+""+((index%8)-1)+""+((index/8)-1)+""+index%8);
         }
 
         //en passant left
         moves=pawns>>1 & toTake & RANK_MASKS[4] & ~FILE_MASKS[7] & FILE_MASKS[file];
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
-            result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8);
+            result.add(""+index/8+""+((index%8)+1)+""+((index/8)-1)+""+index%8);
         }
         return result;
     }
