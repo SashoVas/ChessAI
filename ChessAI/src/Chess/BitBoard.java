@@ -103,7 +103,83 @@ public class BitBoard {
         //moves.addAll(generateRookMoves(br,whiteOrEmpty));
         //moves.addAll(generateKnightsMoves(bn,notBlackToMove));
         //moves.addAll(generateKingMoves(bk,notBlackToMove));
+        attackedByBlack(bk, bq, bn, bb, br, bp);
+
         return moves;
+    }
+    public long attackedByBlack(long bk,long bq,long bn,long bb,long br,long bp){
+        long result=0L;
+        //pawns
+        result|=bp<<7   & ~FILE_MASKS[7];
+        result|=bp<<9 & ~FILE_MASKS[0];
+
+        //knights
+        long i=bn&~(bn-1);
+        long moves;
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+
+            if(bishopIndex>18){
+                moves=KNIGHT_MOVES_MASK<<(bishopIndex-18);
+            }
+            else{
+                moves=KNIGHT_MOVES_MASK>>(18-bishopIndex);
+            }
+            if(bishopIndex%8<4){
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7]);
+            }
+            else{
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1]);
+            }
+            result|=moves;
+            bn&=~i;
+            i=bn&~(bn-1);
+        }
+
+        //bishop and queen
+        long bishopOrQueen=bb|bq;
+        i=bishopOrQueen&~(bishopOrQueen-1);
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateDiagonalMoves(bishopIndex) ;
+            result|=moves;
+            bishopOrQueen&=~i;
+            i=bishopOrQueen&~(bishopOrQueen-1);
+        }
+        //rook and queen
+        long rookOrQueen=br|bq;
+        i=rookOrQueen&~(rookOrQueen-1);
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+            moves=generateHorAndVertPMoves(bishopIndex);
+            result|=moves;
+            rookOrQueen&=~i;
+            i=rookOrQueen&~(rookOrQueen-1);
+        }
+        //king
+        i=bk&~(bk-1);
+
+        while(i!=0){
+            int bishopIndex=Long.numberOfTrailingZeros(i);
+
+            if(bishopIndex>9){
+                moves=KING_MOVES_MASK<<(bishopIndex-9);
+            }
+            else{
+                moves=KING_MOVES_MASK>>(9-bishopIndex);
+            }
+            if(bishopIndex%8<4){
+                moves&=~(FILE_MASKS[6]|FILE_MASKS[7]);
+            }
+            else{
+                moves&=~(FILE_MASKS[0]|FILE_MASKS[1]);
+            }
+            result|=moves;
+            bk&=~i;
+            i=bk&~(bk-1);
+        }
+        printMask(result);
+        return result;
     }
     public long attackedByWhite(long wk,long wq,long wn,long wb,long wr,long wp){
         long result=0L;
@@ -137,7 +213,6 @@ public class BitBoard {
         //bishop and queen
         long bishopOrQueen=wb|wq;
         i=bishopOrQueen&~(bishopOrQueen-1);
-        long j;
         while(i!=0){
             int bishopIndex=Long.numberOfTrailingZeros(i);
             moves=generateDiagonalMoves(bishopIndex) ;
@@ -177,10 +252,7 @@ public class BitBoard {
             wk&=~i;
             i=wk&~(wk-1);
         }
-
-        printMask(result);
         return result;
-
     }
     public long generateHorAndVertPMoves(int pos){
         long binaryPos=1L<<pos;
