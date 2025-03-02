@@ -56,13 +56,13 @@ public class BitBoard {
         while(first!=0){
             long index=Long.numberOfTrailingZeros(first);
             if(!isPromotion){
-                result.add(""+index/8+startRowIncrement+index%8+startColIncrement+index/8+index%8);
+                result.add(""+(index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8);
             }
             else{
-                result.add(index/8+startRowIncrement+index%8+startColIncrement+index/8+index%8+"Q");
-                result.add(index/8+startRowIncrement+index%8+startColIncrement+index/8+index%8+"R");
-                result.add(index/8+startRowIncrement+index%8+startColIncrement+index/8+index%8+"B");
-                result.add(index/8+startRowIncrement+index%8+startColIncrement+index/8+index%8+"N");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"Q");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"R");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"B");
+                result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"N");
             }
             bitBoard&=~first;
             first=bitBoard & ~(bitBoard-1);
@@ -77,13 +77,30 @@ public class BitBoard {
         notWhiteToMove=~(wk|wq|wn|wb|wr|wp|bk);
         long blackOrEmpty=blackToTake|empty;
         List<String> moves=new ArrayList<>();
-        //moves.addAll(generatePawnMovesW());
+        moves.addAll(generatePawnMovesW(wp,blackToTake));
         //moves.addAll(generateEnPassantMoves(wp,blackToTake,history));
         //moves.addAll(generateBishopMoves(wb,blackOrEmpty));
         //moves.addAll(generateQueenMoves(wq,blackOrEmpty));
         //moves.addAll(generateRookMoves(wr,blackOrEmpty));
-        moves.addAll(generateKnightsMoves(wn,notWhiteToMove));
+        //moves.addAll(generateKnightsMoves(wn,notWhiteToMove));
         //moves.addAll(generateKingMoves(wk,notWhiteToMove));
+        return moves;
+    }
+    public List<String> generateMovesB(List<String>history){
+        //Optimize using int instead of string
+        empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
+        long whiteToTake=wq|wn|wb|wr|wp;
+        occupied=~empty;
+        long notBlackToMove=~(bk|bq|bn|bb|br|bp|wk);
+        long whiteOrEmpty=whiteToTake|empty;
+        List<String> moves=new ArrayList<>();
+        //moves.addAll(generatePawnMovesB(bp,whiteToTake));
+        //moves.addAll(generateEnPassantMoves(bp,whiteToTake,history));
+        //moves.addAll(generateBishopMoves(bb,whiteOrEmpty));
+        //moves.addAll(generateQueenMoves(bq,whiteOrEmpty));
+        //moves.addAll(generateRookMoves(br,whiteOrEmpty));
+        //moves.addAll(generateKnightsMoves(bn,notBlackToMove));
+        moves.addAll(generateKingMoves(bk,notBlackToMove));
         return moves;
     }
     public long generateHorAndVertPMoves(int pos){
@@ -257,40 +274,72 @@ public class BitBoard {
         }
         return result;
     }
-    public List<String> generatePawnMovesW(){
+    public List<String> generatePawnMovesW(long pieces,long toTake){
         //TODO: Implement en-passant
         List<String> result=new ArrayList<>();
         //capture right
-        long moves=wp>>7 & blackToTake & ~RANK_MASKS[7] & ~FILE_MASKS[0];
+        long moves=pieces>>7 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[0];
         result.addAll(generateMovesFromBitBoard(moves,1,-1,false));
         //capture left
-        moves= wp>>9 & blackToTake & ~RANK_MASKS[7] & ~FILE_MASKS[7];
+        moves= pieces>>9 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[7];
         result.addAll(generateMovesFromBitBoard(moves,1,1,false));
 
         //move one up
-        moves=wp>>8 & empty & ~RANK_MASKS[7];
+        moves=pieces>>8 & empty & ~RANK_MASKS[7];
         result.addAll(generateMovesFromBitBoard(moves,1,0,false));
 
         //move two up
-        moves=(wp>>16) & empty &(empty>>8) & RANK_MASKS[3];
+        moves=(pieces>>16) & empty &(empty>>8) & RANK_MASKS[3];
         result.addAll(generateMovesFromBitBoard(moves,2,0,false));
 
         //promotion attack right
-        moves=wp>>7 & blackToTake & RANK_MASKS[7] & ~FILE_MASKS[0];
+        moves=pieces>>7 & toTake & RANK_MASKS[7] & ~FILE_MASKS[0];
         result.addAll(generateMovesFromBitBoard(moves,1,-1,true));
 
         //promotion attack left
-        moves=wp>>9 & blackToTake & RANK_MASKS[7] & ~FILE_MASKS[7];
+        moves=pieces>>9 & toTake & RANK_MASKS[7] & ~FILE_MASKS[7];
         result.addAll(generateMovesFromBitBoard(moves,1,1,true));
 
         //promotion move one up
-        moves=wp>>8 & empty & RANK_MASKS[7];
+        moves=pieces>>8 & empty & RANK_MASKS[7];
         result.addAll(generateMovesFromBitBoard(moves,1,0,true));
 
         //en passant moves
         return result;
     }
+    public List<String> generatePawnMovesB(long pieces,long toTake){
+        //TODO: Implement en-passant
+        List<String> result=new ArrayList<>();
+        //capture right
+        long moves=pieces<<7 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[7];
+        result.addAll(generateMovesFromBitBoard(moves,-1,1,false));
+        //capture left
+        moves= pieces<<9 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[0];
+        result.addAll(generateMovesFromBitBoard(moves,-1,-1,false));
 
+        //move one up
+        moves=pieces<<8 & empty & ~RANK_MASKS[0];
+        result.addAll(generateMovesFromBitBoard(moves,-1,0,false));
+
+        //move two up
+        moves=(pieces<<16) & empty &(empty<<8) & RANK_MASKS[4];
+        result.addAll(generateMovesFromBitBoard(moves,-2,0,false));
+
+        //promotion attack right
+        moves=pieces<<7 & toTake & RANK_MASKS[0] & ~FILE_MASKS[7];
+        result.addAll(generateMovesFromBitBoard(moves,-1,1,true));
+
+        //promotion attack left
+        moves=pieces<<9 & toTake & RANK_MASKS[0] & ~FILE_MASKS[0];
+        result.addAll(generateMovesFromBitBoard(moves,-1,-1,true));
+
+        //promotion move one up
+        moves=pieces<<8 & empty & RANK_MASKS[0];
+        result.addAll(generateMovesFromBitBoard(moves,-1,0,true));
+
+        //en passant moves
+        return result;
+    }
     public static void visualizeMoves(List<String>moves){
         String[][] result=new String[8][8];
         for(String move:moves){
