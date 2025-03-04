@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.function.Function;
 
 public class BitBoard {
-    public static final String defaultFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    public static final String defaultFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public long wk,wq,wn,wb,wr,wp=0L;
     public long bk,bq,bn,bb,br,bp=0L;
+    boolean ckw=true;
+    boolean cqw=true;
+    boolean ckb=true;
+    boolean cqb=true;
 
     public static final long[] FILE_MASKS = new long[8];
     public static final long[] RANK_MASKS = new long[8];
@@ -89,7 +93,7 @@ public class BitBoard {
 
     }
     public long perft(int depth,int color){
-        return perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,true,true,true,true,depth,color,0);
+        return perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,color,0);
     }
     public long perft(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int depth,int color,long lastMove){
         if (depth==0){
@@ -856,6 +860,8 @@ public class BitBoard {
 
     public static BitBoard createBoardFromFen(String fen){
         BitBoard board=new BitBoard();
+        String[] fenFragments=fen.split(" w ");
+        fen=fenFragments[0];
         int row=0;
         int col=0;
         for (int i=0;i<fen.length();i++){
@@ -909,6 +915,18 @@ public class BitBoard {
                 }
                 col++;
             }
+        }
+        if (!fenFragments[1].contains("K")){
+            board.ckw=false;
+        }
+        if(!fenFragments[1].contains("Q")){
+            board.cqw=false;
+        }
+        if(!fenFragments[1].contains("k")){
+            board.ckb=false;
+        }
+        if(!fenFragments[1].contains("q")){
+            board.cqb=false;
         }
         return board;
     }
