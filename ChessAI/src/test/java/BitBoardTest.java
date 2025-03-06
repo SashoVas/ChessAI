@@ -48,7 +48,7 @@ class BitBoardTest {
     @MethodSource("provideTestCases")
     void TestPerft(String fen,int depth,int expected) {
         BitBoard board=BitBoard.createBoardFromFen(fen);
-        assertEquals(expected,board.perft(depth,1));
+        assertEquals(expected,board.perft(depth));
 
     }
 }
