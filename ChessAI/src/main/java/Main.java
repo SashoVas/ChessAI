@@ -85,14 +85,14 @@ public class Main {
        //BitBoard.visualizeMoves(moves);
 
 
-        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        BitBoard board=BitBoard.createBoardFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         board.printBoard();
-        long startTime = System.currentTimeMillis();
-        long result=board.perft(6);
-        long endTime = System.currentTimeMillis();
-        System.out.println(result);
-        System.out.println(endTime-startTime);
-
+        //long startTime = System.currentTimeMillis();
+        //long result=board.perft(6);
+        //long endTime = System.currentTimeMillis();
+        //System.out.println(result);
+        //System.out.println(endTime-startTime);
+        System.out.println(board.evaluate());
         //System.out.println(BitBoard.promotions);
         //for(int i=0;i<8;i++){
         //    BitBoard.printMask(BitBoard.RANK_MASKS[i]);
