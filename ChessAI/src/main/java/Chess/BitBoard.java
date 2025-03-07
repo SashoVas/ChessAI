@@ -31,11 +31,11 @@ public class BitBoard {
     }
     public List<Long> generateMovesW(long lastMove){
         //TODO:swap castle boolean
-        return BitBoardMovesGenerator.generateMovesW( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,true,true,lastMove);
+        return BitBoardMovesGenerator.generateMovesW( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
     }
     public List<Long>generateMovesB(long lastMove){
         //TODO:swap castle boolean
-        return BitBoardMovesGenerator.generateMovesB( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,true,true,lastMove);
+        return BitBoardMovesGenerator.generateMovesB( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
     }
 
     public long makeAMove(long move){

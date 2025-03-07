@@ -89,6 +89,7 @@ public class BitBoardMovesGenerator {
         long movesCount=0;
 
         for(long move:moves){
+            //Make the move
             long wkc=makeAMoveOnBoard(wk,move,11);
             long wqc=makeAMoveOnBoard(wq,move,1);
             long wnc=makeAMoveOnBoard(wn,move,2);
@@ -101,10 +102,14 @@ public class BitBoardMovesGenerator {
             long bbc=makeAMoveOnBoard(bb,move,8);
             long brc=makeAMoveOnBoard(br,move,7);
             long bpc=makeAMoveOnBoard(bp,move,10);
+
+            //Check if move is legal
             if((color==1 && ((attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0))||
                     (color==0&& ((attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
                 continue;
             }
+
+            //Update castle rules
             boolean ckwc=ckw;
             boolean cqwc=cqw;
             boolean ckbc=ckb;
@@ -119,6 +124,8 @@ public class BitBoardMovesGenerator {
                 if(((1L<<start)&br &(1L<<7))!=0){ckbc=false;}
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
+
+            //process next moves
             movesCount+=perft( wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
         }
         return movesCount;
