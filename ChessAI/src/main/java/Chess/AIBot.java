@@ -175,11 +175,14 @@ public class AIBot {
         else{
             moves=BitBoardMovesGenerator.generateMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
         }
-
-        int score=0;
+        if(moves.size()==0){
+            return 0;
+        }
         long bestCurrentMove=0;
+        boolean isMate=true;
         //Check every move
         for(long move:moves){
+
             //Make the move
             long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
             long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
@@ -215,15 +218,12 @@ public class AIBot {
                 if(((1L<<start)&br &(1L<<7))!=0){ckbc=false;}
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
+
+            isMate=false;
             ply++;
-            if(move==7567){
-                int a=4;
-            }
-            score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            int score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             ply--;
-            if(move==7567){
-                int a=4;
-            }
+
             if(score>=beta){
                 return beta;
             }
@@ -234,6 +234,9 @@ public class AIBot {
 
                 }
             }
+        }
+        if(isMate){
+            return -49000 +ply;
         }
         if (bestCurrentMove!=0){
             bestMove=bestCurrentMove;
