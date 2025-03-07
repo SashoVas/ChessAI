@@ -21,7 +21,6 @@ public class BitBoardMovesGenerator {
     public static final long KNIGHT_MOVES_MASK=43234889994L;
     public static final long KING_MOVES_MASK=460039L;
 
-
     public static void printMasksRanks(){
         for (int i=0;i<8;i++){
             System.out.println(Long.toBinaryString( RANK_MASKS[i]));

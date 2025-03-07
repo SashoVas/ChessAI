@@ -85,7 +85,7 @@ public class Main {
        //BitBoard.visualizeMoves(moves);
 
 
-        BitBoard board=BitBoard.createBoardFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        BitBoard board=BitBoard.createBoardFromFen("rnbq1bnr/pppppppp/8/8/8/7k/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         board.printBoard();
         //long startTime = System.currentTimeMillis();
         //long result=board.perft(6);
