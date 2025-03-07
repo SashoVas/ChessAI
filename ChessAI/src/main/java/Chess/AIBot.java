@@ -216,8 +216,14 @@ public class AIBot {
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
             ply++;
+            if(move==7567){
+                int a=4;
+            }
             score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             ply--;
+            if(move==7567){
+                int a=4;
+            }
             if(score>=beta){
                 return beta;
             }
@@ -236,6 +242,10 @@ public class AIBot {
     }
 
     public static long getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
+        nodes=0;
+        bestMove=0;
+        ply=0;
+
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);
         return bestMove;

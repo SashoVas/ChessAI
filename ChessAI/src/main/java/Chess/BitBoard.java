@@ -14,7 +14,8 @@ public class BitBoard {
     boolean cqw=true;
     boolean ckb=true;
     boolean cqb=true;
-    int currentMove=1;//1-White,0-Black
+    int currentTurn=1;//1-White,0-Black
+    long lastMove=0;
 
 
     private BitBoard(){
@@ -23,11 +24,17 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
+    public void playBestMove(int depth){
+        makeAMove(getBestMove(depth));
+    }
+    public long getBestMove(int depth){
+        return AIBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
+    }
     public int evaluate(){
-        return AIBot.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentMove);
+        return AIBot.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);
     }
     public long perft(int depth){
-        return BitBoardMovesGenerator.perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,currentMove,0);
+        return BitBoardMovesGenerator.perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,currentTurn,lastMove);
     }
     public List<Long> generateMovesW(long lastMove){
         //TODO:swap castle boolean
@@ -40,10 +47,7 @@ public class BitBoard {
 
     public long makeAMove(long move){
         //TODO: Implement castle here
-        if((currentMove==1 && ((BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0))||
-                (currentMove==0&& ((BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0))){
-            return -1;
-        }
+
         long result=0L;
         wk=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
         wq=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
@@ -57,6 +61,11 @@ public class BitBoard {
         bb=BitBoardMovesGenerator.makeAMoveOnBoard(bb,move,8);
         br=BitBoardMovesGenerator.makeAMoveOnBoard(br,move,7);
         bp=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
+
+        if((currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0))||
+                (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0))){
+            return -1;
+        }
         if(move<10000 || move>=1000000){
             //Castle
             long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
@@ -67,7 +76,8 @@ public class BitBoard {
             if(((1L<<start)&br &(1L<<7))!=0){ckb=false;}
             if(((1L<<start)&br &(1L<<0))!=0){cqb=false;}
         }
-        currentMove=1-currentMove;
+        currentTurn=1-currentTurn;
+        lastMove=move;
         return result;
     }
     public static void visualizeMoves(List<String>moves){
@@ -148,11 +158,11 @@ public class BitBoard {
         String[] fenFragments;
         if(fen.contains(" w ")){
             fenFragments=fen.split(" w ");
-            board.currentMove=1;
+            board.currentTurn=1;
         }
         else{
             fenFragments=fen.split(" b ");
-            board.currentMove=0;
+            board.currentTurn=0;
         }
         fen=fenFragments[0];
         int row=0;
