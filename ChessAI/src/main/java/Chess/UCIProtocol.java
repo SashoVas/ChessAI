@@ -45,8 +45,11 @@ public class UCIProtocol {
         line=line.substring(9);
 
         if(line.contains("startpos")){
-            line=line.substring(9);
             board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+            if(line.length()>8){
+                line=line.substring(9);
+
+            }
         }
         else if(line.contains("fen")){
             line=line.substring(4);
