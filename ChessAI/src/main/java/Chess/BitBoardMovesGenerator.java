@@ -130,6 +130,28 @@ public class BitBoardMovesGenerator {
         }
         return movesCount;
     }
+    public static String promotionToAlgebra(int promotion){
+        switch (promotion){
+            case(1):
+                return "Q";
+            case(2):
+                return "N";
+            case(3):
+                return "R";
+            case(4):
+                return "B";
+            case(5):
+                return "q";
+            case(6):
+                return "n";
+            case(7):
+                return "r";
+            case(8):
+                return "b";
+            default:
+                return "";
+        }
+    }
     private static List<Long>generateMovesFromBitBoard(long bitBoard,long startRowIncrement,long startColIncrement,boolean isPromotion,boolean isWhite,List<Long> result){
         //promotion mappings
         //1-wq

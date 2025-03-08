@@ -86,6 +86,7 @@ public class Main {
 
 
         BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+
         board.printBoard();
         board.playBestMove(6);
         board.printBoard();

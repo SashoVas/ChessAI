@@ -24,6 +24,42 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
+    public static String toAlgebra(long move){
+        String result="";
+        long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+        long end=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+        long promotion=BitBoardMovesGenerator.extractFromCodedMove(move,3);
+        result=""+(start/8)+(start%8)+(end/8)+(end%8);
+        result+=(promotion==0?"":BitBoardMovesGenerator.promotionToAlgebra((int)promotion));
+        return result;
+    }
+    public long algebraToCode(String move){
+        boolean isPromotion=move.length()>4;
+        long moveStart=(move.charAt(0)-'0')*8+(move.charAt(1)-'0');
+        long moveEnd=(move.charAt(2)-'0')*8+(move.charAt(3)-'0');
+        List<Long>moves;
+        if(currentTurn==1){
+            moves=generateMovesW();
+        }
+        else{
+            moves=generateMovesB();
+        }
+        for(long moveCode:moves){
+            long codeStart=BitBoardMovesGenerator.extractFromCodedMove(moveCode,1);
+            long codeEnd=BitBoardMovesGenerator.extractFromCodedMove(moveCode,2);
+            if(codeStart==moveStart&&codeEnd==moveEnd){
+                long promotionPiece=BitBoardMovesGenerator.extractFromCodedMove(moveCode,3);
+                if(isPromotion && promotionPiece!=0 && move.charAt(4)==BitBoardMovesGenerator.promotionToAlgebra((int)promotionPiece).charAt(0)){
+                    return moveCode;
+                }
+                else if(!isPromotion && promotionPiece==0){
+                    return moveCode;
+                }
+            }
+        }
+        //Invalid state
+        return -1;
+    }
     public void playBestMove(int depth){
         makeAMove(getBestMove(depth));
     }
@@ -36,12 +72,10 @@ public class BitBoard {
     public long perft(int depth){
         return BitBoardMovesGenerator.perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,currentTurn,lastMove);
     }
-    public List<Long> generateMovesW(long lastMove){
-        //TODO:swap castle boolean
+    public List<Long> generateMovesW(){
         return BitBoardMovesGenerator.generateMovesW( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
     }
-    public List<Long>generateMovesB(long lastMove){
-        //TODO:swap castle boolean
+    public List<Long>generateMovesB(){
         return BitBoardMovesGenerator.generateMovesB( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
     }
 
