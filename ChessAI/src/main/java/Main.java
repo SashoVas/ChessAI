@@ -1,6 +1,7 @@
 import Chess.BitBoard;
 import Chess.Board;
 import Chess.Move;
+import Chess.UCIProtocol;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -84,14 +85,16 @@ public class Main {
        //System.out.println(moves.size());
        //BitBoard.visualizeMoves(moves);
 
-
-        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-
-        board.printBoard();
-        board.playBestMove(6);
-        board.printBoard();
-
-        System.out.println(board.evaluate());
+        UCIProtocol game=new UCIProtocol();
+        game.startGame();
+        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+//
+//
+        //board.printBoard();
+        //board.playBestMove(6);
+        //board.printBoard();
+//
+        //System.out.println(board.evaluate());
 
         //long startTime = System.currentTimeMillis();
         //long result=board.perft(6);

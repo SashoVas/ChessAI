@@ -3,6 +3,7 @@ package Chess;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.Function;
 
 public class BitBoard {
@@ -24,19 +25,20 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
+
     public static String toAlgebra(long move){
         String result="";
         long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
         long end=BitBoardMovesGenerator.extractFromCodedMove(move,2);
         long promotion=BitBoardMovesGenerator.extractFromCodedMove(move,3);
-        result=""+(start/8)+(start%8)+(end/8)+(end%8);
+        result=""+(char)('a'+start%8)+(8-start/8)+(char)('a'+end%8)+(8-end/8);
         result+=(promotion==0?"":BitBoardMovesGenerator.promotionToAlgebra((int)promotion));
         return result;
     }
     public long algebraToCode(String move){
-        boolean isPromotion=move.length()>4;
-        long moveStart=(move.charAt(0)-'0')*8+(move.charAt(1)-'0');
-        long moveEnd=(move.charAt(2)-'0')*8+(move.charAt(3)-'0');
+        boolean isPromotion=move.length()>4 && move.charAt(4)!=' ';
+        long moveStart=(8-(move.charAt(1)-'0'))*8+(move.charAt(0)-'a');
+        long moveEnd=(8-(move.charAt(3)-'0'))*8+(move.charAt(2)-'a');
         List<Long>moves;
         if(currentTurn==1){
             moves=generateMovesW();
@@ -49,7 +51,7 @@ public class BitBoard {
             long codeEnd=BitBoardMovesGenerator.extractFromCodedMove(moveCode,2);
             if(codeStart==moveStart&&codeEnd==moveEnd){
                 long promotionPiece=BitBoardMovesGenerator.extractFromCodedMove(moveCode,3);
-                if(isPromotion && promotionPiece!=0 && move.charAt(4)==BitBoardMovesGenerator.promotionToAlgebra((int)promotionPiece).charAt(0)){
+                if(isPromotion && promotionPiece!=0 && move.toLowerCase().charAt(4)==BitBoardMovesGenerator.promotionToAlgebra((int)promotionPiece).toLowerCase().charAt(0)){
                     return moveCode;
                 }
                 else if(!isPromotion && promotionPiece==0){
