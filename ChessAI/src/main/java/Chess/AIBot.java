@@ -160,10 +160,86 @@ public class AIBot {
     public static int nodes=0;
     public static long bestMove=0;
     public static int ply=0;
+    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
+
+        //Prune
+        int eval=evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
+        if(eval>=beta){
+            return beta;
+        }
+        if(eval>alpha){
+            alpha=eval;
+        }
+
+        long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
+        List<Long> moves;
+        if(color==1){
+            moves=BitBoardMovesGenerator.generateMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
+        }
+        else{
+            moves=BitBoardMovesGenerator.generateMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
+        }
+        for(long move:moves){
+            //Only captures
+            long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+            if(((1L<<endPosition)&fullBoard)==0){
+                continue;
+            }
+            //Make the move
+            long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
+            long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
+            long wnc=BitBoardMovesGenerator.makeAMoveOnBoard(wn,move,2);
+            long wbc=BitBoardMovesGenerator.makeAMoveOnBoard(wb,move,4);
+            long wrc=BitBoardMovesGenerator.makeAMoveOnBoard(wr,move,3);
+            long wpc=BitBoardMovesGenerator.makeAMoveOnBoard(wp,move,9);
+            long bkc=BitBoardMovesGenerator.makeAMoveOnBoard(bk,move,12);
+            long bqc=BitBoardMovesGenerator.makeAMoveOnBoard(bq,move,5);
+            long bnc=BitBoardMovesGenerator.makeAMoveOnBoard(bn,move,6);
+            long bbc=BitBoardMovesGenerator.makeAMoveOnBoard(bb,move,8);
+            long brc=BitBoardMovesGenerator.makeAMoveOnBoard(br,move,7);
+            long bpc=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
+
+            //Check if move is legal
+            if((color==1 && ((BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0))||
+                    (color==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
+                continue;
+            }
+
+            //Update castle rules
+            boolean ckwc=ckw;
+            boolean cqwc=cqw;
+            boolean ckbc=ckb;
+            boolean cqbc=cqb;
+            if(move<10000 || move>=1000000){
+                //Castle
+                long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+                if(((1L<<start)&wk)!=0){ckwc=false;cqwc=false;}
+                if(((1L<<start)&bk)!=0){ckbc=false;cqbc=false;}
+                if(((1L<<start)&wr &(1L<<63))!=0){ckwc=false;}
+                if(((1L<<start)&wr &(1L<<56))!=0){cqwc=false;}
+                if(((1L<<start)&br &(1L<<7))!=0){ckbc=false;}
+                if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
+            }
+            ply++;
+            int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            ply--;
+
+            //Prune
+            if(score>=beta){
+                return beta;
+            }
+            if(score>alpha){
+                alpha=score;
+
+            }
+        }
+        return alpha;
+    }
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
 
         if(depth==0){
-            return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
+            return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
+            //return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         }
         nodes++;
 
@@ -224,6 +300,7 @@ public class AIBot {
             int score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             ply--;
 
+            //Prune
             if(score>=beta){
                 return beta;
             }

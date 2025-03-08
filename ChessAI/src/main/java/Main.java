@@ -85,9 +85,9 @@ public class Main {
        //BitBoard.visualizeMoves(moves);
 
 
-        BitBoard board=BitBoard.createBoardFromFen("3k4/8/4K3/8/Q7/8/8/8 w - - 0 1");
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         board.printBoard();
-        board.playBestMove(9);
+        board.playBestMove(6);
         board.printBoard();
 
         System.out.println(board.evaluate());
