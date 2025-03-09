@@ -87,7 +87,7 @@ public class Main {
         game.startGame();
 
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
-        //System.out.println(board.getBestMove(4));
+        //System.out.println(board.getBestMove(7));
         //System.out.println(AIBot.nodes);
         //List<Long>moves=board.generateMovesW();
         //System.out.println(moves);

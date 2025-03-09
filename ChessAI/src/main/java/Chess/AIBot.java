@@ -101,19 +101,35 @@ public class AIBot {
                     0,   5,   5,  -5,  -5,   0,   5,   0,
                     0,   0,   5,   0, -15,   0,  10,   0
             };
+    public static long[][] killerMoves=new long[2][64];
+    public static int[][] historyMoves=new int[12][64];
+
     public static int scoreMove(long move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long targetIndex=BitBoardMovesGenerator.extractFromCodedMove(move,2);
         int targetType=BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
         if(targetType!=-1){
+            //score capture moves higher than others
             long startIndex=BitBoardMovesGenerator.extractFromCodedMove(move,1);
             int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
 
-            return mvv_lva[startType][targetType];
+            return mvv_lva[startType][targetType]+ 10000;
         }
         else if(move>100000 && move<1000000){
-            return mvv_lva[WPAWN_INDEX][WPAWN_INDEX];
+            //score en passant as capture
+            return mvv_lva[WPAWN_INDEX][WPAWN_INDEX] + 10000;
         }
-        return 0;
+
+        //score moves that are not captures, but produce cut ofs
+        if(move==killerMoves[0][ply]){
+            return 9000;
+        }
+        else if(move==killerMoves[1][ply]){
+            return 8000;
+        }
+        //score moves that were good before
+        long startIndex=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+        int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+        return historyMoves[startType][(int)targetIndex];
     }
     public static int evaluateBoard(long board,int pieceType){
         int result=0;
@@ -210,6 +226,7 @@ public class AIBot {
             //Only captures
             long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
             if(((1L<<endPosition)&fullBoard)==0){
+                //break;
                 continue;
             }
             //Make the move
@@ -257,7 +274,6 @@ public class AIBot {
             }
             if(score>alpha){
                 alpha=score;
-
             }
         }
         return alpha;
@@ -333,13 +349,16 @@ public class AIBot {
 
             //Prune
             if(score>=beta){
+                killerMoves[1][ply]=killerMoves[0][ply];
+                killerMoves[0][ply]=move;
                 return beta;
             }
             if(score>alpha){
+                int startPosType=BitBoardMovesGenerator.getPieceType(BitBoardMovesGenerator.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+                historyMoves[startPosType][(int)BitBoardMovesGenerator.extractFromCodedMove(move,2)]+=depth;
                 alpha=score;
                 if(ply==0){
                     bestCurrentMove=move;
-
                 }
             }
         }
@@ -356,6 +375,7 @@ public class AIBot {
         nodes=0;
         bestMove=0;
         ply=0;
+
 
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);
