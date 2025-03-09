@@ -3,6 +3,8 @@ package Chess;
 import java.util.ArrayList;
 import java.util.List;
 
+import static Chess.AIBot.*;
+
 public class BitBoardMovesGenerator {
     public static final long[] FILE_MASKS = new long[8];
     public static final long[] RANK_MASKS = new long[8];
@@ -32,6 +34,38 @@ public class BitBoardMovesGenerator {
             System.out.println(Long.toBinaryString( FILE_MASKS[i]));
             System.out.println("================================");
         }
+    }
+
+    public static int getPieceType(long pieceIndex,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
+        long pieceMask=1L<<pieceIndex;
+        long occupied=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
+
+        if((occupied & pieceMask)==0){
+            return -1;
+        }
+        else if(((wk|bk)&pieceMask)!=0){
+            return WKING_INDEX;
+        }
+        else if(((wq|bq)&pieceMask)!=0){
+            return WQUEEN_INDEX;
+
+        }
+        else if(((wn|bn)&pieceMask)!=0){
+            return WKNIGHT_INDEX;
+
+        }
+        else if(((wb|bb)&pieceMask)!=0){
+            return WBISHOP_INDEX;
+
+        }
+        else if(((wr|br)&pieceMask)!=0){
+            return WROOK_INDEX;
+
+        }
+        else if(((wp|bp)&pieceMask)!=0){
+            return WPAWN_INDEX;
+        }
+        return -1;
     }
     public static long codeMove(long startRow,long startCol,long endRow,long endCol,long promotionPiece,long isEnPassant,long isCastle){
         long result=startRow+10*startCol+100*endRow+1000*endCol;

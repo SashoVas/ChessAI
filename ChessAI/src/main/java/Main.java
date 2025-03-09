@@ -1,8 +1,5 @@
 
-import Chess.BitBoard;
-import Chess.Board;
-import Chess.Move;
-import Chess.UCIProtocol;
+import Chess.*;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -88,7 +85,10 @@ public class Main {
 
         UCIProtocol game=new UCIProtocol();
         game.startGame();
-        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+
+        //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
+        //List<Integer>moves=board.getMovesScore();
+        //System.out.println(moves);
 //
 //
         //board.printBoard();

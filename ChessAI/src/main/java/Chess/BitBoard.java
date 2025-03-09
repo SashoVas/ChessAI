@@ -25,6 +25,20 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
+    public List<Integer>getMovesScore(){
+        List<Long>moves;
+        if(currentTurn==1){
+            moves=generateMovesW();
+        }
+        else{
+            moves=generateMovesB();
+        }
+        List<Integer>result=new ArrayList<>();
+        for(long move:moves){
+            result.add(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+        }
+        return result;
+    }
 
     public static String toAlgebra(long move){
         String result="";

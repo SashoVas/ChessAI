@@ -19,19 +19,19 @@ public class AIBot {
     public static final  int BPAWN_INDEX=11;
 
     public static final int mvv_lva[][] = {
-            {105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
-            {104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
-            {103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
-            {102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
-            {101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
-            {100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600},
+            {600, 500, 200, 300, 400, 100,  600, 500, 200, 300, 400, 100},
+            {601, 501, 201, 301, 401, 101,  601, 501, 201, 301, 401, 101},
+            {604, 504, 204, 304, 404, 104,  604, 504, 204, 304, 404, 104},
+            {603, 503, 203, 303, 403, 103,  603, 503, 203, 303, 403, 103},
+            {602, 502, 202, 302, 402, 102,  602, 502, 202, 302, 402, 102},
+            {605, 505, 205, 305, 405, 105,  605, 505, 205, 305, 405, 105},
 
-            {105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
-            {104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
-            {103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
-            {102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
-            {101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
-            {100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600}
+            {600, 500, 200, 300, 400, 100,  600, 500, 200, 300, 400, 100},
+            {601, 501, 201, 301, 401, 101,  601, 501, 201, 301, 401, 101},
+            {604, 504, 204, 304, 404, 104,  604, 504, 204, 304, 404, 104},
+            {603, 503, 203, 303, 403, 103,  603, 503, 203, 303, 403, 103},
+            {602, 502, 202, 302, 402, 102,  602, 502, 202, 302, 402, 102},
+            {605, 505, 205, 305, 405, 105,  605, 505, 205, 305, 405, 105},
     };
 
 
@@ -101,6 +101,20 @@ public class AIBot {
                     0,   5,   5,  -5,  -5,   0,   5,   0,
                     0,   0,   5,   0, -15,   0,  10,   0
             };
+    public static int scoreMove(long move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
+        long targetIndex=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+        int targetType=BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+        if(targetType!=-1){
+            long startIndex=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+            int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+
+            return mvv_lva[startType][targetType];
+        }
+        else if(move>100000 && move<1000000){
+            return mvv_lva[WPAWN_INDEX][WPAWN_INDEX];
+        }
+        return 0;
+    }
     public static int evaluateBoard(long board,int pieceType){
         int result=0;
 
