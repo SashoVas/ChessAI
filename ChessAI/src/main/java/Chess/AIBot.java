@@ -1,34 +1,42 @@
 package Chess;
 
 import java.util.List;
-
-enum piece{
-    wk(11),
-    wq(1),
-    wn(2),
-    wb(4),
-    wr(3),
-    wp(9),
-    bk(12),
-    bq(5),
-    bn(6),
-    bb(8),
-    br(7),
-    bp(10);
-    private final int value;
-
-    piece(final int newValue) {
-        value = newValue;
-    }
-
-    public int getValue() { return value; }
-}
 public class AIBot {
-    public static int[]pieceValues={
-        900,300,500,300,-900,-300,-500,-300,100,-100,0,0
+    public static final int[]pieceValues={
+            0,900,300,300,500,100,0,-900,-300,-300,-500,-100
     };
+    public static final  int WKING_INDEX=0;
+    public static final  int WQUEEN_INDEX=1;
+    public static final  int WKNIGHT_INDEX=2;
+    public static final  int WBISHOP_INDEX=3;
+    public static final  int WROOK_INDEX=4;
+    public static final  int WPAWN_INDEX=5;
+    public static final  int BKING_INDEX=6;
+    public static final  int BQUEEN_INDEX=7;
+    public static final  int BKNIGHT_INDEX=8;
+    public static final  int BBISHOP_INDEX=9;
+    public static final  int BROOK_INDEX=10;
+    public static final  int BPAWN_INDEX=11;
+
+    public static final int mvv_lva[][] = {
+            {105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
+            {104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
+            {103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
+            {102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
+            {101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
+            {100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600},
+
+            {105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
+            {104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
+            {103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
+            {102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
+            {101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
+            {100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600}
+    };
+
+
     // pawn positional score
-    public static int pawn_score[] =
+    public static final int pawn_score[] =
             {
                     90,  90,  90,  90,  90,  90,  90,  90,
                     30,  30,  30,  40,  40,  30,  30,  30,
@@ -41,7 +49,7 @@ public class AIBot {
             };
 
     // knight positional score
-    public static int knight_score[] =
+    public static final int knight_score[] =
             {
                     -5,   0,   0,   0,   0,   0,   0,  -5,
                     -5,   0,   0,  10,  10,   0,   0,  -5,
@@ -54,7 +62,7 @@ public class AIBot {
             };
 
     // bishop positional score
-    public static int bishop_score[] =
+    public static final int bishop_score[] =
             {
                     0,   0,   0,   0,   0,   0,   0,   0,
                     0,   0,   0,   0,   0,   0,   0,   0,
@@ -68,7 +76,7 @@ public class AIBot {
             };
 
     // rook positional score
-    public static int rook_score[] =
+    public static final int rook_score[] =
             {
                     50,  50,  50,  50,  50,  50,  50,  50,
                     50,  50,  50,  50,  50,  50,  50,  50,
@@ -82,7 +90,7 @@ public class AIBot {
             };
 
     // king positional score
-    public static int king_score[] =
+    public static final int king_score[] =
             {
                     0,   0,   0,   0,   0,   0,   0,   0,
                     0,   0,   5,   5,   5,   5,   0,   0,
@@ -103,34 +111,34 @@ public class AIBot {
             int index=Long.numberOfTrailingZeros(current);
             int blackPos=(7-index/8)*8+index%8;
             switch (pieceType){
-                case 1:
+                case WKNIGHT_INDEX:
                     result+=knight_score[index];
                     break;
-                case 2:
+                case WROOK_INDEX:
                     result+=rook_score[index];
                     break;
-                case 3:
+                case WBISHOP_INDEX:
                     result+=bishop_score[index];
                     break;
-                case 5:
+                case BKNIGHT_INDEX:
                     result-=knight_score[blackPos];
                     break;
-                case 6:
+                case BROOK_INDEX:
                     result-=rook_score[blackPos];
                     break;
-                case 7:
+                case BBISHOP_INDEX:
                     result-=bishop_score[blackPos];
                     break;
-                case 8:
+                case WPAWN_INDEX:
                     result+=pawn_score[index];
                     break;
-                case 9:
+                case BPAWN_INDEX:
                     result-=pawn_score[blackPos];
                     break;
-                case 10:
+                case WKING_INDEX:
                     result+=king_score[index];
                     break;
-                case 11:
+                case BKING_INDEX:
                     result-=king_score[blackPos];
                     break;
                 default:
@@ -143,18 +151,18 @@ public class AIBot {
     }
     public static int evaluate (long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         int result=0;
-        result+=evaluateBoard(wq,0);
-        result+=evaluateBoard(wn,1);
-        result+=evaluateBoard(wb,3);
-        result+=evaluateBoard(wr,2);
-        result+=evaluateBoard(wp,8);
-        result+=evaluateBoard(bq,4);
-        result+=evaluateBoard(bn,5);
-        result+=evaluateBoard(bb,7);
-        result+=evaluateBoard(br,6);
-        result+=evaluateBoard(bp,9);
-        result+=evaluateBoard(wk,10);
-        result+=evaluateBoard(bk,11);
+        result+=evaluateBoard(wq,WQUEEN_INDEX);
+        result+=evaluateBoard(wn,WKNIGHT_INDEX);
+        result+=evaluateBoard(wb,WBISHOP_INDEX);
+        result+=evaluateBoard(wr,WROOK_INDEX);
+        result+=evaluateBoard(wp,WPAWN_INDEX);
+        result+=evaluateBoard(bq,BQUEEN_INDEX);
+        result+=evaluateBoard(bn,BKNIGHT_INDEX);
+        result+=evaluateBoard(bb,BBISHOP_INDEX);
+        result+=evaluateBoard(br,BROOK_INDEX);
+        result+=evaluateBoard(bp,BPAWN_INDEX);
+        result+=evaluateBoard(wk,WKING_INDEX);
+        result+=evaluateBoard(bk,BKING_INDEX);
         return color==1?result:-result;
     }
     public static int nodes=0;
@@ -162,6 +170,7 @@ public class AIBot {
     public static int ply=0;
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
 
+        nodes++;
         //Prune
         int eval=evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         if(eval>=beta){

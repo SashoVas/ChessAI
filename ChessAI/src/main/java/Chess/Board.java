@@ -27,26 +27,11 @@ public class Board {
         List<Move>moves=getMoves(color);
         int movesCount=0;
         for (Move move: moves){
-            //for (int i = 0; i < 1 - depth; i++) {
-            //    System.out.print("  ");
-            //}
-            //String moveString1=move.toString();
-            //System.out.print(moveString1);
-            //System.out.println(",");
             if(makeAMoveSearch(move))
             {
-
                 int currentMoves = search(1 - color, depth - 1);
                 movesCount += currentMoves;
                 undoMove();
-                //if (depth==4){
-                //    String moveString=move.toString();
-                //    System.out.print(moveString);
-                //    System.out.print(": ");
-                //    System.out.println(currentMoves);
-                //}
-
-
             }
 
         }
