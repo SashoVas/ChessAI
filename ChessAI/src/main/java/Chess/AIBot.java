@@ -349,13 +349,26 @@ public class AIBot {
 
             //Prune
             if(score>=beta){
-                killerMoves[1][ply]=killerMoves[0][ply];
-                killerMoves[0][ply]=move;
+                //Update killer move only if it is not capture
+                long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
+                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                if(((1L<<endPosition)&fullBoard)==0){
+                    killerMoves[1][ply]=killerMoves[0][ply];
+                    killerMoves[0][ply]=move;
+                }
+
                 return beta;
             }
             if(score>alpha){
-                int startPosType=BitBoardMovesGenerator.getPieceType(BitBoardMovesGenerator.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
-                historyMoves[startPosType][(int)BitBoardMovesGenerator.extractFromCodedMove(move,2)]+=depth;
+
+                //Update history move, if it is not capture
+                long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
+                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                if(((1L<<endPosition)&fullBoard)==0){
+                    int startPosType=BitBoardMovesGenerator.getPieceType(BitBoardMovesGenerator.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+                    historyMoves[startPosType][(int)endPosition]+=depth;
+                }
+
                 alpha=score;
                 if(ply==0){
                     bestCurrentMove=move;
