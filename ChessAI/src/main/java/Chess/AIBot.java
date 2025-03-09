@@ -202,6 +202,10 @@ public class AIBot {
         else{
             moves=BitBoardMovesGenerator.generateMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
         }
+
+        moves.sort((a,b)-> Integer.compare(
+                scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
+                scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
         for(long move:moves){
             //Only captures
             long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
@@ -279,6 +283,10 @@ public class AIBot {
         }
         long bestCurrentMove=0;
         boolean isMate=true;
+        //Sort The moves
+        moves.sort((a,b)-> Integer.compare(
+                scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
+                scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
         //Check every move
         for(long move:moves){
 

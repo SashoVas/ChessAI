@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class UCIProtocol {
 
     BitBoard board;
-    int depth=4;
+    int depth=6;
     public UCIProtocol(){
         board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
     }

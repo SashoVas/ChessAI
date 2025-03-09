@@ -2,6 +2,7 @@ package Chess;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -24,6 +25,23 @@ public class BitBoard {
             BitBoardMovesGenerator.FILE_MASKS[i] = 0x0101010101010101L << i;
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
+    }
+    public List<Long>getMovesOrdered(){
+        List<Long>moves;
+        if(currentTurn==1){
+            moves=generateMovesW();
+        }
+        else{
+            moves=generateMovesB();
+        }
+        moves.sort((a,b)-> Integer.compare(
+                AIBot.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
+                AIBot.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
+        for(long move:moves){
+            System.out.println(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+        }
+        return moves;
+
     }
     public List<Integer>getMovesScore(){
         List<Long>moves;
