@@ -1,9 +1,7 @@
-package Chess.Pieces;
+package Chess.StandardImplementation.Pieces;
 
-import Chess.Board;
-import Chess.Move;
-import Chess.Pieces.Base.Piece;
-import Chess.Pieces.Base.SlidingPiece;
+import Chess.StandardImplementation.Pieces.Base.Piece;
+import Chess.StandardImplementation.Pieces.Base.SlidingPiece;
 
 import java.security.InvalidParameterException;
 import java.util.List;

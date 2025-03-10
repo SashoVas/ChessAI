@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class UCIProtocol {
 
     BitBoard board;
-    int depth=6;
+    int depth=7;
     public UCIProtocol(){
         board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
     }
@@ -42,7 +42,7 @@ public class UCIProtocol {
         }
     }
     public void getBestMove(){
-        long move=board.getBestMove(depth);
+        int move=board.getBestMove(depth);
         System.out.println("bestmove "+BitBoard.toAlgebra(move));
     }
     public void processPositionCommand(String line){
@@ -64,7 +64,7 @@ public class UCIProtocol {
             String[] moves=line.split(" ");
 
             for(String move: moves){
-                long moveCode=board.algebraToCode(move);
+                int moveCode=board.algebraToCode(move);
                 board.makeAMove(moveCode);
             }
             //while(line.length()>0){

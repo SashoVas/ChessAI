@@ -1,8 +1,6 @@
-package Chess.Pieces;
+package Chess.StandardImplementation.Pieces;
 
-import Chess.Board;
-import Chess.Move;
-import Chess.Pieces.Base.SlidingPiece;
+import Chess.StandardImplementation.Pieces.Base.SlidingPiece;
 
 import java.util.List;
 

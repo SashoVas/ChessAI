@@ -1,7 +1,7 @@
-package Chess;
+package Chess.StandardImplementation.Pieces;
 
-import Chess.Pieces.*;
-import Chess.Pieces.Base.Piece;
+import Chess.StandardImplementation.Pieces.*;
+import Chess.StandardImplementation.Pieces.Base.Piece;
 
 import java.security.InvalidParameterException;
 import java.util.*;

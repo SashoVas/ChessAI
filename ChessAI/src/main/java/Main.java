@@ -1,14 +1,13 @@
 
 import Chess.*;
+import Chess.StandardImplementation.Pieces.Board;
 
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
     public static boolean runTest(int depth,int expected,String fen,int color){
         if(fen == null){
-            fen=Board.defaultFen;
+            fen= Board.defaultFen;
         }
         Board board=Board.fenToBoard(fen);
         //board.printBoard();
@@ -67,6 +66,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        //int res=MoveUtilities.codeMove(2,3,5,3,7,1,1);
+        //System.out.println(MoveUtilities.extractFromCodedMove(res,1));
+        //System.out.println(MoveUtilities.extractFromCodedMove(res,2));
+        //System.out.println(MoveUtilities.extractFromCodedMove(res,3));
+        //System.out.println(MoveUtilities.extractFromCodedMove(res,4));
+        //System.out.println(MoveUtilities.extractFromCodedMove(res,5));
         //runTests();
         //runTestsStandard();
         //Board board=Board.fenToBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R");
@@ -87,7 +92,9 @@ public class Main {
         game.startGame();
 
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
-        //System.out.println(board.getBestMove(7));
+        //int move=board.getBestMove(7);
+        //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
+        //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
         //System.out.println(AIBot.nodes);
         //List<Long>moves=board.generateMovesW();
         //System.out.println(moves);

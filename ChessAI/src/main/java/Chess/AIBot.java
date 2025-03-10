@@ -105,17 +105,17 @@ public class AIBot {
     public static long[][] killerMoves=new long[2][64];
     public static int[][] historyMoves=new int[12][64];
 
-    public static int scoreMove(long move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
-        long targetIndex=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+    public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
+        long targetIndex=MoveUtilities.extractFromCodedMove(move,2);
         int targetType=BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
         if(targetType!=-1){
             //score capture moves higher than others
-            long startIndex=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+            long startIndex=MoveUtilities.extractFromCodedMove(move,1);
             int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
 
             return mvv_lva[startType][targetType]+ 10000;
         }
-        else if(move>100000 && move<1000000){
+        else if(MoveUtilities.extractFromCodedMove(move,4)!=0 ){
             //score en passant as capture
             return mvv_lva[WPAWN_INDEX][WPAWN_INDEX] + 10000;
         }
@@ -128,7 +128,7 @@ public class AIBot {
             return 8000;
         }
         //score moves that were good before
-        long startIndex=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+        long startIndex=MoveUtilities.extractFromCodedMove(move,1);
         int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
         return historyMoves[startType][(int)targetIndex];
     }
@@ -197,9 +197,9 @@ public class AIBot {
         return color==1?result:-result;
     }
     public static int nodes=0;
-    public static long bestMove=0;
+    public static int bestMove=0;
     public static int ply=0;
-    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
+    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         nodes++;
         //Prune
@@ -212,7 +212,7 @@ public class AIBot {
         }
 
         long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
-        List<Long> moves;
+        List<Integer> moves;
         if(color==1){
             moves=BitBoardMovesGenerator.generateMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
         }
@@ -223,9 +223,9 @@ public class AIBot {
         moves.sort((a,b)-> Integer.compare(
                 scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
                 scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
-        for(long move:moves){
+        for(int move:moves){
             //Only captures
-            long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+            long endPosition=MoveUtilities.extractFromCodedMove(move,2);
             if(((1L<<endPosition)&fullBoard)==0){
                 //break;
                 continue;
@@ -255,9 +255,9 @@ public class AIBot {
             boolean cqwc=cqw;
             boolean ckbc=ckb;
             boolean cqbc=cqb;
-            if(move<10000 || move>=1000000){
+            if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
                 //Castle
-                long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+                long start=MoveUtilities.extractFromCodedMove(move,1);
                 if(((1L<<start)&wk)!=0){ckwc=false;cqwc=false;}
                 if(((1L<<start)&bk)!=0){ckbc=false;cqbc=false;}
                 if(((1L<<start)&wr &(1L<<63))!=0){ckwc=false;}
@@ -279,7 +279,7 @@ public class AIBot {
         }
         return alpha;
     }
-    public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
+    public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         if(depth==0){
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
@@ -288,7 +288,7 @@ public class AIBot {
         nodes++;
 
         //Initialize possible moves
-        List<Long> moves;
+        List<Integer> moves;
         if(color==1){
             moves=BitBoardMovesGenerator.generateMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
         }
@@ -298,7 +298,7 @@ public class AIBot {
         if(moves.size()==0){
             return 0;
         }
-        long bestCurrentMove=0;
+        int bestCurrentMove=0;
         boolean isMate=true;
 
         int fullMovesSearched=0;
@@ -307,7 +307,7 @@ public class AIBot {
                 scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
                 scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
         //Check every move
-        for(long move:moves){
+        for(int move:moves){
 
             //Make the move
             long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
@@ -334,9 +334,9 @@ public class AIBot {
             boolean cqwc=cqw;
             boolean ckbc=ckb;
             boolean cqbc=cqb;
-            if(move<10000 || move>=1000000){
+            if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
                 //Castle
-                long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+                long start=MoveUtilities.extractFromCodedMove(move,1);
                 if(((1L<<start)&wk)!=0){ckwc=false;cqwc=false;}
                 if(((1L<<start)&bk)!=0){ckbc=false;cqbc=false;}
                 if(((1L<<start)&wr &(1L<<63))!=0){ckwc=false;}
@@ -360,10 +360,10 @@ public class AIBot {
                 else{
                     inCheck=BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc;
                 }
-                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                long endPosition=MoveUtilities.extractFromCodedMove(move,2);
                 int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
 
-                if(fullMovesSearched>MOVE_TO_BE_SEARCHED && depth>=3 && inCheck==0 && endPosType==-1 && move<10000){
+                if(fullMovesSearched>MOVE_TO_BE_SEARCHED && depth>=3 && inCheck==0 && endPosType==-1 && MoveUtilities.extractFromCodedMove(move,3)==0){
                     //PV search with late move reduction
                     score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
                 }
@@ -385,7 +385,7 @@ public class AIBot {
             if(score>=beta){
                 //Update killer move only if it is not capture
                 long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
-                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                long endPosition=MoveUtilities.extractFromCodedMove(move,2);
                 if(((1L<<endPosition)&fullBoard)==0){
                     killerMoves[1][ply]=killerMoves[0][ply];
                     killerMoves[0][ply]=move;
@@ -397,9 +397,9 @@ public class AIBot {
 
                 //Update history move, if it is not capture
                 long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
-                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                long endPosition=MoveUtilities.extractFromCodedMove(move,2);
                 if(((1L<<endPosition)&fullBoard)==0){
-                    int startPosType=BitBoardMovesGenerator.getPieceType(BitBoardMovesGenerator.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+                    int startPosType=BitBoardMovesGenerator.getPieceType(MoveUtilities.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
                     historyMoves[startPosType][(int)endPosition]+=depth;
                 }
 
@@ -419,11 +419,10 @@ public class AIBot {
         return alpha;
     }
 
-    public static long getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,long lastMove){
+    public static int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         nodes=0;
         bestMove=0;
         ply=0;
-
 
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);

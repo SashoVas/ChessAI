@@ -17,7 +17,7 @@ public class BitBoard {
     boolean ckb=true;
     boolean cqb=true;
     int currentTurn=1;//1-White,0-Black
-    long lastMove=0;
+    int lastMove=0;
 
 
     private BitBoard(){
@@ -26,8 +26,8 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
     }
-    public List<Long>getMovesOrdered(){
-        List<Long>moves;
+    public List<Integer>getMovesOrdered(){
+        List<Integer>moves;
         if(currentTurn==1){
             moves=generateMovesW();
         }
@@ -37,14 +37,14 @@ public class BitBoard {
         moves.sort((a,b)-> Integer.compare(
                 AIBot.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
                 AIBot.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
-        for(long move:moves){
+        for(int move:moves){
             System.out.println(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
         }
         return moves;
 
     }
     public List<Integer>getMovesScore(){
-        List<Long>moves;
+        List<Integer>moves;
         if(currentTurn==1){
             moves=generateMovesW();
         }
@@ -52,37 +52,37 @@ public class BitBoard {
             moves=generateMovesB();
         }
         List<Integer>result=new ArrayList<>();
-        for(long move:moves){
+        for(int move:moves){
             result.add(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
         }
         return result;
     }
 
-    public static String toAlgebra(long move){
+    public static String toAlgebra(int move){
         String result="";
-        long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
-        long end=BitBoardMovesGenerator.extractFromCodedMove(move,2);
-        long promotion=BitBoardMovesGenerator.extractFromCodedMove(move,3);
+        long start=MoveUtilities.extractFromCodedMove(move,1);
+        long end=MoveUtilities.extractFromCodedMove(move,2);
+        long promotion=MoveUtilities.extractFromCodedMove(move,3);
         result=""+(char)('a'+start%8)+(8-start/8)+(char)('a'+end%8)+(8-end/8);
         result+=(promotion==0?"":BitBoardMovesGenerator.promotionToAlgebra((int)promotion));
         return result;
     }
-    public long algebraToCode(String move){
+    public int algebraToCode(String move){
         boolean isPromotion=move.length()>4 && move.charAt(4)!=' ';
         long moveStart=(8-(move.charAt(1)-'0'))*8+(move.charAt(0)-'a');
         long moveEnd=(8-(move.charAt(3)-'0'))*8+(move.charAt(2)-'a');
-        List<Long>moves;
+        List<Integer>moves;
         if(currentTurn==1){
             moves=generateMovesW();
         }
         else{
             moves=generateMovesB();
         }
-        for(long moveCode:moves){
-            long codeStart=BitBoardMovesGenerator.extractFromCodedMove(moveCode,1);
-            long codeEnd=BitBoardMovesGenerator.extractFromCodedMove(moveCode,2);
+        for(int moveCode:moves){
+            long codeStart=MoveUtilities.extractFromCodedMove(moveCode,1);
+            long codeEnd=MoveUtilities.extractFromCodedMove(moveCode,2);
             if(codeStart==moveStart&&codeEnd==moveEnd){
-                long promotionPiece=BitBoardMovesGenerator.extractFromCodedMove(moveCode,3);
+                long promotionPiece=MoveUtilities.extractFromCodedMove(moveCode,3);
                 if(isPromotion && promotionPiece!=0 && move.toLowerCase().charAt(4)==BitBoardMovesGenerator.promotionToAlgebra((int)promotionPiece).toLowerCase().charAt(0)){
                     return moveCode;
                 }
@@ -97,7 +97,7 @@ public class BitBoard {
     public void playBestMove(int depth){
         makeAMove(getBestMove(depth));
     }
-    public long getBestMove(int depth){
+    public int getBestMove(int depth){
         return AIBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
     public int evaluate(){
@@ -106,14 +106,14 @@ public class BitBoard {
     public long perft(int depth){
         return BitBoardMovesGenerator.perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,currentTurn,lastMove);
     }
-    public List<Long> generateMovesW(){
+    public List<Integer> generateMovesW(){
         return BitBoardMovesGenerator.generateMovesW( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
     }
-    public List<Long>generateMovesB(){
+    public List<Integer>generateMovesB(){
         return BitBoardMovesGenerator.generateMovesB( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
     }
 
-    public long makeAMove(long move){
+    public long makeAMove(int move){
         //TODO: Implement castle here
 
         long result=0L;
@@ -134,9 +134,9 @@ public class BitBoard {
                 (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
             return -1;
         }
-        if(move<10000 || move>=1000000){
+        if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
             //Castle
-            long start=BitBoardMovesGenerator.extractFromCodedMove(move,1);
+            long start=MoveUtilities.extractFromCodedMove(move,1);
             if(((1L<<start)&wk)!=0){ckw=false;cqw=false;}
             if(((1L<<start)&bk)!=0){ckb=false;cqb=false;}
             if(((1L<<start)&wr &(1L<<63))!=0){ckw=false;}

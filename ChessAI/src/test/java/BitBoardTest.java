@@ -69,7 +69,7 @@ class BitBoardTest {
     void TestAlgebraTransformations(String fen){
         BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
 
-        for(long move:board.generateMovesW()){
+        for(int move:board.generateMovesW()){
             String algebraMove=BitBoard.toAlgebra(move);
             long fromAlgebra=board.algebraToCode(algebraMove);
             assertEquals(fromAlgebra,move);

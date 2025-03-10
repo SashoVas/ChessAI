@@ -1,8 +1,9 @@
-package Chess;
+package Chess.StandardImplementation.Pieces;
 
-import Chess.Pieces.Base.Piece;
+import Chess.StandardImplementation.Pieces.Base.Piece;
+import Chess.StandardImplementation.Pieces.Move;
 
-public class ReverseMove extends Move{
+public class ReverseMove extends Move {
 
     Piece takenPiece;
 

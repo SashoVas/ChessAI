@@ -1,6 +1,4 @@
-package Chess;
-
-import Chess.Pieces.Base.Piece;
+package Chess.StandardImplementation.Pieces;
 
 public class Move {
     public int initialRow;

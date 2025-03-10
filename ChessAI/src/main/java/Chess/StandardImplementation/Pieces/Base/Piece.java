@@ -1,10 +1,9 @@
-package Chess.Pieces.Base;
+package Chess.StandardImplementation.Pieces.Base;
 
-import Chess.Board;
-import Chess.Move;
+import Chess.StandardImplementation.Pieces.Board;
+import Chess.StandardImplementation.Pieces.Move;
 
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Piece {
