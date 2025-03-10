@@ -117,21 +117,21 @@ public class BitBoard {
         //TODO: Implement castle here
 
         long result=0L;
-        wk=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
-        wq=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
-        wn=BitBoardMovesGenerator.makeAMoveOnBoard(wn,move,2);
-        wb=BitBoardMovesGenerator.makeAMoveOnBoard(wb,move,4);
-        wr=BitBoardMovesGenerator.makeAMoveOnBoard(wr,move,3);
-        wp=BitBoardMovesGenerator.makeAMoveOnBoard(wp,move,9);
-        bk=BitBoardMovesGenerator.makeAMoveOnBoard(bk,move,12);
-        bq=BitBoardMovesGenerator.makeAMoveOnBoard(bq,move,5);
-        bn=BitBoardMovesGenerator.makeAMoveOnBoard(bn,move,6);
-        bb=BitBoardMovesGenerator.makeAMoveOnBoard(bb,move,8);
-        br=BitBoardMovesGenerator.makeAMoveOnBoard(br,move,7);
-        bp=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
+        long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
+        long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
+        long wnc=BitBoardMovesGenerator.makeAMoveOnBoard(wn,move,2);
+        long wbc=BitBoardMovesGenerator.makeAMoveOnBoard(wb,move,4);
+        long wrc=BitBoardMovesGenerator.makeAMoveOnBoard(wr,move,3);
+        long wpc=BitBoardMovesGenerator.makeAMoveOnBoard(wp,move,9);
+        long bkc=BitBoardMovesGenerator.makeAMoveOnBoard(bk,move,12);
+        long bqc=BitBoardMovesGenerator.makeAMoveOnBoard(bq,move,5);
+        long bnc=BitBoardMovesGenerator.makeAMoveOnBoard(bn,move,6);
+        long bbc=BitBoardMovesGenerator.makeAMoveOnBoard(bb,move,8);
+        long brc=BitBoardMovesGenerator.makeAMoveOnBoard(br,move,7);
+        long bpc=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
 
-        if((currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0))||
-                (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0))){
+        if((currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0))||
+                (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
             return -1;
         }
         if(move<10000 || move>=1000000){
@@ -144,6 +144,18 @@ public class BitBoard {
             if(((1L<<start)&br &(1L<<7))!=0){ckb=false;}
             if(((1L<<start)&br &(1L<<0))!=0){cqb=false;}
         }
+         wk=wkc;
+         wq=wqc;
+         wn=wnc;
+         wb=wbc;
+         wr=wrc;
+         wp=wpc;
+         bk=bkc;
+         bq=bqc;
+         bn=bnc;
+         bb=bbc;
+         br=brc;
+         bp=bpc;
         currentTurn=1-currentTurn;
         lastMove=move;
         return result;
@@ -217,6 +229,12 @@ public class BitBoard {
                 System.out.print(" |");
             }
         }
+        System.out.println("");
+        System.out.println("Castle rights:");
+        System.out.println("ckw:"+ckw);
+        System.out.println("cqw:"+cqw);
+        System.out.println("ckb:"+ckb);
+        System.out.println("cqb:"+cqb);
         System.out.println("");
 
     }

@@ -38,12 +38,8 @@ public class BitBoardMovesGenerator {
 
     public static int getPieceType(long pieceIndex,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long pieceMask=1L<<pieceIndex;
-        long occupied=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
 
-        if((occupied & pieceMask)==0){
-            return -1;
-        }
-        else if(((wk|bk)&pieceMask)!=0){
+        if(((wk|bk)&pieceMask)!=0){
             return WKING_INDEX;
         }
         else if(((wq|bq)&pieceMask)!=0){
@@ -73,10 +69,10 @@ public class BitBoardMovesGenerator {
             return result+10000*promotionPiece;
         }
         else if(isEnPassant!=0){
-            return result+100000*isEnPassant;
+            return result+100000;
         }
         else if(isCastle!=0){
-            return result+1000000*isCastle;
+            return result+1000000;
         }
         return result;
     }

@@ -28,12 +28,16 @@ public class UCIProtocol {
             }
             else if(line.startsWith("position")){
                 processPositionCommand(line);
+                //board.printBoard();
             }
             else if(line.contains("go")){
                 getBestMove();
             }
             else if("print".equals(line)){
                 board.printBoard();
+            }
+            else if("quit".equals(line)){
+                break;
             }
         }
     }

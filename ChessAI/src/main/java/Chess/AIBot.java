@@ -5,6 +5,7 @@ public class AIBot {
     public static final int[]pieceValues={
             0,900,300,300,500,100,0,-900,-300,-300,-500,-100
     };
+    public static final int MOVE_TO_BE_SEARCHED=4;
     public static final  int WKING_INDEX=0;
     public static final  int WQUEEN_INDEX=1;
     public static final  int WKNIGHT_INDEX=2;
@@ -284,7 +285,6 @@ public class AIBot {
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
             //return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         }
-        boolean foundPV=false;
         nodes++;
 
         //Initialize possible moves
@@ -300,6 +300,8 @@ public class AIBot {
         }
         long bestCurrentMove=0;
         boolean isMate=true;
+
+        int fullMovesSearched=0;
         //Sort The moves
         moves.sort((a,b)-> Integer.compare(
                 scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
@@ -346,15 +348,36 @@ public class AIBot {
             isMate=false;
             ply++;
             int score;
-            if(foundPV){
-              //PV search
-              score=-negmax(-alpha -1,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
-                if(score> alpha && score<beta){
-                    score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
-                }
+            if(fullMovesSearched==0){
+                score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             }
             else{
-                score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                //Late move reduction
+                long inCheck;
+                if(color==1){
+                    inCheck=BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc;
+                }
+                else{
+                    inCheck=BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc;
+                }
+                long endPosition=BitBoardMovesGenerator.extractFromCodedMove(move,2);
+                int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+
+                if(fullMovesSearched>MOVE_TO_BE_SEARCHED && depth>=3 && inCheck==0 && endPosType==-1 && move<10000){
+                    //PV search with late move reduction
+                    score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                }
+                else{
+                    score =alpha+1;
+                }
+                if(score>alpha){
+                    //Only PV search, late move reduction does not work
+                    score=-negmax(-alpha -1,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                    if(score> alpha && score<beta){
+                        //PV and late move reduction does not work
+                        score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                    }
+                }
             }
             ply--;
 
@@ -371,8 +394,6 @@ public class AIBot {
                 return beta;
             }
             if(score>alpha){
-                //found principle variation
-                foundPV=true;
 
                 //Update history move, if it is not capture
                 long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
@@ -387,6 +408,7 @@ public class AIBot {
                     bestCurrentMove=move;
                 }
             }
+            fullMovesSearched++;
         }
         if(isMate){
             return -49000 +ply;
