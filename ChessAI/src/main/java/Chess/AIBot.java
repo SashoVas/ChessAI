@@ -284,6 +284,7 @@ public class AIBot {
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
             //return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         }
+        boolean foundPV=false;
         nodes++;
 
         //Initialize possible moves
@@ -344,7 +345,17 @@ public class AIBot {
 
             isMate=false;
             ply++;
-            int score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            int score;
+            if(foundPV){
+              //PV search
+              score=-negmax(-alpha -1,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                if(score> alpha && score<beta){
+                    score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+                }
+            }
+            else{
+                score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            }
             ply--;
 
             //Prune
@@ -360,6 +371,8 @@ public class AIBot {
                 return beta;
             }
             if(score>alpha){
+                //found principle variation
+                foundPV=true;
 
                 //Update history move, if it is not capture
                 long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
