@@ -279,6 +279,31 @@ public class AIBot {
         }
         return alpha;
     }
+    public static boolean lateMoveReductionCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int move,int fullMovesSearched){
+        long inCheck;
+        long giveCheck;
+        if(color==1){
+            inCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
+            giveCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
+        }
+        else{
+            inCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
+            giveCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
+        }
+        long endPosition=MoveUtilities.extractFromCodedMove(move,2);
+        int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+        return fullMovesSearched>MOVE_TO_BE_SEARCHED && depth>=3 && inCheck==0 && giveCheck==0 && move!=killerMoves[0][ply]&& move!=killerMoves[1][ply] && endPosType==-1 && MoveUtilities.extractFromCodedMove(move,3)==0;
+    }
+    public static boolean nullMovePruningCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
+        long inCheck;
+        if(color==1){
+            inCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
+        }
+        else{
+            inCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
+        }
+        return inCheck==0 && depth>=3 && ply>0;
+    }
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         if(depth==0){
@@ -287,6 +312,13 @@ public class AIBot {
         }
         nodes++;
 
+        if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
+            //null move pruning
+            int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);
+            if(score>=beta){
+                return beta;
+            }
+        }
         //Initialize possible moves
         List<Integer> moves;
         if(color==1){
@@ -353,17 +385,7 @@ public class AIBot {
             }
             else{
                 //Late move reduction
-                long inCheck;
-                if(color==1){
-                    inCheck=BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc;
-                }
-                else{
-                    inCheck=BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc;
-                }
-                long endPosition=MoveUtilities.extractFromCodedMove(move,2);
-                int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
-
-                if(fullMovesSearched>MOVE_TO_BE_SEARCHED && depth>=3 && inCheck==0 && endPosType==-1 && MoveUtilities.extractFromCodedMove(move,3)==0){
+                if(lateMoveReductionCondition(depth,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,color,move,fullMovesSearched)){
                     //PV search with late move reduction
                     score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
                 }
