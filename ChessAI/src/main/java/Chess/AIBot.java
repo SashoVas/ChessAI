@@ -442,6 +442,7 @@ public class AIBot {
     }
 
     public static int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+        ZobristHash.initializeHashes();
         nodes=0;
         bestMove=0;
         ply=0;

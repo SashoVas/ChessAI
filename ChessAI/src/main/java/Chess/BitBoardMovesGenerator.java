@@ -629,6 +629,17 @@ public class BitBoardMovesGenerator {
         }
         return result;
     }
+    public static int getEnPassantIndex(int lastMove,int color){
+        int start=MoveUtilities.extractFromCodedMove(lastMove,1);
+        long end=MoveUtilities.extractFromCodedMove(lastMove,2);
+
+        if(color==0 && (start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6))
+            return -1;
+        else if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=1)
+            return -1;
+
+        return start;
+    }
     public static List<Integer>generateEnPassantMovesB(long pawns,long toTake,int lastMove,List<Integer> result){
         int start=MoveUtilities.extractFromCodedMove(lastMove,1);
         long end=MoveUtilities.extractFromCodedMove(lastMove,2);

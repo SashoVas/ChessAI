@@ -25,6 +25,11 @@ public class BitBoard {
             BitBoardMovesGenerator.FILE_MASKS[i] = 0x0101010101010101L << i;
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
+        ZobristHash.initializeHashes();
+
+    }
+    public long getBoardHash(){
+        return ZobristHash.hashBoard(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,lastMove,lastMove);
     }
     public List<Integer>getMovesOrdered(){
         List<Integer>moves;

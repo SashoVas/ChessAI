@@ -93,6 +93,7 @@ public class Main {
 
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
         //int move=board.getBestMove(7);
+        //System.out.println(board.getBoardHash());
         //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
         //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
         //System.out.println(AIBot.nodes);
