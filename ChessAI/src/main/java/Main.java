@@ -102,6 +102,8 @@ public class Main {
         //moves=board.getMovesOrdered();
         //System.out.println(moves);
 
+        //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
+        //System.out.println(board.perft(5));
 //
 //
         //board.printBoard();

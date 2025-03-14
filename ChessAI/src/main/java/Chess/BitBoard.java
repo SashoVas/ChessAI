@@ -29,7 +29,7 @@ public class BitBoard {
 
     }
     public long getBoardHash(){
-        return ZobristHash.hashBoard(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,lastMove,lastMove);
+        return ZobristHash.hashBoard(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,currentTurn,lastMove);
     }
     public List<Integer>getMovesOrdered(){
         List<Integer>moves;
@@ -109,6 +109,7 @@ public class BitBoard {
         return AIBot.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);
     }
     public long perft(int depth){
+        BitBoardMovesGenerator.hash=getBoardHash();
         return BitBoardMovesGenerator.perft( wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,depth,currentTurn,lastMove);
     }
     public List<Integer> generateMovesW(){

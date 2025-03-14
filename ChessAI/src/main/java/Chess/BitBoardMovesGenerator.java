@@ -2,12 +2,14 @@ package Chess;
 
 import Chess.StandardImplementation.Pieces.Move;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static Chess.AIBot.*;
 
 public class BitBoardMovesGenerator {
+    public static long hash=0;
     public static final long[] FILE_MASKS = new long[8];
     public static final long[] RANK_MASKS = new long[8];
     public static final long[] DIAGONALS_MASKS= {
@@ -49,7 +51,7 @@ public class BitBoardMovesGenerator {
             moves=generateMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
         }
         long movesCount=0;
-
+        long oldHash=hash;
         for(int move:moves){
             //Make the move
             long wkc=makeAMoveOnBoard(wk,move,11);
@@ -88,8 +90,19 @@ public class BitBoardMovesGenerator {
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
 
+            //hash move
+            hash=ZobristHash.hashMove(hash,move,lastMove,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,ckwc,cqwc,ckbc,cqbc,color);
             //process next moves
+            long expected=ZobristHash.hashBoard(wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            if(expected!=hash){
+                throw new InternalError();
+            }
             movesCount+=perft( wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
+
+            //undo hash
+            //By repeating the same operation with hash, the move is undone
+            hash=oldHash;
+
         }
         return movesCount;
     }
@@ -118,27 +131,49 @@ public class BitBoardMovesGenerator {
     public static int getPieceType(long pieceIndex,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long pieceMask=1L<<pieceIndex;
 
-        if(((wk|bk)&pieceMask)!=0){
+        if((wk&pieceMask)!=0){
             return WKING_INDEX;
         }
-        else if(((wq|bq)&pieceMask)!=0){
+        else if((wq&pieceMask)!=0){
             return WQUEEN_INDEX;
 
         }
-        else if(((wn|bn)&pieceMask)!=0){
+        else if((wn&pieceMask)!=0){
             return WKNIGHT_INDEX;
 
         }
-        else if(((wb|bb)&pieceMask)!=0){
+        else if((wb&pieceMask)!=0){
             return WBISHOP_INDEX;
 
         }
-        else if(((wr|br)&pieceMask)!=0){
+        else if((wr&pieceMask)!=0){
             return WROOK_INDEX;
 
         }
-        else if(((wp|bp)&pieceMask)!=0){
+        else if((wp&pieceMask)!=0){
             return WPAWN_INDEX;
+        }
+        else if((bk&pieceMask)!=0){
+            return BKING_INDEX;
+        }
+        else if((bq&pieceMask)!=0){
+            return BQUEEN_INDEX;
+
+        }
+        else if((bn&pieceMask)!=0){
+            return BKNIGHT_INDEX;
+
+        }
+        else if((bb&pieceMask)!=0){
+            return BBISHOP_INDEX;
+
+        }
+        else if((br&pieceMask)!=0){
+            return BROOK_INDEX;
+
+        }
+        else if((bp&pieceMask)!=0){
+            return BPAWN_INDEX;
         }
         return -1;
     }
@@ -632,8 +667,7 @@ public class BitBoardMovesGenerator {
     public static int getEnPassantIndex(int lastMove,int color){
         int start=MoveUtilities.extractFromCodedMove(lastMove,1);
         long end=MoveUtilities.extractFromCodedMove(lastMove,2);
-
-        if(color==0 && (start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6))
+        if(color==1 && (start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6))
             return -1;
         else if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=1)
             return -1;

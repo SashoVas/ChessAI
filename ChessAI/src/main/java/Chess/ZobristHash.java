@@ -68,11 +68,114 @@ public class ZobristHash {
         if(cqb)hash^=castleHash[3];
 
         //En passant Hashing
-        int enPassantIndex=BitBoardMovesGenerator.getEnPassantIndex(lastMove,color);
-        if(enPassantIndex!=-1){
+        int lastPieceIndex=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastPieceType=BitBoardMovesGenerator.getPieceType(lastPieceIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        int enPassantIndex=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
+        if((lastPieceType==AIBot.WPAWN_INDEX || lastPieceType==AIBot.BPAWN_INDEX) && enPassantIndex!=-1){
             hash^=enpassantHash[enPassantIndex];
         }
 
         return hash;
     }
+    public static int promotionPieceIndexToPieceIndex(int promotionPieceIndex){
+        switch (promotionPieceIndex){
+            case MoveUtilities.WQUEEN_MAPPING:
+                return AIBot.WQUEEN_INDEX;
+            case MoveUtilities.WKNIGHT_MAPPING:
+                return AIBot.WKNIGHT_INDEX;
+            case MoveUtilities.WROOK_MAPPING:
+                return AIBot.WROOK_INDEX;
+            case MoveUtilities.WBISHOP_MAPPING:
+                return AIBot.WBISHOP_INDEX;
+            case MoveUtilities.BQUEEN_MAPPING:
+                return AIBot.BQUEEN_INDEX;
+            case MoveUtilities.BKNIGHT_MAPPING:
+                return AIBot.BKNIGHT_INDEX;
+            case MoveUtilities.BROOK_MAPPING:
+                return AIBot.BROOK_INDEX;
+            case MoveUtilities.BBISHOP_MAPPING:
+                return AIBot.BBISHOP_INDEX;
+        }
+        return -1;
+    }
+    public static long hashMove(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean oldCkw,boolean oldCqw,boolean oldCkb,boolean oldCqb,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color){
+        int startIndex=MoveUtilities.extractFromCodedMove(move,1);
+        int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+        int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+
+        //Turn swap hash
+        hash^=sideHash;
+
+        //Movement hash
+        hash^=pieceHash[startType][startIndex];
+        int promotionPiece=MoveUtilities.extractFromCodedMove(move,3);
+        if(promotionPiece!=0){
+            hash ^= pieceHash[promotionPieceIndexToPieceIndex(promotionPiece)][endIndex];
+        }
+        else {
+            hash ^= pieceHash[startType][endIndex];
+        }
+        //Captures Hash
+        if(endType!=-1){
+            hash^=pieceHash[endType][endIndex];
+        }
+
+        //Hash Castle rights
+
+        if(ckw!=oldCkw)hash^=castleHash[0];
+        if(cqw!=oldCqw)hash^=castleHash[1];
+        if(ckb!=oldCkb)hash^=castleHash[2];
+        if(cqb!=oldCqb)hash^=castleHash[3];
+
+        //En passant rights
+        if(startType==AIBot.WPAWN_INDEX ||startType==AIBot.BPAWN_INDEX){
+            int currentEnpassant=BitBoardMovesGenerator.getEnPassantIndex(move,color);
+            if(currentEnpassant!=-1){
+                hash^=enpassantHash[currentEnpassant];
+            }
+        }
+        int lastEnd=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastStartType=BitBoardMovesGenerator.getPieceType(lastEnd,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        if(lastStartType==AIBot.WPAWN_INDEX ||lastStartType==AIBot.BPAWN_INDEX) {
+            int oldEnpassant=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
+            if(oldEnpassant!=-1){
+                hash^=enpassantHash[oldEnpassant];
+            }
+        }
+
+        //En passant
+        if(MoveUtilities.extractFromCodedMove(move,4)!=0){
+            int captureIndex;
+            if(color==1)
+                captureIndex=endIndex+8;
+            else
+                captureIndex=endIndex-8;
+            int capturePieceType=BitBoardMovesGenerator.getPieceType(captureIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+            hash^=pieceHash[capturePieceType][captureIndex];
+        }
+        //Castle
+        if(MoveUtilities.extractFromCodedMove(move,5)!=0){
+            int rookStart;
+            int rookEnd;
+            if(startIndex>endIndex){
+                rookStart=startIndex-4;
+                rookEnd=rookStart+3;
+            }
+            else{
+                rookStart=startIndex+3;
+                rookEnd=rookStart-2;
+            }
+            int pieceType;
+            if(color==1)
+                pieceType=AIBot.WROOK_INDEX;
+            else
+                pieceType=AIBot.BROOK_INDEX;
+
+            hash^=pieceHash[pieceType][rookStart];
+            hash^=pieceHash[pieceType][rookEnd];
+        }
+        return hash;
+    }
+
 }
