@@ -206,7 +206,6 @@ public class AIBot {
         return color==1?result:-result;
     }
     public static int nodes=0;
-    public static int bestMove=0;
     public static int ply=0;
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
@@ -313,16 +312,17 @@ public class AIBot {
         }
         return inCheck==0 && depth>=3 && ply>0;
     }
-
+    public static int pvLength[]=new int[64];
+    public static int pvTable[][]=new int[64][64];
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
-
+        pvLength[ply]=ply;
         if(depth==0){
             //Search the captures, so that we don't blunder pieces
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
             //return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         }
         nodes++;
-        if(tt.containsKey(hash)){
+        if(ply>0 && tt.containsKey(hash)){
             int res= tt.retrieveFromTable(hash,depth,alpha,beta);
             if(res!=invalidValue)
                 return res;
@@ -330,11 +330,13 @@ public class AIBot {
         long oldHash=hash;
         if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
             //null move pruning
+            ply++;
             //Hash side repeat
             hash^=ZobristHash.sideHash;
             //Remove en passant from hash if any
             hash=ZobristHash.hashEnPassantRights(hash,0,lastMove,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,color);
             int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);
+            ply--;
             if(score>=beta){
                 //tt.put(oldHash^depthHash,beta);
                 tt.addToTable(hash,beta,depth,upperBoundType);
@@ -353,7 +355,6 @@ public class AIBot {
         if(moves.size()==0){
             return 0;
         }
-        int bestCurrentMove=0;
         boolean isMate=true;
 
         int fullMovesSearched=0;
@@ -431,19 +432,6 @@ public class AIBot {
             hash=oldHash;
             ply--;
 
-            //Prune
-            if(score>=beta){
-                //Update killer move only if it is not capture
-                long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
-                long endPosition=MoveUtilities.extractFromCodedMove(move,2);
-                if(((1L<<endPosition)&fullBoard)==0){
-                    killerMoves[1][ply]=killerMoves[0][ply];
-                    killerMoves[0][ply]=move;
-                }
-                //tt.put(oldHash,beta);
-                tt.addToTable(hash,beta,depth,upperBoundType);
-                return beta;
-            }
             if(score>alpha){
 
                 //Update history move, if it is not capture
@@ -455,17 +443,28 @@ public class AIBot {
                 }
                 nodeType=exactBoundType;
                 alpha=score;
-                if(ply==0){
-                    bestCurrentMove=move;
+                //Add pv moves to table
+                pvTable[ply][ply]=move;
+                for(int nextPly=ply+1;nextPly<pvLength[ply+1];nextPly++)
+                    pvTable[ply][nextPly]=pvTable[ply+1][nextPly];
+                pvLength[ply]=pvLength[ply+1];
+                //Prune
+                if(score>=beta){
+                    //Update killer move only if it is not capture
+                    if(((1L<<endPosition)&fullBoard)==0){
+                        killerMoves[1][ply]=killerMoves[0][ply];
+                        killerMoves[0][ply]=move;
+                    }
+                    //tt.put(oldHash,beta);
+                    tt.addToTable(hash,beta,depth,upperBoundType);
+                    return beta;
                 }
             }
             fullMovesSearched++;
+
         }
         if(isMate){
             return -49000 +ply;
-        }
-        if (bestCurrentMove!=0){
-            bestMove=bestCurrentMove;
         }
         //tt.put(oldHash,alpha);
         tt.addToTable(hash,alpha,depth,nodeType);
@@ -476,11 +475,16 @@ public class AIBot {
     public static int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         //ZobristHash.initializeHashes();
         nodes=0;
-        bestMove=0;
         ply=0;
 
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);
-        return bestMove;
+        System.out.print("PVs: ");
+        for(int i=0;i<pvLength[0];i++){
+
+            System.out.print(BitBoard.toAlgebra(pvTable[0][i])+", ");
+        }
+        System.out.println();
+        return pvTable[0][0];
     }
 }
