@@ -1,6 +1,9 @@
 package Chess;
 
+import Chess.TranspositionTable.TranspositionTable;
+
 import java.util.List;
+
 public class AIBot {
     public static final int[]pieceValues={
             0,900,300,300,500,100,0,-900,-300,-300,-500,-100
@@ -18,6 +21,10 @@ public class AIBot {
     public static final  int BBISHOP_INDEX=9;
     public static final  int BROOK_INDEX=10;
     public static final  int BPAWN_INDEX=11;
+    public static final int lowerBoundType=1;
+    public static final int upperBoundType=3;
+    public static final int exactBoundType=2;
+    public static final int invalidValue=-999999;
 
     public static final int mvv_lva[][] = {
             {600, 500, 200, 300, 400, 100,  600, 500, 200, 300, 400, 100},
@@ -104,6 +111,8 @@ public class AIBot {
             };
     public static long[][] killerMoves=new long[2][64];
     public static int[][] historyMoves=new int[12][64];
+    public static long hash=0L;
+    public static TranspositionTable tt=new TranspositionTable();
 
     public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long targetIndex=MoveUtilities.extractFromCodedMove(move,2);
@@ -304,21 +313,35 @@ public class AIBot {
         }
         return inCheck==0 && depth>=3 && ply>0;
     }
+
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         if(depth==0){
+            //Search the captures, so that we don't blunder pieces
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
             //return evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         }
         nodes++;
-
+        if(tt.containsKey(hash)){
+            int res= tt.retrieveFromTable(hash,depth,alpha,beta);
+            if(res!=invalidValue)
+                return res;
+        }
+        long oldHash=hash;
         if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
             //null move pruning
+            //Hash side repeat
+            hash^=ZobristHash.sideHash;
+            //Remove en passant from hash if any
+            hash=ZobristHash.hashEnPassantRights(hash,0,lastMove,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,color);
             int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);
             if(score>=beta){
+                //tt.put(oldHash^depthHash,beta);
+                tt.addToTable(hash,beta,depth,upperBoundType);
                 return beta;
             }
         }
+        hash= oldHash;
         //Initialize possible moves
         List<Integer> moves;
         if(color==1){
@@ -334,10 +357,13 @@ public class AIBot {
         boolean isMate=true;
 
         int fullMovesSearched=0;
-        //Sort The moves
+        //Sort The moves, so that we check the strong moves first and prune the week moves later
         moves.sort((a,b)-> Integer.compare(
                 scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
                 scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
+
+        //variable that indicate what type of node the current one is(used in transposition table)
+        int nodeType=lowerBoundType;
         //Check every move
         for(int move:moves){
 
@@ -377,6 +403,7 @@ public class AIBot {
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
 
+            hash=ZobristHash.hashMove(hash,move,lastMove,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,ckwc,cqwc,ckbc,cqbc,color);
             isMate=false;
             ply++;
             int score;
@@ -401,6 +428,7 @@ public class AIBot {
                     }
                 }
             }
+            hash=oldHash;
             ply--;
 
             //Prune
@@ -412,7 +440,8 @@ public class AIBot {
                     killerMoves[1][ply]=killerMoves[0][ply];
                     killerMoves[0][ply]=move;
                 }
-
+                //tt.put(oldHash,beta);
+                tt.addToTable(hash,beta,depth,upperBoundType);
                 return beta;
             }
             if(score>alpha){
@@ -424,7 +453,7 @@ public class AIBot {
                     int startPosType=BitBoardMovesGenerator.getPieceType(MoveUtilities.extractFromCodedMove(move,1),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
                     historyMoves[startPosType][(int)endPosition]+=depth;
                 }
-
+                nodeType=exactBoundType;
                 alpha=score;
                 if(ply==0){
                     bestCurrentMove=move;
@@ -438,11 +467,14 @@ public class AIBot {
         if (bestCurrentMove!=0){
             bestMove=bestCurrentMove;
         }
+        //tt.put(oldHash,alpha);
+        tt.addToTable(hash,alpha,depth,nodeType);
+
         return alpha;
     }
 
     public static int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
-        ZobristHash.initializeHashes();
+        //ZobristHash.initializeHashes();
         nodes=0;
         bestMove=0;
         ply=0;

@@ -90,14 +90,18 @@ public class Main {
 
         //UCIProtocol game=new UCIProtocol();
         //game.startGame();
-        BitBoard board=BitBoard.createBoardFromFen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-        System.out.println(board.perftWithUndo(2));
+        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        //System.out.println(board.perft(6));
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+
+
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
-        //int move=board.getBestMove(7);
-        //System.out.println(board.getBoardHash());
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
-        //System.out.println(AIBot.nodes);
+        int move=board.getBestMove(7);
+        System.out.println(board.getBoardHash());
+        System.out.println(MoveUtilities.extractFromCodedMove(move,1));
+        System.out.println(MoveUtilities.extractFromCodedMove(move,2));
+        System.out.println(AIBot.nodes);
+
         //List<Long>moves=board.generateMovesW();
         //System.out.println(moves);
         //moves=board.getMovesOrdered();

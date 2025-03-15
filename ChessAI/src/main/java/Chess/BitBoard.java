@@ -107,6 +107,8 @@ public class BitBoard {
         makeAMove(getBestMove(depth));
     }
     public int getBestMove(int depth){
+        AIBot.hash=getBoardHash();
+        AIBot.tt.clear();
         return AIBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
     public int evaluate(){

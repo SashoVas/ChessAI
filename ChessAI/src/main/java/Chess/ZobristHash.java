@@ -12,6 +12,7 @@ public class ZobristHash {
     public static long pieceHash[][]=new long[12][64];
     public static long castleHash[]=new long[4];
     public static long enpassantHash[]=new long[64];
+    public static long depthHash[]=new long[10];
 
     public static void initializeHashes(){
         SecureRandom random=new SecureRandom();
@@ -26,6 +27,9 @@ public class ZobristHash {
         }
         for(int i=0;i<64;i++){
             enpassantHash[i]=random.nextLong();
+        }
+        for(int i=0;i<10;i++){
+            depthHash[i]=random.nextLong();
         }
     }
     public static long updateHash(long hash,long piece,int pieceType){
@@ -97,6 +101,27 @@ public class ZobristHash {
                 return AIBot.BBISHOP_INDEX;
         }
         return -1;
+    }
+    public static long hashEnPassantRights(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
+        int startIndex=MoveUtilities.extractFromCodedMove(move,1);
+        int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+        int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        if(startType==AIBot.WPAWN_INDEX ||startType==AIBot.BPAWN_INDEX){
+            int currentEnpassant=BitBoardMovesGenerator.getEnPassantIndex(move,color);
+            if(currentEnpassant!=-1){
+                hash^=enpassantHash[currentEnpassant];
+            }
+        }
+        int lastEnd=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastStartType=BitBoardMovesGenerator.getPieceType(lastEnd,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        if(lastStartType==AIBot.WPAWN_INDEX ||lastStartType==AIBot.BPAWN_INDEX) {
+            int oldEnpassant=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
+            if(oldEnpassant!=-1){
+                hash^=enpassantHash[oldEnpassant];
+            }
+        }
+        return hash;
     }
     public static long hashMove(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean oldCkw,boolean oldCqw,boolean oldCkb,boolean oldCqb,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color){
         int startIndex=MoveUtilities.extractFromCodedMove(move,1);
