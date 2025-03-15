@@ -65,6 +65,12 @@ class BitBoardTest {
         assertEquals(expected,board.perft(depth));
     }
     @ParameterizedTest
+    @MethodSource("provideTestCasesForPerf")
+    void TestPerftWithUndo(String fen,int depth,int expected) {
+        BitBoard board=BitBoard.createBoardFromFen(fen);
+        assertEquals(expected,board.perftWithUndo(depth));
+    }
+    @ParameterizedTest
     @MethodSource("provideTestCasesForAlgebra")
     void TestAlgebraTransformations(String fen){
         BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);

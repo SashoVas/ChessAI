@@ -39,6 +39,80 @@ public class BitBoardMovesGenerator {
             System.out.println("================================");
         }
     }
+    public static long perftWithUndo(long[] boards,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int depth,int color,int lastMove){
+        if (depth==0){
+            return 1;
+        }
+        List<Integer> moves;
+        if(color==1){
+            moves=generateMovesW(boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11],ckw,cqw,lastMove);
+        }
+        else{
+            moves=generateMovesB(boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11],ckb,cqb,lastMove);
+        }
+        long movesCount=0;
+
+        int[]mappings={11,1,2,4,3,9,12,5,6,8,7,10};
+        for(int move:moves){
+            int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+            int captureType=getPieceType(endIndex,boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11]);
+
+            //Update castle rules
+            boolean ckwc=ckw;
+            boolean cqwc=cqw;
+            boolean ckbc=ckb;
+            boolean cqbc=cqb;
+            if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
+                //Castle
+                long start=MoveUtilities.extractFromCodedMove(move,1);
+                if(((1L<<start)&boards[0])!=0){ckwc=false;cqwc=false;}
+                if(((1L<<start)&boards[6])!=0){ckbc=false;cqbc=false;}
+                if(((1L<<start)&boards[4] &(1L<<63))!=0){ckwc=false;}
+                if(((1L<<start)&boards[4] &(1L<<56))!=0){cqwc=false;}
+                if(((1L<<start)&boards[10] &(1L<<7))!=0){ckbc=false;}
+                if(((1L<<start)&boards[10] &(1L<<0))!=0){cqbc=false;}
+            }
+            //long[] boardCopy=boards.clone();
+            //Make the move
+            for(int i=0;i<12;i++){
+                boards[i]=makeAMoveOnBoard(boards[i],move,mappings[i]);
+            }
+
+            //Check if move is legal
+            if((color==1 && ((attackedByBlack(  boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11])&boards[0])!=0))||
+                    (color==0&& ((attackedByWhite(  boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11])&boards[6])!=0))){
+                for(int i=0;i<12;i++){
+                    boards[i]=undoMoveOnBoard(boards[i],move,mappings[i],captureType!=-1?mappings[captureType]:-1);
+                }
+                //for(int i=0;i<12;i++){
+                //    if(boards[i]!=boardCopy[i]){
+                //        String moveAlg=BitBoard.toAlgebra(move);
+                //        String lastMoveAlg=BitBoard.toAlgebra(lastMove);
+                //        long a=makeAMoveOnBoard(boardCopy[i],move,mappings[i]);
+                //        long b=undoMoveOnBoard(a,move,mappings[i],captureType!=-1?mappings[captureType]:-1);
+                //        int c=3;
+                //    }
+                //}
+                continue;
+            }
+
+            movesCount+=perftWithUndo(boards,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
+            for(int i=0;i<12;i++){
+                boards[i]=undoMoveOnBoard(boards[i],move,mappings[i],captureType!=-1?mappings[captureType]:-1);
+            }
+            //for(int i=0;i<12;i++){
+            //    if(boards[i]!=boardCopy[i]){
+            //        String moveAlg=BitBoard.toAlgebra(move);
+            //        String lastMoveAlg=BitBoard.toAlgebra(lastMove);
+            //        long expected=boardCopy[i];
+            //        long a=makeAMoveOnBoard(expected,move,mappings[i]);
+            //        long b=undoMoveOnBoard(a,move,mappings[i],captureType!=-1?mappings[captureType]:-1);
+            //        int c=3;
+            //    }
+            //}
+        }
+        return movesCount;
+    }
     public static long perft(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int depth,int color,int lastMove){
         if (depth==0){
             return 1;
@@ -100,7 +174,6 @@ public class BitBoardMovesGenerator {
             movesCount+=perft( wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
 
             //undo hash
-            //By repeating the same operation with hash, the move is undone
             hash=oldHash;
 
         }
@@ -421,9 +494,76 @@ public class BitBoardMovesGenerator {
         long antiDiagonal=((occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])-(2*binaryPos))^ Long.reverse(Long.reverse(occupied&ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)])- (2* Long.reverse(binaryPos)));
         return (diagonal & DIAGONALS_MASKS[(pos/8)+(pos%8)]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[(pos/8) +7- (pos%8)]);
     }
+    public static long undoMoveOnBoard(long board,int move,int pieceBoard,int capturePiece){
+        long start=MoveUtilities.extractFromCodedMove(move,1);
+        long end=MoveUtilities.extractFromCodedMove(move,2);
+        if(MoveUtilities.extractFromCodedMove(move,3)!=0){
+            //Promotion
+            if(((board>>>end)&1)==1)
+                board&=~(1L<<end);
+            if(capturePiece==pieceBoard){
+                board|=(1L<<end);
+            }
+            long promotionPiece=MoveUtilities.extractFromCodedMove(move,3);
+            if(promotionPiece<5 && pieceBoard==9)
+                board|=(1L<<start);
+            else if(promotionPiece>=5 && pieceBoard==10)
+                board|=(1L<<start);
+
+        }
+        else if(MoveUtilities.extractFromCodedMove(move,4)!=0 && (pieceBoard==10||pieceBoard==9)){
+            //EnPassant
+            if(((board>>>end)&1)==1){
+                board&=~(1L<<end);
+                board|=(1L<<start);
+                return board;
+            }
+            long toRemove;
+            if(start%8-end%8==1){
+                toRemove=(start/8)*8+(start%8-1);
+            }
+            else{
+                toRemove=(start/8)*8+(start%8+1);
+            }
+            //if(((board>>>toRemove)&1)==1){
+                board|=(1L<<toRemove);
+            //}
+        }
+        else if(MoveUtilities.extractFromCodedMove(move,5)!=0 &&(pieceBoard==3 ||pieceBoard==7||pieceBoard==12||pieceBoard==11)){
+            //Castle
+            if(((board>>>end)&1)==1){
+                board&=~(1L<<end);
+                board|=(1L<<start);
+            }
+
+            long rookStart;
+            long rookEnd;
+            if(start>end){
+                rookStart=start-4;
+                rookEnd=rookStart+3;
+            }
+            else{
+                rookStart=start+3;
+                rookEnd=rookStart-2;
+            }
+            if(((board>>>rookEnd)&1)!=0){
+                board&=~(1L<<rookEnd);
+                board|=(1L<<rookStart);
+            }
+        }
+        else {
+            //Standard move
+            if(((board>>>end)&1)==1){
+                board&=~(1L<<end);
+                board|=(1L<<start);
+            }
+            else if(capturePiece==pieceBoard){
+                board|=(1L<<end);
+            }
+        }
+        return board;
+    }
     public static long makeAMoveOnBoard(long board,int move,int pieceBoard){
-        //int start=(move.charAt(0)-'0')*8+(move.charAt(1)-'0');
-        //int end=(move.charAt(2)-'0')*8+(move.charAt(3)-'0');
 
         long start=MoveUtilities.extractFromCodedMove(move,1);
         long end=MoveUtilities.extractFromCodedMove(move,2);
@@ -446,9 +586,6 @@ public class BitBoardMovesGenerator {
                 board&=~(1L<<start);
                 board|=(1L<<end);
             }
-            else{
-                board&=~(1L<<end);
-            }
             long toRemove;
             if(start%8-end%8==1){
                 toRemove=(start/8)*8+(start%8-1);
@@ -465,9 +602,6 @@ public class BitBoardMovesGenerator {
             if(((board>>>start)&1)==1){
                 board&=~(1L<<start);
                 board|=(1L<<end);
-            }
-            else{
-                board&=~(1L<<end);
             }
             long rookStart;
             long rookEnd;
@@ -496,6 +630,7 @@ public class BitBoardMovesGenerator {
         }
         return board;
     }
+
     public static List<Integer> generateCastleBlack(long king,long rooks,long occupied,boolean ck,boolean cq,long unsafe,List<Integer> result){
         if((unsafe & king) !=0){
             return result;

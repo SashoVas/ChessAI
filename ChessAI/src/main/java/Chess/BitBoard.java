@@ -28,6 +28,10 @@ public class BitBoard {
         ZobristHash.initializeHashes();
 
     }
+    public long perftWithUndo(int depth){
+        long[]arr={wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp};
+        return BitBoardMovesGenerator.perftWithUndo(arr,ckw,cqw,ckb,cqb,depth,currentTurn,lastMove);
+    }
     public long getBoardHash(){
         return ZobristHash.hashBoard(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,currentTurn,lastMove);
     }
