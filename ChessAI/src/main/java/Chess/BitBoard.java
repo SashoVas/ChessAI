@@ -111,6 +111,11 @@ public class BitBoard {
         AIBot.tt.clear();
         return AIBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
+    public int getBestMoveIterativeDeepening(int depth){
+        AIBot.hash=getBoardHash();
+        AIBot.tt.clear();
+        return AIBot.getBestMoveIterativeDeepening(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
+    }
     public int evaluate(){
         return AIBot.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);
     }
