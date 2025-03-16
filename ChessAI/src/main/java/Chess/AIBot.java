@@ -216,6 +216,9 @@ public class AIBot {
     }
     public static int nodes=0;
     public static int ply=0;
+    public static final int infinity=50000;
+    public static final int mateVal=49000;
+    public static final int mateScore=48000;
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         nodes++;
@@ -475,22 +478,21 @@ public class AIBot {
 
         }
         if(isMate){
-            return -49000 +ply;
+            return -mateVal +ply;
         }
         //tt.put(oldHash,alpha);
         tt.addToTable(hash,alpha,depth,nodeType);
 
         return alpha;
     }
-
     public static int getBestMoveIterativeDeepening(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         //ZobristHash.initializeHashes();
         nodes=0;
         ply=0;
         int alphaIncrement=50;
         int bettaIncrement=50;
-        int alpha=-50000;
-        int beta=50000;
+        int alpha=-infinity;
+        int beta=infinity;
         int score=0;
         followPv=false;
         scorePv=false;
@@ -500,8 +502,8 @@ public class AIBot {
             followPv=true;
             score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
             if ((score <= alpha) || (score >= beta)) {
-                alpha = -50000;
-                beta = 50000;
+                alpha = -infinity;
+                beta = infinity;
                 current_depth--;
                 continue;
             }
