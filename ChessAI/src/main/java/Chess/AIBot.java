@@ -113,10 +113,19 @@ public class AIBot {
     public static int[][] historyMoves=new int[12][64];
     public static long hash=0L;
     public static TranspositionTable tt=new TranspositionTable();
-    public static int pvLength[]=new int[64];
-    public static int pvTable[][]=new int[64][64];
+    public static int MAX_PLY=64;
+    public static int pvLength[]=new int[MAX_PLY];
+    public static int pvTable[][]=new int[MAX_PLY][64];
+    public static int MAX_MOVES_IN_GAME=1000;
     public static boolean followPv=false;
     public static boolean scorePv=false;
+    public static int nodes=0;
+    public static int ply=0;
+    public static int historyPly=0;
+    public static long history[]=new long[MAX_MOVES_IN_GAME];
+    public static final int infinity=50000;
+    public static final int mateVal=49000;
+    public static final int mateScore=48000;
 
     public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long targetIndex=MoveUtilities.extractFromCodedMove(move,2);
@@ -214,11 +223,6 @@ public class AIBot {
         result+=evaluateBoard(bk,BKING_INDEX);
         return color==1?result:-result;
     }
-    public static int nodes=0;
-    public static int ply=0;
-    public static final int infinity=50000;
-    public static final int mateVal=49000;
-    public static final int mateScore=48000;
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         nodes++;
@@ -286,8 +290,11 @@ public class AIBot {
                 if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
             }
             ply++;
+            history[historyPly]=hash;
+            historyPly++;
             int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             ply--;
+            historyPly--;
 
             //Prune
             if(score>=beta){
@@ -324,8 +331,20 @@ public class AIBot {
         }
         return inCheck==0 && depth>=3 && ply>0;
     }
+    public static boolean detectRepetitions(){
+        for(int i=historyPly-2;i>=0;i--){
+            if(history[i]==hash)
+                return true;
+        }
+        return false;
+    }
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+
         pvLength[ply]=ply;
+        //Check if current move is repeated(helps avoid 3-fold repetition)
+        if(detectRepetitions())
+            return 0;
+
         if(depth==0){
             //Search the captures, so that we don't blunder pieces
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
@@ -341,12 +360,15 @@ public class AIBot {
         if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
             //null move pruning
             ply++;
+            history[historyPly]=hash;
+            historyPly++;
             //Hash side repeat
             hash^=ZobristHash.sideHash;
             //Remove en passant from hash if any
             hash=ZobristHash.hashEnPassantRights(hash,0,lastMove,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,color);
             int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);
             ply--;
+            historyPly--;
             if(score>=beta){
                 //tt.put(oldHash^depthHash,beta);
                 //tt.addToTable(hash,beta,depth,upperBoundType);
@@ -419,6 +441,8 @@ public class AIBot {
             hash=ZobristHash.hashMove(hash,move,lastMove,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,ckwc,cqwc,ckbc,cqbc,color);
             isMate=false;
             ply++;
+            history[historyPly]=hash;
+            historyPly++;
             int score;
             if(fullMovesSearched==0){
                 score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
@@ -445,6 +469,7 @@ public class AIBot {
             }
             hash=oldHash;
             ply--;
+            historyPly--;
 
             if(score>alpha){
 

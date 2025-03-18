@@ -62,17 +62,14 @@ public class UCIProtocol {
         if(line.contains("moves")){
             line=line.substring(line.indexOf("moves")+6);
             String[] moves=line.split(" ");
+            AIBot.historyPly=0;
 
             for(String move: moves){
                 int moveCode=board.algebraToCode(move);
                 board.makeAMove(moveCode);
+                AIBot.history[AIBot.historyPly]=board.getBoardHash();
+                AIBot.historyPly++;
             }
-            //while(line.length()>0){
-            //    String move=line.substring(0,5);
-            //    line=line.substring(5);
-            //    long moveCode=board.algebraToCode(move);
-            //    board.makeAMove(moveCode);
-            //}
 
         }
     }
@@ -81,5 +78,8 @@ public class UCIProtocol {
         System.out.println("id name bezpoleznik");
         System.out.println("id author bezpoleznik");
         System.out.println("uciok");
+
+        //Reset history of the AI bot
+        AIBot.historyPly=0;
     }
 }
