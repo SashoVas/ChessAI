@@ -126,6 +126,33 @@ public class AIBot {
     public static final int infinity=50000;
     public static final int mateVal=49000;
     public static final int mateScore=48000;
+    public static long[] isolatedPawnMasks=new long[8];
+    public static long[] passedPawnMasksWhite=new long[8];
+    public static long[] passedPawnMasksBlack=new long[8];
+
+    public static void generatePawnMasks(){
+        //generates the masks for isolated pawns in specific file by or-ing the files to the left and right of it
+        for(int i=1;i<7;i++){
+            isolatedPawnMasks[i]=BitBoardMovesGenerator.FILE_MASKS[i-1]|BitBoardMovesGenerator.FILE_MASKS[i+1];
+        }
+        isolatedPawnMasks[0]=BitBoardMovesGenerator.FILE_MASKS[1];
+        isolatedPawnMasks[7]=BitBoardMovesGenerator.FILE_MASKS[6];
+
+        //generates passed pawn mask for white
+        long firstRow=7L;
+        long passedPawnMask=firstRow|(firstRow<<8)|(firstRow<<16);
+        for(int i=1;i<7;i++){
+            passedPawnMasksWhite[i]=passedPawnMask<<(i-1);
+        }
+        passedPawnMasksWhite[0]=3L|(3L<<8)|(3L<<16);
+        passedPawnMasksWhite[7]=passedPawnMasksWhite[0]<<6;
+
+        //generates passed pawn mask for black
+        for(int i=0;i<8;i++){
+            passedPawnMasksBlack[i]=passedPawnMasksWhite[i]<<40;
+        }
+
+    }
 
     public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long targetIndex=MoveUtilities.extractFromCodedMove(move,2);

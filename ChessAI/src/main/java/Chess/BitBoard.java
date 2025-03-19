@@ -26,7 +26,7 @@ public class BitBoard {
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
         ZobristHash.initializeHashes();
-
+        AIBot.generatePawnMasks();
     }
     public long perftWithUndo(int depth){
         long[]arr={wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp};

@@ -88,12 +88,17 @@ public class Main {
        //System.out.println(moves.size());
        //BitBoard.visualizeMoves(moves);
 
-        UCIProtocol game=new UCIProtocol();
-        game.startGame();
+        //UCIProtocol game=new UCIProtocol();
+        //game.startGame();
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //System.out.println(board.perft(6));
 
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
 
+        for(int i=0;i<8;i++){
+            BitBoardMovesGenerator.printMask(AIBot.passedPawnMasksBlack[i]);
+            System.out.println("==========");
+        }
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
         //int move=board.getBestMoveIterativeDeepening(8);
