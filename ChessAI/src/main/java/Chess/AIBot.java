@@ -127,8 +127,8 @@ public class AIBot {
     public static final int mateVal=49000;
     public static final int mateScore=48000;
     public static long[] isolatedPawnMasks=new long[8];
-    public static long[] passedPawnMasksWhite=new long[8];
-    public static long[] passedPawnMasksBlack=new long[8];
+    public static long[] passedPawnMasksWhite=new long[64];
+    public static long[] passedPawnMasksBlack=new long[64];
 
     public static void generatePawnMasks(){
         //generates the masks for isolated pawns in specific file by or-ing the files to the left and right of it
@@ -138,20 +138,44 @@ public class AIBot {
         isolatedPawnMasks[0]=BitBoardMovesGenerator.FILE_MASKS[1];
         isolatedPawnMasks[7]=BitBoardMovesGenerator.FILE_MASKS[6];
 
-        //generates passed pawn mask for white
-        long firstRow=7L;
-        long passedPawnMask=firstRow|(firstRow<<8)|(firstRow<<16);
+        //generation of white pass pawns masks
+        passedPawnMasksWhite[1]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]|BitBoardMovesGenerator.FILE_MASKS[2];
+        passedPawnMasksWhite[1]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
+        passedPawnMasksWhite[0]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1];
+        passedPawnMasksWhite[0]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
+        passedPawnMasksWhite[7]=BitBoardMovesGenerator.FILE_MASKS[7]|BitBoardMovesGenerator.FILE_MASKS[6];
+        passedPawnMasksWhite[7]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
         for(int i=1;i<7;i++){
-            passedPawnMasksWhite[i]=passedPawnMask<<(i-1);
+            passedPawnMasksWhite[i]=passedPawnMasksWhite[1]<<(i-1);
         }
-        passedPawnMasksWhite[0]=3L|(3L<<8)|(3L<<16);
-        passedPawnMasksWhite[7]=passedPawnMasksWhite[0]<<6;
-
-        //generates passed pawn mask for black
-        for(int i=0;i<8;i++){
-            passedPawnMasksBlack[i]=passedPawnMasksWhite[i]<<40;
+        for(int i=8;i<64;i++){
+            passedPawnMasksWhite[i]=passedPawnMasksWhite[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[7-(i/8)]);
         }
 
+        //generation of black pass pawns masks
+        passedPawnMasksBlack[1]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]|BitBoardMovesGenerator.FILE_MASKS[2];
+        passedPawnMasksBlack[1]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksBlack[0]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1];
+        passedPawnMasksBlack[0]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksBlack[7]=BitBoardMovesGenerator.FILE_MASKS[7]|BitBoardMovesGenerator.FILE_MASKS[6];
+        passedPawnMasksBlack[7]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        for(int i=1;i<7;i++){
+            passedPawnMasksBlack[i]=passedPawnMasksBlack[1]<<(i-1);
+        }
+        for(int i=8;i<64;i++){
+            passedPawnMasksBlack[i]=passedPawnMasksBlack[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[(i/8)]);
+        }
+
+        //swap orientation
+
+        for(int i=0;i<4;i++){
+            for(int j=0;j<8;j++){
+                long temp=passedPawnMasksBlack[i*8+j];
+                passedPawnMasksBlack[i*8+j]=passedPawnMasksBlack[56-i*8 +j];
+                passedPawnMasksBlack[56-i*8 +j]=temp;
+            }
+
+        }
     }
 
     public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
