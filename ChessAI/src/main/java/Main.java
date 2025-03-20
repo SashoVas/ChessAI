@@ -93,7 +93,7 @@ public class Main {
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //System.out.println(board.perft(6));
 
-        BitBoard board=BitBoard.createBoardFromFen("8/8/3p4/1p6/6P1/4P3/8/8 b - - 0 1");
+        BitBoard board=BitBoard.createBoardFromFen("k7/7p/8/8/8/8/P7/7K w - - 0 1");
         System.out.println(board.evaluate());
         //for(int i=0;i<63;i++){
         //    BitBoardMovesGenerator.printMask(AIBot.passedPawnMasksBlack[i]);

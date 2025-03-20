@@ -132,12 +132,30 @@ public class AIBot {
     public static final int doublePawnPenalty=-10;
     public static final int isolatedPawnPenalty=-10;
     public static final int[] passedPawnsBonus={0, 10, 30, 50, 75, 100, 150, 200};
+    public static final int semiOpenFileScore=10;
+    public static final int openFileScore=15;
+    public static int getRookScore(int rookIndex,long pawns,long enemyPawns){
+        int score=0;
+        if((pawns & BitBoardMovesGenerator.FILE_MASKS[rookIndex%8])==0)
+            score+=semiOpenFileScore;
+        if(((pawns|enemyPawns) & BitBoardMovesGenerator.FILE_MASKS[rookIndex%8])==0)
+            score += openFileScore;
+        return score;
+    }
+    public static int getKingScore(int kingIndex,long pawns,long enemyPawns){
+        int score=0;
+        if((pawns & BitBoardMovesGenerator.FILE_MASKS[kingIndex%8])==0)
+            score-=semiOpenFileScore;
+        if(((pawns|enemyPawns) & BitBoardMovesGenerator.FILE_MASKS[kingIndex%8])==0)
+            score-=openFileScore;
+        return score;
+    }
 
     public static int getPawnsScore(long pawns,int index,long enemyPawns,int color){
         int score=0;
 
         //double pawns
-        long stackedPawnMask=pawns&BitBoardMovesGenerator.FILE_MASKS[index%8];
+        long stackedPawnMask=pawns & BitBoardMovesGenerator.FILE_MASKS[index%8];
         int bitsCount=BitBoardMovesGenerator.countBits(stackedPawnMask);
         if(bitsCount>1)
             score+=doublePawnPenalty*bitsCount;
@@ -150,12 +168,9 @@ public class AIBot {
         //BitBoardMovesGenerator.printMask(passedPawnMasksWhite[index]);
         if(color==1 && (passedPawnMasksWhite[index]&enemyPawns)==0){
             score+=passedPawnsBonus[7-index/8];
-            System.out.println("Passed white: "+passedPawnsBonus[7-index/8]);
         }
         else if(color==0 && (passedPawnMasksBlack[index]&enemyPawns)==0){
             score+=passedPawnsBonus[index/8];
-            System.out.println("Passed black: "+passedPawnsBonus[index/8]);
-
         }
         return score;
     }
@@ -250,7 +265,6 @@ public class AIBot {
             int index=Long.numberOfTrailingZeros(current);
             int blackPos=(7-index/8)*8+index%8;
             switch (pieceType){
-
                 case WPAWN_INDEX:
                     result+=pawn_score[index];
                     result+=getPawnsScore(fullBoard,index,enemyPawns,1);
@@ -265,9 +279,54 @@ public class AIBot {
         }
         return result;
     }
+    public static int evaluateRookBoard(long board,int pieceType,long pawns,long enemyPawns){
+        int result=0;
+        long current=board& -board;
+
+        while(current!=0){
+            result+=pieceValues[pieceType];
+            int index=Long.numberOfTrailingZeros(current);
+            int blackPos=(7-index/8)*8+index%8;
+            switch (pieceType){
+                case WROOK_INDEX:
+                    result+=rook_score[index];
+                    result+=getRookScore(index,pawns,enemyPawns);
+                    break;
+                case BROOK_INDEX:
+                    result-=rook_score[blackPos];
+                    result-=getRookScore(index,pawns,enemyPawns);
+                    break;
+            }
+            board&=~current;
+            current=board& -board;
+        }
+        return result;
+    }
+    public static int evaluationKingBoard(long board,int pieceType,long pawns,long enemyPawns){
+        int result=0;
+        long current=board& -board;
+
+        while(current!=0){
+            result+=pieceValues[pieceType];
+            int index=Long.numberOfTrailingZeros(current);
+            int blackPos=(7-index/8)*8+index%8;
+            switch (pieceType){
+                case WKING_INDEX:
+                    result+=king_score[index];
+                    result+=getKingScore(index,pawns,enemyPawns);
+                    break;
+                case BKING_INDEX:
+                    result-=king_score[blackPos];
+                    result-=getKingScore(index,pawns,enemyPawns);
+                    break;
+            }
+            board&=~current;
+            current=board& -board;
+        }
+        return result;
+    }
     public static int evaluateBoard(long board,int pieceType){
         int result=0;
-        long fullBoard=board;
         long current=board& -board;
 
         while(current!=0){
@@ -321,21 +380,27 @@ public class AIBot {
         result+=evaluateBoard(wq,WQUEEN_INDEX);
         result+=evaluateBoard(wn,WKNIGHT_INDEX);
         result+=evaluateBoard(wb,WBISHOP_INDEX);
-        result+=evaluateBoard(wr,WROOK_INDEX);
+        //result+=evaluateBoard(wr,WROOK_INDEX);
         //result+=evaluateBoard(wp,WPAWN_INDEX);
         result+=evaluateBoard(bq,BQUEEN_INDEX);
         result+=evaluateBoard(bn,BKNIGHT_INDEX);
         result+=evaluateBoard(bb,BBISHOP_INDEX);
-        result+=evaluateBoard(br,BROOK_INDEX);
+        //result+=evaluateBoard(br,BROOK_INDEX);
         //result+=evaluateBoard(bp,BPAWN_INDEX);
-        result+=evaluateBoard(wk,WKING_INDEX);
-        result+=evaluateBoard(bk,BKING_INDEX);
+        //result+=evaluateBoard(wk,WKING_INDEX);
+        //result+=evaluateBoard(bk,BKING_INDEX);
 
         //evaluation of pawn boards
         result+=evaluatePawnBoard(wp,WPAWN_INDEX,bp);
         result+=evaluatePawnBoard(bp,BPAWN_INDEX,wp);
 
+        //evaluation of rook boards
+        result+=evaluateRookBoard(wr,WROOK_INDEX,wp,bp);
+        result+=evaluateRookBoard(br,BROOK_INDEX,bp,wp);
 
+        //evaluation of king boards
+        result+=evaluationKingBoard(wk,WKING_INDEX,wp,bp);
+        result+=evaluationKingBoard(bk,BKING_INDEX,bp,wp);
         return color==1?result:-result;
     }
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
