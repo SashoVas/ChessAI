@@ -39,6 +39,14 @@ public class BitBoardMovesGenerator {
             System.out.println("================================");
         }
     }
+    public static int countBits(long mask){
+        int counter=0;
+        while(mask!=0){
+            counter++;
+            mask&=(mask-1);
+        }
+        return counter;
+    }
     public static long perftWithUndo(long[] boards,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int depth,int color,int lastMove){
         if (depth==0){
             return 1;

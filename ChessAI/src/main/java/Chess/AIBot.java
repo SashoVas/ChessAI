@@ -129,6 +129,36 @@ public class AIBot {
     public static long[] isolatedPawnMasks=new long[8];
     public static long[] passedPawnMasksWhite=new long[64];
     public static long[] passedPawnMasksBlack=new long[64];
+    public static final int doublePawnPenalty=-10;
+    public static final int isolatedPawnPenalty=-10;
+    public static final int[] passedPawnsBonus={0, 10, 30, 50, 75, 100, 150, 200};
+
+    public static int getPawnsScore(long pawns,int index,long enemyPawns,int color){
+        int score=0;
+
+        //double pawns
+        long stackedPawnMask=pawns&BitBoardMovesGenerator.FILE_MASKS[index%8];
+        int bitsCount=BitBoardMovesGenerator.countBits(stackedPawnMask);
+        if(bitsCount>1)
+            score+=doublePawnPenalty*bitsCount;
+
+        //isolated pawns
+        if((pawns & isolatedPawnMasks[index%8]) ==0)
+            score+=isolatedPawnPenalty;
+
+        //passed pawns
+        //BitBoardMovesGenerator.printMask(passedPawnMasksWhite[index]);
+        if(color==1 && (passedPawnMasksWhite[index]&enemyPawns)==0){
+            score+=passedPawnsBonus[7-index/8];
+            System.out.println("Passed white: "+passedPawnsBonus[7-index/8]);
+        }
+        else if(color==0 && (passedPawnMasksBlack[index]&enemyPawns)==0){
+            score+=passedPawnsBonus[index/8];
+            System.out.println("Passed black: "+passedPawnsBonus[index/8]);
+
+        }
+        return score;
+    }
 
     public static void generatePawnMasks(){
         //generates the masks for isolated pawns in specific file by or-ing the files to the left and right of it
@@ -138,41 +168,41 @@ public class AIBot {
         isolatedPawnMasks[0]=BitBoardMovesGenerator.FILE_MASKS[1];
         isolatedPawnMasks[7]=BitBoardMovesGenerator.FILE_MASKS[6];
 
-        //generation of white pass pawns masks
-        passedPawnMasksWhite[1]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]|BitBoardMovesGenerator.FILE_MASKS[2];
-        passedPawnMasksWhite[1]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
-        passedPawnMasksWhite[0]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1];
-        passedPawnMasksWhite[0]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
-        passedPawnMasksWhite[7]=BitBoardMovesGenerator.FILE_MASKS[7]|BitBoardMovesGenerator.FILE_MASKS[6];
-        passedPawnMasksWhite[7]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
-        for(int i=1;i<7;i++){
-            passedPawnMasksWhite[i]=passedPawnMasksWhite[1]<<(i-1);
-        }
-        for(int i=8;i<64;i++){
-            passedPawnMasksWhite[i]=passedPawnMasksWhite[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[7-(i/8)]);
-        }
-
         //generation of black pass pawns masks
         passedPawnMasksBlack[1]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]|BitBoardMovesGenerator.FILE_MASKS[2];
-        passedPawnMasksBlack[1]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksBlack[1]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
         passedPawnMasksBlack[0]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1];
-        passedPawnMasksBlack[0]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksBlack[0]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
         passedPawnMasksBlack[7]=BitBoardMovesGenerator.FILE_MASKS[7]|BitBoardMovesGenerator.FILE_MASKS[6];
-        passedPawnMasksBlack[7]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksBlack[7]&=~(BitBoardMovesGenerator.RANK_MASKS[7]);
         for(int i=1;i<7;i++){
             passedPawnMasksBlack[i]=passedPawnMasksBlack[1]<<(i-1);
         }
         for(int i=8;i<64;i++){
-            passedPawnMasksBlack[i]=passedPawnMasksBlack[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[(i/8)]);
+            passedPawnMasksBlack[i]=passedPawnMasksBlack[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[7-(i/8)]);
+        }
+
+        //generation of white pass pawns masks
+        passedPawnMasksWhite[1]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]|BitBoardMovesGenerator.FILE_MASKS[2];
+        passedPawnMasksWhite[1]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksWhite[0]=BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1];
+        passedPawnMasksWhite[0]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        passedPawnMasksWhite[7]=BitBoardMovesGenerator.FILE_MASKS[7]|BitBoardMovesGenerator.FILE_MASKS[6];
+        passedPawnMasksWhite[7]&=~(BitBoardMovesGenerator.RANK_MASKS[0]);
+        for(int i=1;i<7;i++){
+            passedPawnMasksWhite[i]=passedPawnMasksWhite[1]<<(i-1);
+        }
+        for(int i=8;i<64;i++){
+            passedPawnMasksWhite[i]=passedPawnMasksWhite[i-8]&(~BitBoardMovesGenerator.RANK_MASKS[(i/8)]);
         }
 
         //swap orientation
 
         for(int i=0;i<4;i++){
             for(int j=0;j<8;j++){
-                long temp=passedPawnMasksBlack[i*8+j];
-                passedPawnMasksBlack[i*8+j]=passedPawnMasksBlack[56-i*8 +j];
-                passedPawnMasksBlack[56-i*8 +j]=temp;
+                long temp=passedPawnMasksWhite[i*8+j];
+                passedPawnMasksWhite[i*8+j]=passedPawnMasksWhite[56-i*8 +j];
+                passedPawnMasksWhite[56-i*8 +j]=temp;
             }
 
         }
@@ -210,9 +240,34 @@ public class AIBot {
         int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
         return historyMoves[startType][(int)targetIndex];
     }
+    public static int evaluatePawnBoard(long board,int pieceType,long enemyPawns){
+        int result=0;
+        long fullBoard=board;
+        long current=board& -board;
+
+        while(current!=0){
+            result+=pieceValues[pieceType];
+            int index=Long.numberOfTrailingZeros(current);
+            int blackPos=(7-index/8)*8+index%8;
+            switch (pieceType){
+
+                case WPAWN_INDEX:
+                    result+=pawn_score[index];
+                    result+=getPawnsScore(fullBoard,index,enemyPawns,1);
+                    break;
+                case BPAWN_INDEX:
+                    result-=pawn_score[blackPos];
+                    result-=getPawnsScore(fullBoard,index,enemyPawns,0);
+                    break;
+            }
+            board&=~current;
+            current=board& -board;
+        }
+        return result;
+    }
     public static int evaluateBoard(long board,int pieceType){
         int result=0;
-
+        long fullBoard=board;
         long current=board& -board;
 
         while(current!=0){
@@ -240,9 +295,11 @@ public class AIBot {
                     break;
                 case WPAWN_INDEX:
                     result+=pawn_score[index];
+                    //result+=getPawnsScore(fullBoard,index);
                     break;
                 case BPAWN_INDEX:
                     result-=pawn_score[blackPos];
+                    //result-=getPawnsScore(fullBoard,index);
                     break;
                 case WKING_INDEX:
                     result+=king_score[index];
@@ -260,18 +317,25 @@ public class AIBot {
     }
     public static int evaluate (long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         int result=0;
+        // evaluation of non pawn boards
         result+=evaluateBoard(wq,WQUEEN_INDEX);
         result+=evaluateBoard(wn,WKNIGHT_INDEX);
         result+=evaluateBoard(wb,WBISHOP_INDEX);
         result+=evaluateBoard(wr,WROOK_INDEX);
-        result+=evaluateBoard(wp,WPAWN_INDEX);
+        //result+=evaluateBoard(wp,WPAWN_INDEX);
         result+=evaluateBoard(bq,BQUEEN_INDEX);
         result+=evaluateBoard(bn,BKNIGHT_INDEX);
         result+=evaluateBoard(bb,BBISHOP_INDEX);
         result+=evaluateBoard(br,BROOK_INDEX);
-        result+=evaluateBoard(bp,BPAWN_INDEX);
+        //result+=evaluateBoard(bp,BPAWN_INDEX);
         result+=evaluateBoard(wk,WKING_INDEX);
         result+=evaluateBoard(bk,BKING_INDEX);
+
+        //evaluation of pawn boards
+        result+=evaluatePawnBoard(wp,WPAWN_INDEX,bp);
+        result+=evaluatePawnBoard(bp,BPAWN_INDEX,wp);
+
+
         return color==1?result:-result;
     }
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
