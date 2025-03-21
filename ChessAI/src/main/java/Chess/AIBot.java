@@ -135,6 +135,7 @@ public class AIBot {
     public static final int semiOpenFileScore=10;
     public static final int openFileScore=15;
     public static final int kingSafetyBonus=10;
+    public static final int bishopMobilityBonus=5;
     public static int getRookScore(int rookIndex,long pawns,long enemyPawns){
         int score=0;
         if((pawns & BitBoardMovesGenerator.FILE_MASKS[rookIndex%8])==0)
@@ -345,6 +346,34 @@ public class AIBot {
         }
         return result;
     }
+    public static int evaluateBishopMobilityBonus(int bishopIndex,long occupied,long toTakeAndEmpty){
+        long moves=BitBoardMovesGenerator.generateDiagonalMoves(bishopIndex,occupied) & toTakeAndEmpty;
+        return bishopMobilityBonus* BitBoardMovesGenerator.countBits(moves);
+    }
+    public static int evaluateBishopBoard(long board,int pieceType,long occupied,long toTakeAndEmpty){
+        int result=0;
+        long current=board& -board;
+
+        while(current!=0){
+            result+=pieceValues[pieceType];
+            int index=Long.numberOfTrailingZeros(current);
+            int blackPos=(7-index/8)*8+index%8;
+            switch (pieceType){
+                case WBISHOP_INDEX:
+                    result+=bishop_score[index];
+                    result+=evaluateBishopMobilityBonus(index,occupied,toTakeAndEmpty);
+                    break;
+                case BBISHOP_INDEX:
+                    result-=bishop_score[blackPos];
+                    result-=evaluateBishopMobilityBonus(blackPos,occupied,toTakeAndEmpty);
+
+                    break;
+            }
+            board&=~current;
+            current=board& -board;
+        }
+        return result;
+    }
     public static int evaluateBoard(long board,int pieceType){
         int result=0;
         long current=board& -board;
@@ -395,16 +424,19 @@ public class AIBot {
         return result;
     }
     public static int evaluate (long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
+        long white=wk| wq| wn| wb| wr| wp;
+        long black=bk| bq| bn| bb| br| bp;
+        long occupied=black|white;
         int result=0;
         // evaluation of non pawn boards
         result+=evaluateBoard(wq,WQUEEN_INDEX);
         result+=evaluateBoard(wn,WKNIGHT_INDEX);
-        result+=evaluateBoard(wb,WBISHOP_INDEX);
+        //result+=evaluateBoard(wb,WBISHOP_INDEX);
         //result+=evaluateBoard(wr,WROOK_INDEX);
         //result+=evaluateBoard(wp,WPAWN_INDEX);
         result+=evaluateBoard(bq,BQUEEN_INDEX);
         result+=evaluateBoard(bn,BKNIGHT_INDEX);
-        result+=evaluateBoard(bb,BBISHOP_INDEX);
+        //result+=evaluateBoard(bb,BBISHOP_INDEX);
         //result+=evaluateBoard(br,BROOK_INDEX);
         //result+=evaluateBoard(bp,BPAWN_INDEX);
         //result+=evaluateBoard(wk,WKING_INDEX);
@@ -421,6 +453,10 @@ public class AIBot {
         //evaluation of king boards
         result+=evaluationKingBoard(wk,WKING_INDEX,wp,bp);
         result+=evaluationKingBoard(bk,BKING_INDEX,bp,wp);
+        //evaluation of bishop boards
+        result+=evaluateBishopBoard(wb,WBISHOP_INDEX,occupied,~white);
+        result+=evaluateBishopBoard(bb,BBISHOP_INDEX,occupied,~black);
+
         return color==1?result:-result;
     }
     public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){

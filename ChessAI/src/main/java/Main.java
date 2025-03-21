@@ -100,10 +100,11 @@ public class Main {
         //    System.out.println("==========");
         //}
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
+        //BitBoard board=BitBoard.createBoardFromFen("2kr1b1r/3npppp/bq6/p2P4/Q1p1PP2/P1N5/Rp1BN1PP/1R4K1 w - - 0 20");
+        //System.out.println(board.evaluate());
         //int move=board.getBestMoveIterativeDeepening(8);
 
-        //int move=board.getBestMoveIterativeDeepening(8);
+        //int move=board.getBestMoveIterativeDeepening(12);
         //System.out.println(board.getBoardHash());
         //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
         //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
