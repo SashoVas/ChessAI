@@ -88,13 +88,13 @@ public class Main {
        //System.out.println(moves.size());
        //BitBoard.visualizeMoves(moves);
 
-        //UCIProtocol game=new UCIProtocol();
-        //game.startGame();
+        UCIProtocol game=new UCIProtocol();
+        game.startGame();
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //System.out.println(board.perft(6));
 
-        BitBoard board=BitBoard.createBoardFromFen("k7/7p/8/8/8/8/P7/7K w - - 0 1");
-        System.out.println(board.evaluate());
+        //BitBoard board=BitBoard.createBoardFromFen("8/8/1p6/8/2P5/p1K5/k2R2bp/8 b - - 5 55 ");
+        //System.out.println(board.evaluate());
         //for(int i=0;i<63;i++){
         //    BitBoardMovesGenerator.printMask(AIBot.passedPawnMasksBlack[i]);
         //    System.out.println("==========");
@@ -103,11 +103,15 @@ public class Main {
         //BitBoard board=BitBoard.createBoardFromFen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1 ");
         //int move=board.getBestMoveIterativeDeepening(8);
 
-        //int move=board.getBestMoveIterativeDeepening(7);
+        //int move=board.getBestMoveIterativeDeepening(8);
         //System.out.println(board.getBoardHash());
         //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
         //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
         //System.out.println(AIBot.nodes);
+        //System.out.println(BitBoard.toAlgebra(move));
+        //board.makeAMove(move);
+        //System.out.println(board.evaluate());
+
 
         //List<Long>moves=board.generateMovesW();
         //System.out.println(moves);

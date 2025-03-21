@@ -134,6 +134,7 @@ public class AIBot {
     public static final int[] passedPawnsBonus={0, 10, 30, 50, 75, 100, 150, 200};
     public static final int semiOpenFileScore=10;
     public static final int openFileScore=15;
+    public static final int kingSafetyBonus=10;
     public static int getRookScore(int rookIndex,long pawns,long enemyPawns){
         int score=0;
         if((pawns & BitBoardMovesGenerator.FILE_MASKS[rookIndex%8])==0)
@@ -148,6 +149,21 @@ public class AIBot {
             score-=semiOpenFileScore;
         if(((pawns|enemyPawns) & BitBoardMovesGenerator.FILE_MASKS[kingIndex%8])==0)
             score-=openFileScore;
+
+        long moves=0;
+        if(kingIndex>9){
+            moves=BitBoardMovesGenerator.KING_MOVES_MASK<<(kingIndex-9);
+        }
+        else{
+            moves=BitBoardMovesGenerator.KING_MOVES_MASK>>(9-kingIndex);
+        }
+        if(kingIndex%8<4){
+            moves&=~(BitBoardMovesGenerator.FILE_MASKS[6]|BitBoardMovesGenerator.FILE_MASKS[7]);
+        }
+        else{
+            moves&=~(BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]);
+        }
+        score+=BitBoardMovesGenerator.countBits(moves&pawns)*kingSafetyBonus;
         return score;
     }
 
@@ -249,6 +265,10 @@ public class AIBot {
         }
         else if(move==killerMoves[1][ply]){
             return 8000;
+        }
+        //score castle and promotions higher
+        if(MoveUtilities.extractFromCodedMove(move,5)!=0 ||MoveUtilities.extractFromCodedMove(move,3)!=0){
+            return 5000;
         }
         //score moves that were good before
         long startIndex=MoveUtilities.extractFromCodedMove(move,1);
@@ -522,7 +542,7 @@ public class AIBot {
 
         pvLength[ply]=ply;
         //Check if current move is repeated(helps avoid 3-fold repetition)
-        if(detectRepetitions())
+        if(detectRepetitions() && ply!=0)
             return 0;
 
         if(depth==0){
