@@ -104,7 +104,7 @@ public class Main {
         //System.out.println(board.evaluate());
         //int move=board.getBestMoveIterativeDeepening(8);
 
-        //int move=board.getBestMoveIterativeDeepening(12);
+        //int move=board.getBestMoveIterativeDeepening(11);
         //System.out.println(board.getBoardHash());
         //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
         //System.out.println(MoveUtilities.extractFromCodedMove(move,2));

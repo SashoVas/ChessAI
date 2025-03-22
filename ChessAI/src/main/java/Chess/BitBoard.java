@@ -25,6 +25,9 @@ public class BitBoard {
             BitBoardMovesGenerator.FILE_MASKS[i] = 0x0101010101010101L << i;
             BitBoardMovesGenerator.RANK_MASKS[7-i] = 0xFFL << (8 * i);
         }
+        BitBoardMovesGenerator.movesOverTheBoardMaskRight=~(BitBoardMovesGenerator.FILE_MASKS[6]|BitBoardMovesGenerator.FILE_MASKS[7]);
+        BitBoardMovesGenerator.movesOverTheBoardMaskLeft=~(BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]);
+
         ZobristHash.initializeHashes();
         AIBot.generatePawnMasks();
     }

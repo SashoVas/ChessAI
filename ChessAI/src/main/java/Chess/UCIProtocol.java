@@ -25,6 +25,7 @@ public class UCIProtocol {
             }
             else if("ucinewgame".equals(line)){
                 board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+                AIBot.historyPly=0;
             }
             else if(line.startsWith("position")){
                 processPositionCommand(line);

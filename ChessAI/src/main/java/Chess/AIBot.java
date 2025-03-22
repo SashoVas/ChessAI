@@ -52,7 +52,7 @@ public class AIBot {
                     10,  10,  10,  20,  20,  10,  10,  10,
                     5,   5,  10,  20,  20,   5,   5,   5,
                     0,   0,   0,   5,   5,   0,   0,   0,
-                    0,   0,   0, -10, -10,   0,   0,   0,
+                    0,   0,   0, -15, -15,   0,   0,   0,
                     0,   0,   0,   0,   0,   0,   0,   0
             };
 
@@ -365,7 +365,7 @@ public class AIBot {
                     break;
                 case BBISHOP_INDEX:
                     result-=bishop_score[blackPos];
-                    result-=evaluateBishopMobilityBonus(blackPos,occupied,toTakeAndEmpty);
+                    result-=evaluateBishopMobilityBonus(index,occupied,toTakeAndEmpty);
 
                     break;
             }
@@ -542,20 +542,20 @@ public class AIBot {
         }
         return alpha;
     }
-    public static boolean lateMoveReductionCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int move,int fullMovesSearched){
-        long inCheck;
-        long giveCheck;
+    public static boolean lateMoveReductionCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int move,int fullMovesSearched,boolean whiteInCheck,boolean blackInCheck){
+        boolean inCheck;
+        boolean giveCheck;
         if(color==0){
-            inCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
-            giveCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
+            inCheck=blackInCheck;
+            giveCheck=whiteInCheck;
         }
         else{
-            inCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
-            giveCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
+            inCheck=whiteInCheck;
+            giveCheck=blackInCheck;
         }
 
 
-        return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3  && inCheck==0 && giveCheck==0  && MoveUtilities.extractFromCodedMove(move,3)==0;
+        return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3  && !inCheck && !giveCheck  && MoveUtilities.extractFromCodedMove(move,3)==0;
     }
     public static boolean nullMovePruningCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         long inCheck;
@@ -574,6 +574,8 @@ public class AIBot {
         }
         return false;
     }
+    public static final int maxExtensions=6;
+    public static int extensions=0;
     public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         pvLength[ply]=ply;
@@ -653,8 +655,10 @@ public class AIBot {
             long bpc=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
 
             //Check if move is legal
-            if((color==1 && ((BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0))||
-                    (color==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
+            boolean whiteCheck=(BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0;
+            boolean blackCheck=(BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0;
+            if((color==1 && whiteCheck)||
+                    (color==0&& blackCheck)){
                 continue;
             }
 
@@ -680,6 +684,13 @@ public class AIBot {
             history[historyPly]=hash;
             historyPly++;
             int score;
+            //check extensions
+            boolean inExtencion=false;
+            if( extensions<maxExtensions &&((color==1 && blackCheck)||(color==0 && whiteCheck))){
+                depth++;
+                extensions++;
+                inExtencion=true;
+            }
             if(fullMovesSearched==0){
                 score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             }
@@ -687,7 +698,7 @@ public class AIBot {
                 long endPosition=MoveUtilities.extractFromCodedMove(move,2);
                 int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
                 //Late move reduction
-                if( endPosType==-1 && lateMoveReductionCondition(depth,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,color,move,fullMovesSearched)){
+                if( endPosType==-1 && lateMoveReductionCondition(depth,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,color,move,fullMovesSearched,whiteCheck,blackCheck)){
                     //PV search with late move reduction
                     score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
                 }
@@ -706,6 +717,11 @@ public class AIBot {
             hash=oldHash;
             ply--;
             historyPly--;
+            //re increment extensions
+            if( inExtencion) {
+                extensions--;
+                depth--;
+            }
 
             if(score>alpha){
 
@@ -761,6 +777,7 @@ public class AIBot {
         for(int current_depth=1;current_depth<=depth;current_depth++){
             //nodes=0;
             followPv=true;
+            extensions=0;
             score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
             if ((score <= alpha) || (score >= beta)) {
                 alpha = -infinity;
