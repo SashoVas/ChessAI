@@ -424,6 +424,9 @@ public class AIBot {
         return result;
     }
     public static int evaluate (long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
+        return Evaluation.evaluate(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,color);
+    }
+    public static int evaluateOld (long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         long white=wk| wq| wn| wb| wr| wp;
         long black=bk| bq| bn| bb| br| bp;
         long occupied=black|white;
@@ -555,7 +558,7 @@ public class AIBot {
         }
 
 
-        return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3  && !inCheck && !giveCheck  && MoveUtilities.extractFromCodedMove(move,3)==0;
+        return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3   && MoveUtilities.extractFromCodedMove(move,3)==0;
     }
     public static boolean nullMovePruningCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         long inCheck;
@@ -755,7 +758,11 @@ public class AIBot {
 
         }
         if(isMate){
-            return -mateVal +ply;
+            if((color==1 && (BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0)||
+                    (color==0&& (BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0)){
+                return -mateVal +ply;
+            }
+            return 0;
         }
         //tt.put(oldHash,alpha);
         tt.addToTable(hash,alpha,depth,nodeType);

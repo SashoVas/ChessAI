@@ -30,6 +30,7 @@ public class BitBoard {
 
         ZobristHash.initializeHashes();
         AIBot.generatePawnMasks();
+        AIBot.tt.clear();
     }
     public long perftWithUndo(int depth){
         long[]arr={wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp};

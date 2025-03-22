@@ -47,6 +47,7 @@ public class BitBoardMovesGenerator {
         }
         return counter;
     }
+    public static int[] mappings={11,1,2,4,3,9,12,5,6,8,7,10};
     public static long perftWithUndo(long[] boards,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int depth,int color,int lastMove){
         if (depth==0){
             return 1;
@@ -59,8 +60,9 @@ public class BitBoardMovesGenerator {
             moves=generateMovesB(boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11],ckb,cqb,lastMove);
         }
         long movesCount=0;
+        boolean[] changedBoards={false,false,false,false,false,false,false,false,false,false,false,false};
+        long newBoard;
 
-        int[]mappings={11,1,2,4,3,9,12,5,6,8,7,10};
         for(int move:moves){
             int endIndex=MoveUtilities.extractFromCodedMove(move,2);
             int captureType=getPieceType(endIndex,boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11]);
@@ -83,41 +85,30 @@ public class BitBoardMovesGenerator {
             //long[] boardCopy=boards.clone();
             //Make the move
             for(int i=0;i<12;i++){
-                boards[i]=makeAMoveOnBoard(boards[i],move,mappings[i]);
+                newBoard=makeAMoveOnBoard(boards[i],move,mappings[i]);
+                if(boards[i]!=newBoard) {
+                    changedBoards[i] = true;
+                    boards[i] = newBoard;
+                }
             }
 
             //Check if move is legal
             if((color==1 && ((attackedByBlack(  boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11])&boards[0])!=0))||
                     (color==0&& ((attackedByWhite(  boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11])&boards[6])!=0))){
                 for(int i=0;i<12;i++){
+                    if(!changedBoards[i])
+                        continue;
                     boards[i]=undoMoveOnBoard(boards[i],move,mappings[i],captureType!=-1?mappings[captureType]:-1);
                 }
-                //for(int i=0;i<12;i++){
-                //    if(boards[i]!=boardCopy[i]){
-                //        String moveAlg=BitBoard.toAlgebra(move);
-                //        String lastMoveAlg=BitBoard.toAlgebra(lastMove);
-                //        long a=makeAMoveOnBoard(boardCopy[i],move,mappings[i]);
-                //        long b=undoMoveOnBoard(a,move,mappings[i],captureType!=-1?mappings[captureType]:-1);
-                //        int c=3;
-                //    }
-                //}
                 continue;
             }
 
             movesCount+=perftWithUndo(boards,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
             for(int i=0;i<12;i++){
+                if(!changedBoards[i])
+                    continue;
                 boards[i]=undoMoveOnBoard(boards[i],move,mappings[i],captureType!=-1?mappings[captureType]:-1);
             }
-            //for(int i=0;i<12;i++){
-            //    if(boards[i]!=boardCopy[i]){
-            //        String moveAlg=BitBoard.toAlgebra(move);
-            //        String lastMoveAlg=BitBoard.toAlgebra(lastMove);
-            //        long expected=boardCopy[i];
-            //        long a=makeAMoveOnBoard(expected,move,mappings[i]);
-            //        long b=undoMoveOnBoard(a,move,mappings[i],captureType!=-1?mappings[captureType]:-1);
-            //        int c=3;
-            //    }
-            //}
         }
         return movesCount;
     }
@@ -164,12 +155,13 @@ public class BitBoardMovesGenerator {
             //if(move<10000 || move>=1000000){
                 //Castle
                 long start=MoveUtilities.extractFromCodedMove(move,1);
-                if(((1L<<start)&wk)!=0){ckwc=false;cqwc=false;}
-                if(((1L<<start)&bk)!=0){ckbc=false;cqbc=false;}
-                if(((1L<<start)&wr &(1L<<63))!=0){ckwc=false;}
-                if(((1L<<start)&wr &(1L<<56))!=0){cqwc=false;}
-                if(((1L<<start)&br &(1L<<7))!=0){ckbc=false;}
-                if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
+                long currentIndex=(1L<<start);
+                if((currentIndex & wk)!=0){ckwc=false;cqwc=false;}
+                if((currentIndex & bk)!=0){ckbc=false;cqbc=false;}
+                if((currentIndex & wr &whiteRooksPositions[1])!=0){ckwc=false;}
+                if((currentIndex & wr &whiteRooksPositions[0])!=0){cqwc=false;}
+                if((currentIndex & br &blackRooksPositions[1])!=0){ckbc=false;}
+                if((currentIndex & br &blackRooksPositions[0])!=0){cqbc=false;}
             }
 
             //hash move
@@ -680,7 +672,6 @@ public class BitBoardMovesGenerator {
 
         }
     }
-
     public static void generateKingMoves(long king,long notMyColorToTake,List<Integer> result){
         //TODO: Test performance with function as parameter
         long i=king& -king;
@@ -696,10 +687,10 @@ public class BitBoardMovesGenerator {
                 moves=KING_MOVES_MASK>>(9-bishopIndex);
             }
             if(bishopIndex%8<4){
-                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notMyColorToTake;
+                moves&=movesOverTheBoardMaskRight&notMyColorToTake;
             }
             else{
-                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notMyColorToTake;
+                moves&=movesOverTheBoardMaskLeft&notMyColorToTake;
             }
             j=moves& -moves;
             while(j!=0){
@@ -730,10 +721,10 @@ public class BitBoardMovesGenerator {
             }
             //printMask(moves);
             if(bishopIndex%8<4){
-                moves&=~(FILE_MASKS[6]|FILE_MASKS[7])&notMyColorToTake;
+                moves&=movesOverTheBoardMaskRight&notMyColorToTake;
             }
             else{
-                moves&=~(FILE_MASKS[0]|FILE_MASKS[1])&notMyColorToTake;
+                moves&=movesOverTheBoardMaskLeft&notMyColorToTake;
             }
             j=moves& -moves;
             while(j!=0){
@@ -820,11 +811,11 @@ public class BitBoardMovesGenerator {
     }
     public static void generateEnPassantMovesB(long pawns,long toTake,int lastMove,List<Integer> result){
         int start=MoveUtilities.extractFromCodedMove(lastMove,1);
-        long end=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int end=MoveUtilities.extractFromCodedMove(lastMove,2);
         if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6){
             return;
         }
-        int file=(int) (start%8);
+        int file= start%8;
 
         //en passant right
         long moves=(pawns>>1) & toTake & RANK_MASKS[3] & ~FILE_MASKS[7] & FILE_MASKS[file];
@@ -843,12 +834,12 @@ public class BitBoardMovesGenerator {
         }
     }
     public static void generateEnPassantMovesW(long pawns,long toTake,int lastMove,List<Integer> result){
-        long start=MoveUtilities.extractFromCodedMove(lastMove,1);
-        long end=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int start=MoveUtilities.extractFromCodedMove(lastMove,1);
+        int end=MoveUtilities.extractFromCodedMove(lastMove,2);
         if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=1){
             return ;
         }
-        int file=(int) (start%8);
+        int file=start%8;
         //en passant right
         long moves=(pawns<<1) & toTake & RANK_MASKS[4] & ~FILE_MASKS[0] & FILE_MASKS[file];
         if(moves!=0){

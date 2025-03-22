@@ -3,6 +3,8 @@ import Chess.*;
 import Chess.StandardImplementation.Pieces.Board;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static boolean runTest(int depth,int expected,String fen,int color){
@@ -88,8 +90,8 @@ public class Main {
        //System.out.println(moves.size());
        //BitBoard.visualizeMoves(moves);
 
-        UCIProtocol game=new UCIProtocol();
-        game.startGame();
+        //UCIProtocol game=new UCIProtocol();
+        //game.startGame();
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //System.out.println(board.perft(6));
 
@@ -100,18 +102,18 @@ public class Main {
         //    System.out.println("==========");
         //}
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-        //BitBoard board=BitBoard.createBoardFromFen("2kr1b1r/3npppp/bq6/p2P4/Q1p1PP2/P1N5/Rp1BN1PP/1R4K1 w - - 0 20");
+        BitBoard board=BitBoard.createBoardFromFen("6k1/pp6/1p4pp/8/8/8/3q4/K7 b - - 3 41 ");
         //System.out.println(board.evaluate());
         //int move=board.getBestMoveIterativeDeepening(8);
 
-        //int move=board.getBestMoveIterativeDeepening(11);
-        //System.out.println(board.getBoardHash());
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
-        //System.out.println(AIBot.nodes);
-        //System.out.println(BitBoard.toAlgebra(move));
-        //board.makeAMove(move);
-        //System.out.println(board.evaluate());
+        int move=board.getBestMoveIterativeDeepening(8);
+        System.out.println(board.getBoardHash());
+        System.out.println(MoveUtilities.extractFromCodedMove(move,1));
+        System.out.println(MoveUtilities.extractFromCodedMove(move,2));
+        System.out.println(AIBot.nodes);
+        System.out.println(BitBoard.toAlgebra(move));
+        board.makeAMove(move);
+        System.out.println(board.evaluate());
 
 
         //List<Long>moves=board.generateMovesW();
