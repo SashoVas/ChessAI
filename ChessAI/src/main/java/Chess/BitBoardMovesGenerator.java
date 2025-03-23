@@ -64,7 +64,7 @@ public class BitBoardMovesGenerator {
         long newBoard;
 
         for(int move:moves){
-            int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+            int endIndex=MoveUtilities.extractEnd(move);
             int captureType=getPieceType(endIndex,boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11]);
 
             //Update castle rules
@@ -72,9 +72,9 @@ public class BitBoardMovesGenerator {
             boolean cqwc=cqw;
             boolean ckbc=ckb;
             boolean cqbc=cqb;
-            if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
+            if(!MoveUtilities.isPromotion(move) && !MoveUtilities.isEnPassant(move)){
                 //Castle
-                long start=MoveUtilities.extractFromCodedMove(move,1);
+                long start=MoveUtilities.extractStart(move);
                 if(((1L<<start)&boards[0])!=0){ckwc=false;cqwc=false;}
                 if(((1L<<start)&boards[6])!=0){ckbc=false;cqbc=false;}
                 if(((1L<<start)&boards[4] &(1L<<63))!=0){ckwc=false;}
@@ -151,10 +151,10 @@ public class BitBoardMovesGenerator {
             boolean cqwc=cqw;
             boolean ckbc=ckb;
             boolean cqbc=cqb;
-            if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
+            if(!MoveUtilities.isPromotion(move) && !MoveUtilities.isEnPassant(move)){
             //if(move<10000 || move>=1000000){
                 //Castle
-                long start=MoveUtilities.extractFromCodedMove(move,1);
+                long start=MoveUtilities.extractStart(move);
                 long currentIndex=(1L<<start);
                 if((currentIndex & wk)!=0){ckwc=false;cqwc=false;}
                 if((currentIndex & bk)!=0){ckbc=false;cqbc=false;}
@@ -501,23 +501,23 @@ public class BitBoardMovesGenerator {
         return (diagonal & DIAGONALS_MASKS[row+col]) | (antiDiagonal & ANTI_DIAGONALS_MASKS[row +7- col]);
     }
     public static long undoMoveOnBoard(long board,int move,int pieceBoard,int capturePiece){
-        long start=MoveUtilities.extractFromCodedMove(move,1);
-        long end=MoveUtilities.extractFromCodedMove(move,2);
-        if(MoveUtilities.extractFromCodedMove(move,3)!=0){
+        long start=MoveUtilities.extractStart(move);
+        long end=MoveUtilities.extractEnd(move);
+        if(MoveUtilities.isPromotion(move)){
             //Promotion
             if(((board>>>end)&1)==1)
                 board&=~(1L<<end);
             if(capturePiece==pieceBoard){
                 board|=(1L<<end);
             }
-            long promotionPiece=MoveUtilities.extractFromCodedMove(move,3);
+            long promotionPiece=MoveUtilities.extractPromotion(move);
             if(promotionPiece<5 && pieceBoard==9)
                 board|=(1L<<start);
             else if(promotionPiece>=5 && pieceBoard==10)
                 board|=(1L<<start);
 
         }
-        else if(MoveUtilities.extractFromCodedMove(move,4)!=0 && (pieceBoard==10||pieceBoard==9)){
+        else if(MoveUtilities.isEnPassant(move) && (pieceBoard==10||pieceBoard==9)){
             //EnPassant
             if(((board>>>end)&1)==1){
                 board&=~(1L<<end);
@@ -535,7 +535,7 @@ public class BitBoardMovesGenerator {
                 board|=(1L<<toRemove);
             //}
         }
-        else if(MoveUtilities.extractFromCodedMove(move,5)!=0 &&(pieceBoard==3 ||pieceBoard==7||pieceBoard==12||pieceBoard==11)){
+        else if(MoveUtilities.isCastle(move) && (pieceBoard==3 ||pieceBoard==7||pieceBoard==12||pieceBoard==11)){
             //Castle
             if(((board>>>end)&1)==1){
                 board&=~(1L<<end);
@@ -571,9 +571,9 @@ public class BitBoardMovesGenerator {
     }
     public static long makeAMoveOnBoard(long board,int move,int pieceBoard){
 
-        long start=MoveUtilities.extractFromCodedMove(move,1);
-        long end=MoveUtilities.extractFromCodedMove(move,2);
-        if(MoveUtilities.extractFromCodedMove(move,3)!=0){
+        long start=MoveUtilities.extractStart(move);
+        long end=MoveUtilities.extractEnd(move);
+        if(MoveUtilities.isPromotion(move)){
             //Promotion
             if(((board>>>start)&1)==1){
                 board&=~(1L<<start);
@@ -581,12 +581,12 @@ public class BitBoardMovesGenerator {
             else{
                 board&=~(1L<<end);
             }
-            long promotionPiece=MoveUtilities.extractFromCodedMove(move,3);
+            long promotionPiece=MoveUtilities.extractPromotion(move);
             if(promotionPiece==pieceBoard){
                 board|=(1L<<end);
             }
         }
-        else if(MoveUtilities.extractFromCodedMove(move,4)!=0 && (pieceBoard==10||pieceBoard==9)){
+        else if(MoveUtilities.isEnPassant(move) && (pieceBoard==10||pieceBoard==9)){
             //EnPassant
             if(((board>>>start)&1)==1){
                 board&=~(1L<<start);
@@ -603,7 +603,7 @@ public class BitBoardMovesGenerator {
                 board&=~(1L<<toRemove);
             }
         }
-        else if(MoveUtilities.extractFromCodedMove(move,5)!=0 &&(pieceBoard==3 ||pieceBoard==7||pieceBoard==12||pieceBoard==11)){
+        else if(MoveUtilities.isCastle(move) &&(pieceBoard==3 ||pieceBoard==7||pieceBoard==12||pieceBoard==11)){
             //Castle
             if(((board>>>start)&1)==1){
                 board&=~(1L<<start);
@@ -800,8 +800,8 @@ public class BitBoardMovesGenerator {
         }
     }
     public static int getEnPassantIndex(int lastMove,int color){
-        int start=MoveUtilities.extractFromCodedMove(lastMove,1);
-        long end=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int start=MoveUtilities.extractStart(lastMove);
+        long end=MoveUtilities.extractEnd(lastMove);
         if(color==1 && (start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6))
             return -1;
         else if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=1)
@@ -810,8 +810,8 @@ public class BitBoardMovesGenerator {
         return start;
     }
     public static void generateEnPassantMovesB(long pawns,long toTake,int lastMove,List<Integer> result){
-        int start=MoveUtilities.extractFromCodedMove(lastMove,1);
-        int end=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int start=MoveUtilities.extractStart(lastMove);
+        int end=MoveUtilities.extractEnd(lastMove);
         if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=6){
             return;
         }
@@ -834,8 +834,8 @@ public class BitBoardMovesGenerator {
         }
     }
     public static void generateEnPassantMovesW(long pawns,long toTake,int lastMove,List<Integer> result){
-        int start=MoveUtilities.extractFromCodedMove(lastMove,1);
-        int end=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int start=MoveUtilities.extractStart(lastMove);
+        int end=MoveUtilities.extractEnd(lastMove);
         if(start%8!=end%8 ||Math.abs(start/8-end/8)!=2 ||start/8!=1){
             return ;
         }

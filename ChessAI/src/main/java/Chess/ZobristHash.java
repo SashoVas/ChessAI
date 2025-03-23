@@ -72,7 +72,7 @@ public class ZobristHash {
         if(cqb)hash^=castleHash[3];
 
         //En passant Hashing
-        int lastPieceIndex=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastPieceIndex=MoveUtilities.extractEnd(lastMove);
         int lastPieceType=BitBoardMovesGenerator.getPieceType(lastPieceIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         int enPassantIndex=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
         if((lastPieceType==AIBot.WPAWN_INDEX || lastPieceType==AIBot.BPAWN_INDEX) && enPassantIndex!=-1){
@@ -103,9 +103,9 @@ public class ZobristHash {
         return -1;
     }
     public static long hashEnPassantRights(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
-        int startIndex=MoveUtilities.extractFromCodedMove(move,1);
+        int startIndex=MoveUtilities.extractStart(move);
         int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
-        int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+        int endIndex=MoveUtilities.extractEnd(move);
         int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         if(startType==AIBot.WPAWN_INDEX ||startType==AIBot.BPAWN_INDEX){
             int currentEnpassant=BitBoardMovesGenerator.getEnPassantIndex(move,color);
@@ -113,7 +113,7 @@ public class ZobristHash {
                 hash^=enpassantHash[currentEnpassant];
             }
         }
-        int lastEnd=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastEnd=MoveUtilities.extractEnd(lastMove);
         int lastStartType=BitBoardMovesGenerator.getPieceType(lastEnd,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         if(lastStartType==AIBot.WPAWN_INDEX ||lastStartType==AIBot.BPAWN_INDEX) {
             int oldEnpassant=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
@@ -124,9 +124,9 @@ public class ZobristHash {
         return hash;
     }
     public static long hashMove(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean oldCkw,boolean oldCqw,boolean oldCkb,boolean oldCqb,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color){
-        int startIndex=MoveUtilities.extractFromCodedMove(move,1);
+        int startIndex=MoveUtilities.extractStart(move);
         int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
-        int endIndex=MoveUtilities.extractFromCodedMove(move,2);
+        int endIndex=MoveUtilities.extractEnd(move);
         int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
 
         //Turn swap hash
@@ -134,7 +134,7 @@ public class ZobristHash {
 
         //Movement hash
         hash^=pieceHash[startType][startIndex];
-        int promotionPiece=MoveUtilities.extractFromCodedMove(move,3);
+        int promotionPiece=MoveUtilities.extractPromotion(move);
         if(promotionPiece!=0){
             hash ^= pieceHash[promotionPieceIndexToPieceIndex(promotionPiece)][endIndex];
         }
@@ -160,7 +160,7 @@ public class ZobristHash {
                 hash^=enpassantHash[currentEnpassant];
             }
         }
-        int lastEnd=MoveUtilities.extractFromCodedMove(lastMove,2);
+        int lastEnd=MoveUtilities.extractEnd(lastMove);
         int lastStartType=BitBoardMovesGenerator.getPieceType(lastEnd,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         if(lastStartType==AIBot.WPAWN_INDEX ||lastStartType==AIBot.BPAWN_INDEX) {
             int oldEnpassant=BitBoardMovesGenerator.getEnPassantIndex(lastMove,1-color);
@@ -170,7 +170,7 @@ public class ZobristHash {
         }
 
         //En passant
-        if(MoveUtilities.extractFromCodedMove(move,4)!=0){
+        if(MoveUtilities.isEnPassant(move)){
             int captureIndex;
             if(color==1)
                 captureIndex=endIndex+8;
@@ -180,7 +180,7 @@ public class ZobristHash {
             hash^=pieceHash[capturePieceType][captureIndex];
         }
         //Castle
-        if(MoveUtilities.extractFromCodedMove(move,5)!=0){
+        if(MoveUtilities.isCastle(move)){
             int rookStart;
             int rookEnd;
             if(startIndex>endIndex){

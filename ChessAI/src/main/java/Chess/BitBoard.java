@@ -1,11 +1,7 @@
 package Chess;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Scanner;
-import java.util.function.Function;
 
 public class BitBoard {
     public static final String defaultFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -29,7 +25,7 @@ public class BitBoard {
         BitBoardMovesGenerator.movesOverTheBoardMaskLeft=~(BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]);
 
         ZobristHash.initializeHashes();
-        AIBot.generatePawnMasks();
+        BoardEvaluation.generatePawnMasks();
         AIBot.tt.clear();
     }
     public long perftWithUndo(int depth){
@@ -48,10 +44,10 @@ public class BitBoard {
             moves=generateMovesB();
         }
         moves.sort((a,b)-> Integer.compare(
-                AIBot.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
-                AIBot.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
+                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
+                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
         for(int move:moves){
-            System.out.println(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+            System.out.println(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
         }
         return moves;
 
@@ -66,16 +62,16 @@ public class BitBoard {
         }
         List<Integer>result=new ArrayList<>();
         for(int move:moves){
-            result.add(AIBot.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+            result.add(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
         }
         return result;
     }
 
     public static String toAlgebra(int move){
         String result="";
-        long start=MoveUtilities.extractFromCodedMove(move,1);
-        long end=MoveUtilities.extractFromCodedMove(move,2);
-        long promotion=MoveUtilities.extractFromCodedMove(move,3);
+        long start=MoveUtilities.extractStart(move);
+        long end=MoveUtilities.extractEnd(move);
+        long promotion=MoveUtilities.extractPromotion(move);
         result=""+(char)('a'+start%8)+(8-start/8)+(char)('a'+end%8)+(8-end/8);
         result+=(promotion==0?"":BitBoardMovesGenerator.promotionToAlgebra((int)promotion));
         return result;
@@ -92,10 +88,10 @@ public class BitBoard {
             moves=generateMovesB();
         }
         for(int moveCode:moves){
-            long codeStart=MoveUtilities.extractFromCodedMove(moveCode,1);
-            long codeEnd=MoveUtilities.extractFromCodedMove(moveCode,2);
+            long codeStart=MoveUtilities.extractStart(moveCode);
+            long codeEnd=MoveUtilities.extractEnd(moveCode);
             if(codeStart==moveStart&&codeEnd==moveEnd){
-                long promotionPiece=MoveUtilities.extractFromCodedMove(moveCode,3);
+                long promotionPiece=MoveUtilities.extractPromotion(moveCode);
                 if(isPromotion && promotionPiece!=0 && move.toLowerCase().charAt(4)==BitBoardMovesGenerator.promotionToAlgebra((int)promotionPiece).toLowerCase().charAt(0)){
                     return moveCode;
                 }
@@ -121,7 +117,7 @@ public class BitBoard {
         return AIBot.getBestMoveIterativeDeepening(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
     public int evaluate(){
-        return AIBot.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);
+        return BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);
     }
     public long perft(int depth){
         BitBoardMovesGenerator.hash=getBoardHash();
@@ -155,9 +151,9 @@ public class BitBoard {
                 (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
             return -1;
         }
-        if(MoveUtilities.extractFromCodedMove(move,3)==0 && MoveUtilities.extractFromCodedMove(move,4)==0){
+        if(!MoveUtilities.isPromotion(move) && !MoveUtilities.isEnPassant(move)){
             //Castle
-            long start=MoveUtilities.extractFromCodedMove(move,1);
+            long start=MoveUtilities.extractStart(move);
             if(((1L<<start)&wk)!=0){ckw=false;cqw=false;}
             if(((1L<<start)&bk)!=0){ckb=false;cqb=false;}
             if(((1L<<start)&wr &(1L<<63))!=0){ckw=false;}

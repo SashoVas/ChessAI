@@ -9,9 +9,9 @@ public class TranspositionTable {
     Map<Long, TranspositionTableEntry> tt=new HashMap<>(1000000);
     public void addToTable(long hash,int score,int depth,int type){
         //Save score of mate with true distance to mate
-        if(score<-AIBot.mateScore)
+        if(score<-AIBot.MATE_SCORE)
             score-=AIBot.ply;
-        if(score>AIBot.mateScore)
+        if(score>AIBot.MATE_SCORE)
             score+=AIBot.ply;
 
         tt.put(hash,new TranspositionTableEntry(score,depth,type));
@@ -22,17 +22,17 @@ public class TranspositionTable {
         if (entry != null && entry.depth >= depth) {
             int score=entry.score;
             //Adjust mating score to be at true distance to mate
-            if(score<-AIBot.mateScore)
+            if(score<-AIBot.MATE_SCORE)
                 score+=AIBot.ply;
-            if(score>AIBot.mateScore)
+            if(score>AIBot.MATE_SCORE)
                 score-=AIBot.ply;
 
-            if (entry.type == AIBot.exactBoundType) return score;
-            if (entry.type == AIBot.lowerBoundType && score<=alpha) return alpha ;
-            else if (entry.type == AIBot.upperBoundType && score>=beta) return beta ;
+            if (entry.type == AIBot.EXACT_BOUND_TYPE) return score;
+            if (entry.type == AIBot.LOWER_BOUND_TYPE && score<=alpha) return alpha ;
+            else if (entry.type == AIBot.UPPER_BOUND_TYPE && score>=beta) return beta ;
         }
         //throw new InternalError();
-        return AIBot.invalidValue;
+        return AIBot.INVALID_VALUE;
     }
     public boolean containsKey(long hash){
         return tt.containsKey(hash);

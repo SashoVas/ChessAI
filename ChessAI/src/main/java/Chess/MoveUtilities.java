@@ -33,21 +33,23 @@ public class MoveUtilities {
         }
         return result;
     }
-    public static int extractFromCodedMove(int code,int toReturn){
 
-        if (toReturn==1){
-            return code&FIRST_FIVE_BITS;
-        }
-        if (toReturn==2){
-            return (code>>6)&FIRST_FIVE_BITS;
-        }
-        if (toReturn==3){
-            return (code>>15&FIRST_FIVE_BITS);
-        }
-        if (toReturn==4){
-            return (code>>12)&1;
-        }
-        return (code>>13)&1;
-
+    public static boolean isPromotion(int code){
+        return (code>>15&FIRST_FIVE_BITS)!=0;
+    }
+    public static boolean isEnPassant(int code){
+        return ((code>>12)&1)!=0;
+    }
+    public static boolean isCastle(int code){
+        return ((code>>13)&1)!=0;
+    }
+    public static int extractStart(int code){
+        return code&FIRST_FIVE_BITS;
+    }
+    public static int extractEnd(int code){
+        return (code>>6)&FIRST_FIVE_BITS;
+    }
+    public static int extractPromotion(int code){
+        return (code>>15&FIRST_FIVE_BITS);
     }
 }
