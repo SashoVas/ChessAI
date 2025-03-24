@@ -42,7 +42,7 @@ public class AIBot {
     public static final int MAX_EXTENSIONS=6;
     public static int extensions=0;
     public static final int INVALID_MOVE=-700000;
-    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int lastMove){
 
         nodes++;
         //Prune
@@ -54,25 +54,19 @@ public class AIBot {
             alpha=eval;
         }
 
-        long fullBoard=wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp;
         List<Integer> moves;
-        if(color==1){
-            moves=BitBoardMovesGenerator.generateMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,lastMove);
-        }
-        else{
-            moves=BitBoardMovesGenerator.generateMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckb,cqb,lastMove);
-        }
+        if(color==1)
+            moves=BitBoardMovesGenerator.generateAttackMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,lastMove);
+
+        else
+            moves=BitBoardMovesGenerator.generateAttackMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,lastMove);
+
 
         moves.sort((a,b)-> Integer.compare(
                 MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
                 MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
         for(int move:moves){
-            //Only captures
-            long endPosition=MoveUtilities.extractEnd(move);
-            if(((1L<<endPosition)&fullBoard)==0){
-                //break;
-                continue;
-            }
+
             //Make the move
             long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
             long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
@@ -92,26 +86,10 @@ public class AIBot {
                     (color==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
                 continue;
             }
-
-            //Update castle rules
-            boolean ckwc=ckw;
-            boolean cqwc=cqw;
-            boolean ckbc=ckb;
-            boolean cqbc=cqb;
-            if(!MoveUtilities.isPromotion(move) && !MoveUtilities.isEnPassant(move)){
-                //Castle
-                long start=MoveUtilities.extractStart(move);
-                if(((1L<<start)&wk)!=0){ckwc=false;cqwc=false;}
-                if(((1L<<start)&bk)!=0){ckbc=false;cqbc=false;}
-                if(((1L<<start)&wr &(1L<<63))!=0){ckwc=false;}
-                if(((1L<<start)&wr &(1L<<56))!=0){cqwc=false;}
-                if(((1L<<start)&br &(1L<<7))!=0){ckbc=false;}
-                if(((1L<<start)&br &(1L<<0))!=0){cqbc=false;}
-            }
             ply++;
             history[historyPly]=hash;
             historyPly++;
-            int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
+            int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,1-color,move);
             ply--;
             historyPly--;
 
@@ -125,30 +103,15 @@ public class AIBot {
         }
         return alpha;
     }
-    public static boolean lateMoveReductionCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int move,int fullMovesSearched,boolean whiteInCheck,boolean blackInCheck){
-        boolean inCheck;
-        boolean giveCheck;
-        if(color==0){
-            inCheck=blackInCheck;
-            giveCheck=whiteInCheck;
-        }
-        else{
-            inCheck=whiteInCheck;
-            giveCheck=blackInCheck;
-        }
-
-
+    public static boolean lateMoveReductionCondition(int depth,int move,int fullMovesSearched){
         return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3   && !MoveUtilities.isPromotion(move);
     }
     public static boolean nullMovePruningCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
-        long inCheck;
-        if(color==0){
-            inCheck=BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk;
-        }
-        else{
-            inCheck=BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk;
-        }
-        return inCheck==0 && depth>=3 && ply>0;
+        if(color==0)
+            return depth>=3 && ply>0 && (BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)==0;
+        else
+            return depth>=3 && ply>0 && (BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)==0;
+
     }
     public static boolean detectRepetitions(){
         for(int i=historyPly-2;i>=0;i--){
@@ -171,8 +134,6 @@ public class AIBot {
             ply--;
             historyPly--;
             if(score>=beta){
-                //tt.put(oldHash^depthHash,beta);
-                //tt.addToTable(hash,beta,depth,upperBoundType);
                 return true;
             }
         }
@@ -236,7 +197,7 @@ public class AIBot {
             long endPosition=MoveUtilities.extractEnd(move);
             int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
             //Late move reduction
-            if( endPosType==-1 && lateMoveReductionCondition(depth,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,color,move,fullMovesSearched,whiteCheck,blackCheck)){
+            if( endPosType==-1 && lateMoveReductionCondition(depth,move,fullMovesSearched)){
                 //PV search with late move reduction
                 score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             }
@@ -270,7 +231,7 @@ public class AIBot {
 
         //Search the captures, so that we don't blunder pieces
         if(depth==0)
-            return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove);
+            return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
 
         nodes++;
 

@@ -9,8 +9,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        UCIProtocol game=new UCIProtocol();
-        game.startGame();
+        //UCIProtocol game=new UCIProtocol();
+        //game.startGame();
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //System.out.println(board.perft(6));
 
@@ -20,19 +20,19 @@ public class Main {
         //    BitBoardMovesGenerator.printMask(AIBot.passedPawnMasksBlack[i]);
         //    System.out.println("==========");
         //}
-        //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
         //BitBoard board=BitBoard.createBoardFromFen("6k1/pp6/1p4pp/8/8/8/3q4/K7 b - - 3 41 ");
         //System.out.println(board.evaluate());
         //int move=board.getBestMoveIterativeDeepening(8);
 
-        //int move=board.getBestMoveIterativeDeepening(8);
-        //System.out.println(board.getBoardHash());
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,1));
-        //System.out.println(MoveUtilities.extractFromCodedMove(move,2));
-        //System.out.println(AIBot.nodes);
-        //System.out.println(BitBoard.toAlgebra(move));
-        //board.makeAMove(move);
-        //System.out.println(board.evaluate());
+       int move=board.getBestMoveIterativeDeepening(10);
+       System.out.println(board.getBoardHash());
+       System.out.println(MoveUtilities.extractStart(move));
+       System.out.println(MoveUtilities.extractEnd(move));
+       System.out.println(AIBot.nodes);
+       System.out.println(BitBoard.toAlgebra(move));
+       board.makeAMove(move);
+       System.out.println(board.evaluate());
 
 
     }

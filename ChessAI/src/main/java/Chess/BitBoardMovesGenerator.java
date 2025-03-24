@@ -294,6 +294,41 @@ public class BitBoardMovesGenerator {
         }
         return result;
     }
+    public static List<Integer> generateAttackMovesW(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int lastMove){
+        //Optimize using int instead of string
+        long empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
+        long blackToTake=bq|bn|bb|br|bp;
+        long occupied=~empty;
+
+        List<Integer> moves=new ArrayList<>(30);
+        generatePawnMovesW(wp,empty,blackToTake,moves,true);
+        //generateEnPassantMovesW(wp,bp,lastMove,moves);
+        generateBishopMoves(wb,blackToTake,occupied,moves);
+        generateQueenMoves(wq,blackToTake,occupied,moves);
+        generateRookMoves(wr,blackToTake,occupied,moves);
+        generateKnightsMoves(wn,blackToTake,moves);
+        generateKingMoves(wk,blackToTake,moves);
+
+        return moves;
+    }
+    public static List<Integer> generateAttackMovesB(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int lastMove){
+        //Optimize using int instead of string
+        long empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
+        long whiteToTake=wq|wn|wb|wr|wp;
+        long occupied=~empty;
+
+        List<Integer> moves=new ArrayList<>(30);
+        generatePawnMovesB(bp,empty,whiteToTake,moves,true);
+        //generateEnPassantMovesB(bp,wp,lastMove,moves);
+        generateBishopMoves(bb,whiteToTake,occupied,moves);
+        generateQueenMoves(bq,whiteToTake,occupied,moves);
+        generateRookMoves(br,whiteToTake,occupied,moves);
+        generateKnightsMoves(bn,whiteToTake,moves);
+        generateKingMoves(bk,whiteToTake,moves);
+
+        return moves;
+    }
+
     public static List<Integer> generateMovesW(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ck,boolean cq,int lastMove){
         //Optimize using int instead of string
         long empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
@@ -302,15 +337,17 @@ public class BitBoardMovesGenerator {
         long notWhiteToMove=~(wk|wq|wn|wb|wr|wp|bk);
         long blackOrEmpty=blackToTake|empty;
         List<Integer> moves=new ArrayList<>(100);
-        generatePawnMovesW(wp,empty,blackToTake,moves);
+        generatePawnMovesW(wp,empty,blackToTake,moves,false);
         generateEnPassantMovesW(wp,bp,lastMove,moves);
         generateBishopMoves(wb,blackOrEmpty,occupied,moves);
         generateQueenMoves(wq,blackOrEmpty,occupied,moves);
         generateRookMoves(wr,blackOrEmpty,occupied,moves);
         generateKnightsMoves(wn,notWhiteToMove,moves);
         generateKingMoves(wk,notWhiteToMove,moves);
-        long unsafe=attackedByBlack(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
-        generateCastleWhite(wk,wr,occupied,ck,cq,unsafe,moves);
+        if(ck | cq){
+            long unsafe = attackedByBlack(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+            generateCastleWhite(wk, wr, occupied, ck, cq, unsafe, moves);
+        }
         return moves;
     }
     public static List<Integer> generateMovesB(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ck,boolean cq,int lastMove){
@@ -321,15 +358,17 @@ public class BitBoardMovesGenerator {
         long notBlackToMove=~(bk|bq|bn|bb|br|bp|wk);
         long whiteOrEmpty=whiteToTake|empty;
         List<Integer> moves=new ArrayList<>(100);
-        generatePawnMovesB(bp,empty,whiteToTake,moves);
+        generatePawnMovesB(bp,empty,whiteToTake,moves,false);
         generateEnPassantMovesB(bp,wp,lastMove,moves);
         generateBishopMoves(bb,whiteOrEmpty,occupied,moves);
         generateQueenMoves(bq,whiteOrEmpty,occupied,moves);
         generateRookMoves(br,whiteOrEmpty,occupied,moves);
         generateKnightsMoves(bn,notBlackToMove,moves);
         generateKingMoves(bk,notBlackToMove,moves);
-        long unsafe=attackedByWhite(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
-        generateCastleBlack(bk,br,occupied,ck,cq,unsafe,moves);
+        if(ck | cq) {
+            long unsafe = attackedByWhite(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+            generateCastleBlack(bk, br, occupied, ck, cq, unsafe, moves);
+        }
         return moves;
     }
     public static long movesOverTheBoardMaskLeft;
@@ -857,7 +896,7 @@ public class BitBoardMovesGenerator {
             //result.add(""+index/8+""+((index%8)+1)+""+((index/8)-1)+""+index%8+"E");
         }
     }
-    public static void generatePawnMovesW(long pieces,long empty,long toTake,List<Integer> result){
+    public static void generatePawnMovesW(long pieces,long empty,long toTake,List<Integer> result,boolean attacksOnly){
         //capture right
         long moves=pieces>>7 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[0];
         generateMovesFromBitBoard(moves,1,-1,false,true,result);
@@ -865,13 +904,20 @@ public class BitBoardMovesGenerator {
         moves= pieces>>9 & toTake & ~RANK_MASKS[7] & ~FILE_MASKS[7];
         generateMovesFromBitBoard(moves,1,1,false,true,result);
 
-        //move one up
-        moves=pieces>>8 & empty & ~RANK_MASKS[7];
-        generateMovesFromBitBoard(moves,1,0,false,true,result);
+        if(!attacksOnly){
+            //move one up
+            moves=pieces>>8 & empty & ~RANK_MASKS[7];
+            generateMovesFromBitBoard(moves,1,0,false,true,result);
 
-        //move two up
-        moves=(pieces>>16) & empty &(empty>>8) & RANK_MASKS[3];
-        generateMovesFromBitBoard(moves,2,0,false,true,result);
+            //move two up
+            moves=(pieces>>16) & empty &(empty>>8) & RANK_MASKS[3];
+            generateMovesFromBitBoard(moves,2,0,false,true,result);
+
+
+            //promotion move one up
+            moves=pieces>>8 & empty & RANK_MASKS[7];
+            generateMovesFromBitBoard(moves,1,0,true,true,result);
+        }
 
         //promotion attack right
         moves=pieces>>7 & toTake & RANK_MASKS[7] & ~FILE_MASKS[0];
@@ -880,13 +926,8 @@ public class BitBoardMovesGenerator {
         //promotion attack left
         moves=pieces>>9 & toTake & RANK_MASKS[7] & ~FILE_MASKS[7];
         generateMovesFromBitBoard(moves,1,1,true,true,result);
-
-        //promotion move one up
-        moves=pieces>>8 & empty & RANK_MASKS[7];
-        generateMovesFromBitBoard(moves,1,0,true,true,result);
-
     }
-    public static void generatePawnMovesB(long pieces,long empty,long toTake,List<Integer> result){
+    public static void generatePawnMovesB(long pieces,long empty,long toTake,List<Integer> result,boolean attacksOnly){
         //capture right
         long moves=pieces<<7 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[7];
         generateMovesFromBitBoard(moves,-1,1,false,false,result);
@@ -894,13 +935,19 @@ public class BitBoardMovesGenerator {
         moves= pieces<<9 & toTake & ~RANK_MASKS[0] & ~FILE_MASKS[0];
         generateMovesFromBitBoard(moves,-1,-1,false,false,result);
 
-        //move one up
-        moves=pieces<<8 & empty & ~RANK_MASKS[0];
-        generateMovesFromBitBoard(moves,-1,0,false,false,result);
+        if(!attacksOnly){
+            //move one up
+            moves=pieces<<8 & empty & ~RANK_MASKS[0];
+            generateMovesFromBitBoard(moves,-1,0,false,false,result);
 
-        //move two up
-        moves=(pieces<<16) & empty &(empty<<8) & RANK_MASKS[4];
-        generateMovesFromBitBoard(moves,-2,0,false,false,result);
+            //move two up
+            moves=(pieces<<16) & empty &(empty<<8) & RANK_MASKS[4];
+            generateMovesFromBitBoard(moves,-2,0,false,false,result);
+
+            //promotion move one up
+            moves=pieces<<8 & empty & RANK_MASKS[0];
+            generateMovesFromBitBoard(moves,-1,0,true,false,result);
+        }
 
         //promotion attack right
         moves=pieces<<7 & toTake & RANK_MASKS[0] & ~FILE_MASKS[7];
@@ -909,11 +956,6 @@ public class BitBoardMovesGenerator {
         //promotion attack left
         moves=pieces<<9 & toTake & RANK_MASKS[0] & ~FILE_MASKS[0];
         generateMovesFromBitBoard(moves,-1,-1,true,false,result);
-
-        //promotion move one up
-        moves=pieces<<8 & empty & RANK_MASKS[0];
-        generateMovesFromBitBoard(moves,-1,0,true,false,result);
-
     }
     public static void printMask(long mask){
         for(int i=0;i<64;i++){

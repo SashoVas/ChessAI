@@ -147,19 +147,15 @@ public class BoardEvaluation {
 
 
         int whitePieceScore = 0;
-        int blackPieceScore = 0;
 
-        whitePieceScore+=BitBoardMovesGenerator.countBits(wn)* MATERIAL_SCORE[0][1];
-        whitePieceScore+=BitBoardMovesGenerator.countBits(wq)* MATERIAL_SCORE[0][4];
-        whitePieceScore+=BitBoardMovesGenerator.countBits(wb)* MATERIAL_SCORE[0][2];
-        whitePieceScore+=BitBoardMovesGenerator.countBits(wr)* MATERIAL_SCORE[0][3];
 
-        blackPieceScore+=BitBoardMovesGenerator.countBits(bn)* -MATERIAL_SCORE[0][7];
-        blackPieceScore+=BitBoardMovesGenerator.countBits(bq)* -MATERIAL_SCORE[0][10];
-        blackPieceScore+=BitBoardMovesGenerator.countBits(bb)* -MATERIAL_SCORE[0][8];
-        blackPieceScore+=BitBoardMovesGenerator.countBits(br)* -MATERIAL_SCORE[0][9];
+        whitePieceScore+=BitBoardMovesGenerator.countBits(wn|bn)* MATERIAL_SCORE[0][1];
+        whitePieceScore+=BitBoardMovesGenerator.countBits(wq|bq)* MATERIAL_SCORE[0][4];
+        whitePieceScore+=BitBoardMovesGenerator.countBits(wb|bb)* MATERIAL_SCORE[0][2];
+        whitePieceScore+=BitBoardMovesGenerator.countBits(wr|br)* MATERIAL_SCORE[0][3];
+
         // return game phase score
-        return whitePieceScore + blackPieceScore;
+        return whitePieceScore ;
     }
 
     public static final int OPENING_PHASE=0;
