@@ -265,29 +265,18 @@ public class BitBoardMovesGenerator {
             long index=Long.numberOfTrailingZeros(first);
             if(!isPromotion){
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,0,0,0));
-                //result.add(""+(index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8);
             }
             else if(isWhite){
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,1,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,2,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,3,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,4,0,0));
-
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"Q");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"R");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"B");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"N");
             }
             else if(!isWhite){
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,5,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,6,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,7,0,0));
                 result.add(MoveUtilities.codeMove((index/8+startRowIncrement),(index%8+startColIncrement),index/8,index%8,8,0,0));
-
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"q");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"r");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"b");
-                //result.add((index/8+startRowIncrement)+(index%8+startColIncrement)+index/8+index%8+"n");
             }
             bitBoard&=~first;
             first=bitBoard & -bitBoard;

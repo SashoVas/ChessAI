@@ -105,8 +105,8 @@ public class ZobristHash {
     public static long hashEnPassantRights(long hash,int move,int lastMove,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
         int startIndex=MoveUtilities.extractStart(move);
         int startType=BitBoardMovesGenerator.getPieceType(startIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
-        int endIndex=MoveUtilities.extractEnd(move);
-        int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        //int endIndex=MoveUtilities.extractEnd(move);
+        //int endType=BitBoardMovesGenerator.getPieceType(endIndex,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         if(startType==AIBot.WPAWN_INDEX ||startType==AIBot.BPAWN_INDEX){
             int currentEnpassant=BitBoardMovesGenerator.getEnPassantIndex(move,color);
             if(currentEnpassant!=-1){

@@ -2,7 +2,9 @@ package Chess;
 
 import Chess.TranspositionTable.TranspositionTable;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AIBot {
     public static final int MOVE_TO_BE_SEARCHED=4;
@@ -25,6 +27,7 @@ public class AIBot {
     public static long[][] killerMoves=new long[2][64];
     public static int[][] historyMoves=new int[12][64];
     public static long hash=0L;
+    public static long lastHash=0L;
     public static TranspositionTable tt=new TranspositionTable();
     public static int MAX_PLY=64;
     public static int[] pvLength=new int[MAX_PLY];
@@ -36,6 +39,7 @@ public class AIBot {
     public static int ply=0;
     public static int historyPly=0;
     public static long history[]=new long[MAX_MOVES_IN_GAME];
+    public static Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
     public static final int INFINITY =50000;
     public static final int MATE_VAL=49000;
     public static final int MATE_SCORE=48000;
@@ -86,13 +90,15 @@ public class AIBot {
                     (color==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
                 continue;
             }
+
             ply++;
             history[historyPly]=hash;
+            //historySet.add(hash);
             historyPly++;
             int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,1-color,move);
             ply--;
             historyPly--;
-
+            //historySet.remove(hash);
             //Prune
             if(score>=beta){
                 return beta;
@@ -114,11 +120,12 @@ public class AIBot {
 
     }
     public static boolean detectRepetitions(){
-        for(int i=historyPly-2;i>=0;i--){
-            if(history[i]==hash)
-                return true;
-        }
-        return false;
+        return historySet.contains(hash);
+        //for(int i=historyPly-2;i>=0;i--){
+        //    if(history[i]==hash)
+        //        return true;
+        //}
+        //return false;
     }
     public static boolean nullMovePruning(int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
@@ -126,6 +133,8 @@ public class AIBot {
             ply++;
             history[historyPly]=hash;
             historyPly++;
+
+            //historySet.add(hash);
             //Hash side repeat
             hash^=ZobristHash.sideHash;
             //Remove en passant from hash if any
@@ -133,6 +142,7 @@ public class AIBot {
             int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);
             ply--;
             historyPly--;
+            //historySet.remove(hash);
             if(score>=beta){
                 return true;
             }
@@ -178,10 +188,12 @@ public class AIBot {
         }
 
         hash=ZobristHash.hashMove(hash,move,lastMove,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,ckwc,cqwc,ckbc,cqbc,color);
-
+        if(ply!=0 && detectRepetitions())
+            return 0;
         ply++;
         history[historyPly]=hash;
         historyPly++;
+        historySet.add(hash);
         int score;
         //check extensions
         boolean inExtencion=false;
@@ -215,6 +227,7 @@ public class AIBot {
         }
         ply--;
         historyPly--;
+        historySet.remove(hash);
         //re increment extensions
         if( inExtencion) {
             extensions--;
@@ -226,8 +239,8 @@ public class AIBot {
 
         pvLength[ply]=ply;
         //Check if current move is repeated(helps avoid 3-fold repetition)
-        if(detectRepetitions() && ply!=0)
-            return 0;
+        //if(ply!=0 && detectRepetitions())
+        //    return 0;
 
         //Search the captures, so that we don't blunder pieces
         if(depth==0)
@@ -244,8 +257,10 @@ public class AIBot {
         long oldHash=hash;
 
         //null move pruning
-        if(nullMovePruning(alpha,beta,depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove))
+        if(nullMovePruning(alpha,beta,depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove)) {
+            hash= oldHash;
             return beta;
+        }
 
         hash= oldHash;
         //Initialize possible moves

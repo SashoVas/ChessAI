@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class UCIProtocol {
 
     BitBoard board;
-    int depth=8;
+    int depth=9;
     public UCIProtocol(){
         board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
     }
@@ -67,9 +67,12 @@ public class UCIProtocol {
 
             for(String move: moves){
                 int moveCode=board.algebraToCode(move);
+                AIBot.historySet.clear();
                 board.makeAMove(moveCode);
-                AIBot.history[AIBot.historyPly]=board.getBoardHash();
+                long hash=board.getBoardHash();
+                AIBot.history[AIBot.historyPly]=hash;
                 AIBot.historyPly++;
+                AIBot.historySet.add(hash);
             }
 
         }
