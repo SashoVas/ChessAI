@@ -10,6 +10,7 @@ public class Main {
     public static void main(String[] args) {
 
         UCIProtocol game=new UCIProtocol();
+        //game.playWithHimself();
         game.startGame();
         //BitBoard board=BitBoard.createBoardFromFen("5rk1/2pbb1pp/p7/2PP1pq1/2BB4/5P2/PP2QP1P/R4RK1 w - - 1 25 ");
         //System.out.println(board.perft(6));

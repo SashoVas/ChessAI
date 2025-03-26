@@ -38,7 +38,6 @@ public class AIBot {
     public static int nodes=0;
     public static int ply=0;
     public static int historyPly=0;
-    public static long history[]=new long[MAX_MOVES_IN_GAME];
     public static Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
     public static final int INFINITY =50000;
     public static final int MATE_VAL=49000;
@@ -92,7 +91,6 @@ public class AIBot {
             }
 
             ply++;
-            history[historyPly]=hash;
             //historySet.add(hash);
             historyPly++;
             int score=-quiescence(-beta,-alpha,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,1-color,move);
@@ -131,7 +129,6 @@ public class AIBot {
         if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
             //null move pruning
             ply++;
-            history[historyPly]=hash;
             historyPly++;
 
             //historySet.add(hash);
@@ -191,7 +188,6 @@ public class AIBot {
         if(ply!=0 && detectRepetitions())
             return 0;
         ply++;
-        history[historyPly]=hash;
         historyPly++;
         historySet.add(hash);
         int score;
@@ -348,7 +344,11 @@ public class AIBot {
         int score=0;
         followPv=false;
         scorePv=false;
-
+        tt.clear();
+        pvLength=new int[MAX_PLY];
+        pvTable=new int[MAX_PLY][64];
+        killerMoves=new long[2][64];
+        historyMoves=new int[12][64];
         for(int current_depth=1;current_depth<=depth;current_depth++){
             //nodes=0;
             followPv=true;

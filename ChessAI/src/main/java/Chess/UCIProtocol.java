@@ -1,12 +1,14 @@
 package Chess;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class UCIProtocol {
 
     BitBoard board;
-    int depth=9;
+    int depth=10;
     public UCIProtocol(){
         board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
     }
@@ -42,9 +44,10 @@ public class UCIProtocol {
             }
         }
     }
-    public void getBestMove(){
+    public String getBestMove(){
         int move=board.getBestMoveIterativeDeepening(depth);
         System.out.println("bestmove "+BitBoard.toAlgebra(move));
+        return BitBoard.toAlgebra(move);
     }
     public void processPositionCommand(String line){
         line=line.substring(9);
@@ -70,7 +73,6 @@ public class UCIProtocol {
                 AIBot.historySet.clear();
                 board.makeAMove(moveCode);
                 long hash=board.getBoardHash();
-                AIBot.history[AIBot.historyPly]=hash;
                 AIBot.historyPly++;
                 AIBot.historySet.add(hash);
             }
@@ -85,5 +87,26 @@ public class UCIProtocol {
 
         //Reset history of the AI bot
         AIBot.historyPly=0;
+    }
+    public void playWithHimself(){
+        //TODO:Use string builder
+        String input="position startpos";
+        processPositionCommand(input);
+        String currentMove=getBestMove();
+        input="position startpos moves "+currentMove;
+        BigDecimal time=new BigDecimal(0);
+        List<String>moveTimes=new ArrayList<>();
+        while(!"a1a1".equals(currentMove)){
+            processPositionCommand(input);
+            System.out.println(input);
+            BigDecimal start= new BigDecimal( System.currentTimeMillis());
+            currentMove=getBestMove();
+            BigDecimal end= new BigDecimal( System.currentTimeMillis());
+            BigDecimal secs=end.subtract(start).divide(new BigDecimal(1000));
+            System.out.println("Move time:"+secs);
+            moveTimes.add(secs.toString());
+            time=time.add(secs);
+            input=input + " " + currentMove;
+        }
     }
 }
