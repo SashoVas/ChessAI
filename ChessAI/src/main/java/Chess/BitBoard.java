@@ -1,5 +1,11 @@
 package Chess;
 
+import Chess.Evaluation.BoardEvaluation;
+import Chess.Evaluation.MoveEvaluation;
+import Chess.Moves.BitBoardMovesGenerator;
+import Chess.Moves.MoveUtilities;
+import Chess.TranspositionTable.ZobristHash;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +77,7 @@ public class BitBoard {
 
     public static String toAlgebra(int move){
         String result="";
-        long start=MoveUtilities.extractStart(move);
+        long start= MoveUtilities.extractStart(move);
         long end=MoveUtilities.extractEnd(move);
         long promotion=MoveUtilities.extractPromotion(move);
         result=""+(char)('a'+start%8)+(8-start/8)+(char)('a'+end%8)+(8-end/8);

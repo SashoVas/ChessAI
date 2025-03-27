@@ -1,9 +1,8 @@
-package Chess;
+package Chess.TranspositionTable;
 
 import Chess.AIBot;
-import Chess.BitBoard;
-import Chess.BitBoardMovesGenerator;
-import Chess.MoveUtilities;
+import Chess.Moves.BitBoardMovesGenerator;
+import Chess.Moves.MoveUtilities;
 
 import java.security.SecureRandom;
 

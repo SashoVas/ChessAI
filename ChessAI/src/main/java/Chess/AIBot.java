@@ -1,6 +1,11 @@
 package Chess;
 
+import Chess.Evaluation.BoardEvaluation;
+import Chess.Evaluation.MoveEvaluation;
+import Chess.Moves.BitBoardMovesGenerator;
+import Chess.Moves.MoveUtilities;
 import Chess.TranspositionTable.TranspositionTable;
+import Chess.TranspositionTable.ZobristHash;
 
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +54,7 @@ public class AIBot {
 
         nodes++;
         //Prune
-        int eval=BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
+        int eval= BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         if(eval>=beta){
             return beta;
         }
@@ -59,7 +64,7 @@ public class AIBot {
 
         List<Integer> moves;
         if(color==1)
-            moves=BitBoardMovesGenerator.generateAttackMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,lastMove);
+            moves= BitBoardMovesGenerator.generateAttackMovesW(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,lastMove);
 
         else
             moves=BitBoardMovesGenerator.generateAttackMovesB(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,lastMove);
@@ -133,7 +138,7 @@ public class AIBot {
 
             //historySet.add(hash);
             //Hash side repeat
-            hash^=ZobristHash.sideHash;
+            hash^= ZobristHash.sideHash;
             //Remove en passant from hash if any
             hash=ZobristHash.hashEnPassantRights(hash,0,lastMove,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,color);
             int score=-negmax(-beta,-beta +1,depth-1 -2,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,1-color,0);

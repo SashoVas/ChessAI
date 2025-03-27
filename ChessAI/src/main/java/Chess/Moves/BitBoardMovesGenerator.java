@@ -1,8 +1,7 @@
-package Chess;
+package Chess.Moves;
 
-import Chess.StandardImplementation.Pieces.Move;
+import Chess.Moves.MoveUtilities;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +63,7 @@ public class BitBoardMovesGenerator {
         long newBoard;
 
         for(int move:moves){
-            int endIndex=MoveUtilities.extractEnd(move);
+            int endIndex= MoveUtilities.extractEnd(move);
             int captureType=getPieceType(endIndex,boards[0],boards[1],boards[2],boards[3],boards[4],boards[5],boards[6],boards[7],boards[8],boards[9],boards[10],boards[11]);
 
             //Update castle rules

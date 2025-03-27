@@ -1,4 +1,8 @@
-package Chess;
+package Chess.Evaluation;
+
+import Chess.AIBot;
+import Chess.Moves.BitBoardMovesGenerator;
+import Chess.Moves.MoveUtilities;
 
 public class MoveEvaluation {
     public static final int MVV_LVA[][] = {
@@ -17,8 +21,8 @@ public class MoveEvaluation {
             {605, 505, 205, 305, 405, 105,  605, 505, 205, 305, 405, 105},
     };
     public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
-        long targetIndex=MoveUtilities.extractEnd(move);
-        int targetType=BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
+        long targetIndex= MoveUtilities.extractEnd(move);
+        int targetType= BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
 
         if(AIBot.followPv && AIBot.pvTable[0][AIBot.ply]==move){
             AIBot.scorePv=true;

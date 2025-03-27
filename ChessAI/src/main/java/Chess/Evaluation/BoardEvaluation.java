@@ -1,4 +1,7 @@
-package Chess;
+package Chess.Evaluation;
+
+import Chess.AIBot;
+import Chess.Moves.BitBoardMovesGenerator;
 
 public class BoardEvaluation {
 
@@ -149,7 +152,7 @@ public class BoardEvaluation {
         int whitePieceScore = 0;
 
 
-        whitePieceScore+=BitBoardMovesGenerator.countBits(wn|bn)* MATERIAL_SCORE[0][1];
+        whitePieceScore+= BitBoardMovesGenerator.countBits(wn|bn)* MATERIAL_SCORE[0][1];
         whitePieceScore+=BitBoardMovesGenerator.countBits(wq|bq)* MATERIAL_SCORE[0][4];
         whitePieceScore+=BitBoardMovesGenerator.countBits(wb|bb)* MATERIAL_SCORE[0][2];
         whitePieceScore+=BitBoardMovesGenerator.countBits(wr|br)* MATERIAL_SCORE[0][3];
@@ -283,7 +286,7 @@ public class BoardEvaluation {
 
         // init piece & square
         int result=0;
-        result+=evaluateBoard(wq,AIBot.WQUEEN_INDEX,gamePhase,gamePhaseScore);
+        result+=evaluateBoard(wq, AIBot.WQUEEN_INDEX,gamePhase,gamePhaseScore);
         result+=evaluateBoard(wn,AIBot.WKNIGHT_INDEX,gamePhase,gamePhaseScore);
         result+=evaluateBoard(wb,AIBot.WBISHOP_INDEX,gamePhase,gamePhaseScore);
         result+=evaluateBoard(wr,AIBot.WROOK_INDEX,gamePhase,gamePhaseScore);
