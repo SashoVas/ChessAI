@@ -20,7 +20,10 @@ public class MoveEvaluation {
             {602, 502, 202, 302, 402, 102,  602, 502, 202, 302, 402, 102},
             {605, 505, 205, 305, 405, 105,  605, 505, 205, 305, 405, 105},
     };
-    public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
+    public static int scoreMove(int move,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int bestMove){
+        if(move==bestMove){
+            return 30000;
+        }
         long targetIndex= MoveUtilities.extractEnd(move);
         int targetType= BitBoardMovesGenerator.getPieceType(targetIndex,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
 

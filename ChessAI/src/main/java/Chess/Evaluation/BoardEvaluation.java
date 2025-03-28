@@ -234,72 +234,89 @@ public class BoardEvaluation {
     public static final int[]PIECE_VALUES={
             0,900,300,300,500,100,0,-900,-300,-300,-500,-100
     };
-    public static int evaluateBoard(long board,int pieceType,int gamePhase,int gamePhaseScore){
-
-
-        int result=0;
+    public static void evaluateBoard(long board,int pieceType){
         long current=board& -board;
-
         //Iterate over every piece in the board
         while(current!=0){
             //Score the piece by its type
-            if (gamePhase == MIDGAME_PHASE)
-                result += (
-                        MATERIAL_SCORE[OPENING_PHASE][MAPPING[pieceType]] * gamePhaseScore +
-                                MATERIAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]] * (OPENING_PHASE_SCORE - gamePhaseScore)
-                ) / OPENING_PHASE_SCORE;
-            else result += MATERIAL_SCORE[gamePhase][MAPPING[pieceType]];
-
+            openingScore+=MATERIAL_SCORE[OPENING_PHASE][MAPPING[pieceType]];
+            endGameScore+=MATERIAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]];
             //Score the piece by its position
             int index=Long.numberOfTrailingZeros(current);
             int blackPos=(7-index/8)*8+index%8;
             if(pieceType<6) {
-                if (gamePhase == MIDGAME_PHASE)
-                    result += (
-                            POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]][index] * gamePhaseScore +
-                                    POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]][index] * (OPENING_PHASE_SCORE - gamePhaseScore)
-                    ) / OPENING_PHASE_SCORE;
-                else result += POSITIONAL_SCORE[gamePhase][MAPPING[pieceType]][index];
+                openingScore+=POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]][index];
+                endGameScore+=POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]][index];
             }
             else{
-                if (gamePhase == MIDGAME_PHASE)
-                    result -= (
-                            POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]-6][blackPos] * gamePhaseScore +
-                                    POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]-6][blackPos] * (OPENING_PHASE_SCORE - gamePhaseScore)
-                ) / OPENING_PHASE_SCORE;
-                else result -= POSITIONAL_SCORE[gamePhase][MAPPING[pieceType]-6][blackPos];
+                openingScore-=POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]-6][blackPos];
+                endGameScore-=POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]-6][blackPos];
             }
             board&=~current;
             current=board& -board;
         }
-        return result;
     }
+    public static void evaluatePawnBoard(long board,int pieceType,long enemyPawns){
+        long current=board& -board;
+        long boardCopy=board;
+        //Iterate over every piece in the board
+        while(current!=0){
+            //Score the piece by its type
+            openingScore+=MATERIAL_SCORE[OPENING_PHASE][MAPPING[pieceType]];
+            endGameScore+=MATERIAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]];
+            //Score the piece by its position
+            int index=Long.numberOfTrailingZeros(current);
+            int blackPos=(7-index/8)*8+index%8;
+            if(pieceType<6) {
+                openingScore+=POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]][index];
+                endGameScore+=POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]][index];
+                endGameScore+=getPawnsScore(boardCopy,index,enemyPawns,1);
+
+            }
+            else{
+                openingScore-=POSITIONAL_SCORE[OPENING_PHASE][MAPPING[pieceType]-6][blackPos];
+                endGameScore-=POSITIONAL_SCORE[ENDGAME_PHASE][MAPPING[pieceType]-6][blackPos];
+                endGameScore-=getPawnsScore(boardCopy,index,enemyPawns,0);
+            }
+            board&=~current;
+            current=board& -board;
+        }
+    }
+    public static int openingScore=0;
+    public static int endGameScore=0;
     public static  int evaluate(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color) {
         int gamePhaseScore = get_game_phase_score(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
-        int gamePhase = -1;
 
-        // current game phase
-        if (gamePhaseScore > OPENING_PHASE_SCORE) gamePhase = OPENING_PHASE;
-        else if (gamePhaseScore < ENDGAME_PHASE_SCORE) gamePhase = ENDGAME_PHASE;
-        else gamePhase = MIDGAME_PHASE;
-
+        openingScore=0;
+        endGameScore=0;
 
         // init piece & square
-        int result=0;
-        result+=evaluateBoard(wq, AIBot.WQUEEN_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(wn,AIBot.WKNIGHT_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(wb,AIBot.WBISHOP_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(wr,AIBot.WROOK_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(wp,AIBot.WPAWN_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(bq,AIBot.BQUEEN_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(bn,AIBot.BKNIGHT_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(bb,AIBot.BBISHOP_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(br,AIBot.BROOK_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(bp,AIBot.BPAWN_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(wk,AIBot.WKING_INDEX,gamePhase,gamePhaseScore);
-        result+=evaluateBoard(bk,AIBot.BKING_INDEX,gamePhase,gamePhaseScore);
+        evaluateBoard(wq, AIBot.WQUEEN_INDEX);
+        evaluateBoard(wn,AIBot.WKNIGHT_INDEX);
+        evaluateBoard(wb,AIBot.WBISHOP_INDEX);
+        evaluateBoard(wr,AIBot.WROOK_INDEX);
+        //evaluateBoard(wp,AIBot.WPAWN_INDEX);
+        evaluateBoard(bq,AIBot.BQUEEN_INDEX);
+        evaluateBoard(bn,AIBot.BKNIGHT_INDEX);
+        evaluateBoard(bb,AIBot.BBISHOP_INDEX);
+        evaluateBoard(br,AIBot.BROOK_INDEX);
+        //evaluateBoard(bp,AIBot.BPAWN_INDEX);
+        evaluateBoard(wk,AIBot.WKING_INDEX);
+        evaluateBoard(bk,AIBot.BKING_INDEX);
 
-        return color==1?result:-result;
+        evaluatePawnBoard(wp,AIBot.WPAWN_INDEX,bp);
+        evaluatePawnBoard(bp,AIBot.BPAWN_INDEX,wp);
+
+        int score=0;
+        if (gamePhaseScore > OPENING_PHASE_SCORE) score = openingScore;
+        else if (gamePhaseScore < ENDGAME_PHASE_SCORE) score = endGameScore;
+        else {
+            score = (
+                    openingScore * gamePhaseScore +
+                            endGameScore * (OPENING_PHASE_SCORE - gamePhaseScore)
+            ) / OPENING_PHASE_SCORE;
+        }
+        return color==1?score:-score;
     }
 
     public static int getRookScore(int rookIndex,long pawns,long enemyPawns){
@@ -406,7 +423,7 @@ public class BoardEvaluation {
         }
     }
 
-    public static int evaluatePawnBoard(long board,int pieceType,long enemyPawns){
+    public static int evaluatePawnBoardOld(long board,int pieceType,long enemyPawns){
         int result=0;
         long fullBoard=board;
         long current=board& -board;
@@ -573,8 +590,8 @@ public class BoardEvaluation {
         //result+=evaluateBoard(bk,BKING_INDEX);
 
         //evaluation of pawn boards
-        result+=evaluatePawnBoard(wp,AIBot.WPAWN_INDEX,bp);
-        result+=evaluatePawnBoard(bp,AIBot.BPAWN_INDEX,wp);
+        result+=evaluatePawnBoardOld(wp,AIBot.WPAWN_INDEX,bp);
+        result+=evaluatePawnBoardOld(bp,AIBot.BPAWN_INDEX,wp);
 
         //evaluation of rook boards
         result+=evaluateRookBoard(wr,AIBot.WROOK_INDEX,wp,bp);

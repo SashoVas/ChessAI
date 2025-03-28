@@ -52,10 +52,10 @@ public class BitBoard {
             moves=generateMovesB();
         }
         moves.sort((a,b)-> Integer.compare(
-                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp),
-                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp))*-1);
+                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0),
+                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0))*-1);
         for(int move:moves){
-            System.out.println(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+            System.out.println(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0));
         }
         return moves;
 
@@ -70,7 +70,7 @@ public class BitBoard {
         }
         List<Integer>result=new ArrayList<>();
         for(int move:moves){
-            result.add(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp));
+            result.add(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0));
         }
         return result;
     }
