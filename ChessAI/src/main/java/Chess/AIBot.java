@@ -118,24 +118,17 @@ public class AIBot {
     public static boolean lateMoveReductionCondition(int depth,int move,int fullMovesSearched){
         return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3   && !MoveUtilities.isPromotion(move);
     }
-    public static boolean nullMovePruningCondition(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color){
-        if(color==0)
-            return depth>=3 && ply>0 && (BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)==0;
-        else
-            return depth>=3 && ply>0 && (BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)==0;
-
-    }
     public static boolean detectRepetitions(){
         //return historySet.contains(hash);
         int to=Math.max(historyPly-5,0);
-        for(int i=historyPly-2;i>=to;i--){
+        for(int i=historyPly-1;i>=to;i--){
             if(history[i]==hash)
                 return true;
         }
         return false;
     }
     public static boolean nullMovePruning(int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
-        if(nullMovePruningCondition(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color)){
+        if(depth>=3 && ply>0){
             //null move pruning
             ply++;
             history[historyPly]=hash;
@@ -216,7 +209,7 @@ public class AIBot {
             long endPosition=MoveUtilities.extractEnd(move);
             int endPosType=BitBoardMovesGenerator.getPieceType(endPosition,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
             //Late move reduction
-            if( endPosType==-1 && lateMoveReductionCondition(depth,move,fullMovesSearched)){
+            if( endPosType==-1  && lateMoveReductionCondition(depth,move,fullMovesSearched)){
                 //PV search with late move reduction
                 score=-negmax(-alpha -1,-alpha,depth-2,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
             }
@@ -250,23 +243,25 @@ public class AIBot {
         //if(ply!=0 && detectRepetitions())
         //    return 0;
 
+        boolean pvNode = beta - alpha > 1;
+
+        //if the move was processed before, use the old score  7699081 6727348 3053515 1803879
+        int currentBestMove;
+        if(ply>0 && !pvNode  && tt.containsKey(hash)){
+            int res= tt.retrieveFromTable(hash,depth,alpha,beta);
+            if(res!=INVALID_VALUE)
+                return res;
+            currentBestMove=pastBestMove;
+        } else
+            currentBestMove = 0;
+
         //Search the captures, so that we don't blunder pieces
         if(depth==0)
             return quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
 
         nodes++;
 
-         boolean pvNode = beta - alpha > 1;
-
-        //if the move was processed before, use the old score
-        if(ply>0 && !pvNode && tt.containsKey(hash)){
-            int res= tt.retrieveFromTable(hash,depth,alpha,beta);
-            if(res!=INVALID_VALUE)
-                return res;
-        }
-
-        //StaticEvaluation 5414073 3708524
-        boolean inCheck=false;
+        boolean inCheck;
         if(color==1){
             inCheck=(BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0;
         }
@@ -274,7 +269,7 @@ public class AIBot {
             inCheck=(BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0;
         }
         int staticEval= BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
-        if (depth < 3 && !pvNode&& !inCheck  &&  Math.abs(beta - 1) > -INFINITY + 100)
+        if (depth < 3 && !pvNode && !inCheck  &&  Math.abs(beta - 1) > -INFINITY + 100)
         {
             // define evaluation margin
             int evalMargin = 120 * depth;
@@ -284,11 +279,10 @@ public class AIBot {
                 return staticEval - evalMargin;
         }
 
-        int currentBestMove=pastBestMove;
         long oldHash=hash;
         int bestMove=0;
         //null move pruning
-        if(nullMovePruning(alpha,beta,depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove)) {
+        if(!inCheck && nullMovePruning(alpha,beta,depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,color,lastMove)) {
             hash= oldHash;
             return beta;
         }

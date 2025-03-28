@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class TranspositionTable {
     Map<Long, TranspositionTableEntry> tt=new HashMap<>();
+
     public void addToTable(long hash,int score,int depth,int type,int bestMove){
         //Save score of mate with true distance to mate
         if(score<-AIBot.MATE_SCORE)
