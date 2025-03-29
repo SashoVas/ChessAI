@@ -8,16 +8,16 @@ import java.util.Map;
 public class TranspositionTable {
     Map<Long, TranspositionTableEntry> tt=new HashMap<>();
 
-    public void addToTable(long hash,int score,int depth,int type,int bestMove){
+    public void addToTable(long hash,int score,int depth,int type,int bestMove,int ply){
         //Save score of mate with true distance to mate
         if(score<-AIBot.MATE_SCORE)
-            score-=AIBot.ply;
+            score-=ply;
         if(score>AIBot.MATE_SCORE)
-            score+=AIBot.ply;
+            score+=ply;
 
         tt.put(hash,new TranspositionTableEntry(score,depth,type,bestMove));
     }
-    public int retrieveFromTable(long hash,int depth,int alpha,int beta){
+    public int retrieveFromTable(long hash,int depth,int alpha,int beta,int ply){
 
         AIBot.pastBestMove= 0;
 
@@ -27,9 +27,9 @@ public class TranspositionTable {
             int score=entry.score;
             //Adjust mating score to be at true distance to mate
             if(score<-AIBot.MATE_SCORE)
-                score+=AIBot.ply;
+                score+=ply;
             if(score>AIBot.MATE_SCORE)
-                score-=AIBot.ply;
+                score-=ply;
 
             if (entry.type == AIBot.EXACT_BOUND_TYPE) return score;
             if (entry.type == AIBot.LOWER_BOUND_TYPE && score<=alpha) return alpha ;

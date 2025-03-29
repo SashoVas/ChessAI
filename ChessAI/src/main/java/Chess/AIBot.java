@@ -29,30 +29,24 @@ public class AIBot {
     public static final int UPPER_BOUND_TYPE=3;
     public static final int EXACT_BOUND_TYPE=2;
     public static final int INVALID_VALUE=-999999;
-    public static long[][] killerMoves=new long[2][64];
-    public static int[][] historyMoves=new int[12][64];
-    public static long hash=0L;
-    public static long lastHash=0L;
-    public static TranspositionTable tt=new TranspositionTable();
+    public long hash=0L;
+    public long lastHash=0L;
+    public TranspositionTable tt=new TranspositionTable();
     public static int MAX_PLY=64;
-    public static int[] pvLength=new int[MAX_PLY];
-    public static int[][] pvTable=new int[MAX_PLY][64];
     public static int MAX_MOVES_IN_GAME=1000;
-    public static boolean followPv=false;
-    public static boolean scorePv=false;
-    public static int nodes=0;
-    public static int ply=0;
-    public static int historyPly=0;
-    public static long history[]=new long[MAX_MOVES_IN_GAME];
-    public static Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
-
+    public int nodes=0;
+    public int ply=0;
+    public int historyPly=0;
+    public long history[]=new long[MAX_MOVES_IN_GAME];
+    public Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
+    public MoveEvaluation moveEvaluation=new MoveEvaluation();
     public static final int INFINITY =50000;
     public static final int MATE_VAL=49000;
     public static final int MATE_SCORE=48000;
     public static final int MAX_EXTENSIONS=3;
-    public static int extensions=0;
+    public int extensions=0;
     public static final int INVALID_MOVE=-700000;
-    public static int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int lastMove){
+    public int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int lastMove){
 
         nodes++;
         //Prune
@@ -73,8 +67,8 @@ public class AIBot {
 
 
         moves.sort((a,b)-> Integer.compare(
-                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0),
-                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0))*-1);
+                moveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,ply),
+                moveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,ply))*-1);
         for(int move:moves){
 
             //Make the move
@@ -115,10 +109,10 @@ public class AIBot {
         }
         return alpha;
     }
-    public static boolean lateMoveReductionCondition(int depth,int move,int fullMovesSearched){
+    public boolean lateMoveReductionCondition(int depth,int move,int fullMovesSearched){
         return fullMovesSearched>=MOVE_TO_BE_SEARCHED && depth>=3   && !MoveUtilities.isPromotion(move);
     }
-    public static boolean detectRepetitions(){
+    public boolean detectRepetitions(){
         //return historySet.contains(hash);
         int to=Math.max(historyPly-5,0);
         for(int i=historyPly-1;i>=to;i--){
@@ -127,7 +121,7 @@ public class AIBot {
         }
         return false;
     }
-    public static boolean nullMovePruning(int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+    public boolean nullMovePruning(int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         if(depth>=3 && ply>0){
             //null move pruning
             ply++;
@@ -149,7 +143,7 @@ public class AIBot {
         }
         return false;
     }
-    public static int optimizedSearch(int move,int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove,int fullMovesSearched){
+    public int optimizedSearch(int move,int alpha,int beta,int depth,long wk, long wq, long wn, long wb, long wr, long wp, long bk, long bq, long bn, long bb, long br, long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove,int fullMovesSearched){
         long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
         long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
         long wnc=BitBoardMovesGenerator.makeAMoveOnBoard(wn,move,2);
@@ -236,19 +230,19 @@ public class AIBot {
         return score;
     }
     public static int pastBestMove=0;
-    public static int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+    public int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
-        pvLength[ply]=ply;
+        moveEvaluation.pvLength[ply]=ply;
         //Check if current move is repeated(helps avoid 3-fold repetition)
         //if(ply!=0 && detectRepetitions())
         //    return 0;
 
-        boolean pvNode = beta - alpha > 1;
+        boolean pvNode = (beta - alpha) > 1;
 
-        //if the move was processed before, use the old score  7699081 6727348 3053515 1803879
+        //if the move was processed before, use the old score  7699081 6727348 7151907 3053515 1803879 1514321
         int currentBestMove;
         if(ply>0 && !pvNode  && tt.containsKey(hash)){
-            int res= tt.retrieveFromTable(hash,depth,alpha,beta);
+            int res= tt.retrieveFromTable(hash,depth,alpha,beta,ply);
             if(res!=INVALID_VALUE)
                 return res;
             currentBestMove=pastBestMove;
@@ -286,6 +280,31 @@ public class AIBot {
             hash= oldHash;
             return beta;
         }
+
+        //razoring 9237667 66684248 11813067
+        int score;
+        if (!inCheck && depth <= 3)
+        {
+            score = staticEval + 125;
+            int new_score;
+            if (score < beta)
+            {
+                if (depth == 1)
+                {
+                    new_score = quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
+                    return (new_score > score) ? new_score : score;
+                }
+                score += 175;
+                if (score < beta && depth <= 2)
+                {
+                    new_score = quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
+                    if (new_score < beta)
+                        return (new_score > score) ? new_score : score;
+                }
+            }
+        }
+
+
         hash= oldHash;
         //Initialize possible moves
         List<Integer> moves;
@@ -298,22 +317,22 @@ public class AIBot {
 
         boolean isMate=true;
         int fullMovesSearched=0;
-        scorePv=false;
+        moveEvaluation.scorePv=false;
         //Sort The moves, so that we check the strong moves first and prune the week moves later
         moves.sort((a, b)-> Integer.compare(
-                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove),
-                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove))*-1);
+                moveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove,ply),
+                moveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove,ply))*-1);
 
 
-        followPv=scorePv;
-        scorePv=false;
+        moveEvaluation.followPv=moveEvaluation.scorePv;
+        moveEvaluation.scorePv=false;
         //variable that indicate what type of node the current one is(used in transposition table)
         int nodeType=LOWER_BOUND_TYPE;
         //Check every move
         for(int move:moves){
 
             //Search the move, and get its optimal score
-            int score=optimizedSearch(move,alpha,beta,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove,fullMovesSearched);
+            score=optimizedSearch(move,alpha,beta,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove,fullMovesSearched);
             hash=oldHash;
             //the move is invalid
             if(score==INVALID_MOVE){
@@ -328,24 +347,24 @@ public class AIBot {
                 long endPosition=MoveUtilities.extractEnd(move);
                 if(((1L<<endPosition)&fullBoard)==0){
                     int startPosType=BitBoardMovesGenerator.getPieceType(MoveUtilities.extractStart(move),wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp);
-                    historyMoves[startPosType][(int)endPosition]+=depth;
+                    moveEvaluation.historyMoves[startPosType][(int)endPosition]+=depth;
                 }
                 nodeType=EXACT_BOUND_TYPE;
                 alpha=score;
                 bestMove=move;
                 //Add pv moves to table
-                pvTable[ply][ply]=move;
-                for(int nextPly=ply+1;nextPly<pvLength[ply+1];nextPly++)
-                    pvTable[ply][nextPly]=pvTable[ply+1][nextPly];
-                pvLength[ply]=pvLength[ply+1];
+                moveEvaluation.pvTable[ply][ply]=move;
+                for(int nextPly=ply+1;nextPly<moveEvaluation.pvLength[ply+1];nextPly++)
+                    moveEvaluation.pvTable[ply][nextPly]=moveEvaluation.pvTable[ply+1][nextPly];
+                moveEvaluation.pvLength[ply]=moveEvaluation.pvLength[ply+1];
                 //Prune
                 if(score>=beta){
                     //Update killer move only if it is not capture
                     if(((1L<<endPosition)&fullBoard)==0){
-                        killerMoves[1][ply]=killerMoves[0][ply];
-                        killerMoves[0][ply]=move;
+                        moveEvaluation.killerMoves[1][ply]=moveEvaluation.killerMoves[0][ply];
+                        moveEvaluation.killerMoves[0][ply]=move;
                     }
-                    tt.addToTable(hash,beta,depth,UPPER_BOUND_TYPE,bestMove);
+                    tt.addToTable(hash,beta,depth,UPPER_BOUND_TYPE,bestMove,ply);
                     return beta;
                 }
             }
@@ -360,10 +379,10 @@ public class AIBot {
             }
             return 0;
         }
-        tt.addToTable(hash,alpha,depth,nodeType,bestMove);
+        tt.addToTable(hash,alpha,depth,nodeType,bestMove,ply);
         return alpha;
     }
-    public static int getBestMoveIterativeDeepening(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+    public int getBestMoveIterativeDeepening(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         //ZobristHash.initializeHashes();
         nodes=0;
         ply=0;
@@ -372,17 +391,17 @@ public class AIBot {
         int alpha=-INFINITY;
         int beta=INFINITY;
         int score=0;
-        followPv=false;
-        scorePv=false;
+        moveEvaluation.followPv=false;
+        moveEvaluation.scorePv=false;
         //tt.clear();
         tt=new TranspositionTable();
-        pvLength=new int[MAX_PLY];
-        pvTable=new int[MAX_PLY][64];
-        killerMoves=new long[2][64];
-        historyMoves=new int[12][64];
+        moveEvaluation.pvLength=new int[MAX_PLY];
+        moveEvaluation.pvTable=new int[MAX_PLY][64];
+        moveEvaluation.killerMoves=new long[2][64];
+        moveEvaluation.historyMoves=new int[12][64];
         for(int current_depth=1;current_depth<=depth;current_depth++){
             //nodes=0;
-            followPv=true;
+            moveEvaluation.followPv=true;
             extensions=0;
             score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
             if ((score <= alpha) || (score >= beta)) {
@@ -396,31 +415,31 @@ public class AIBot {
 
             System.out.println("depth "+current_depth+","+"Nodes: "+nodes+","+"score: "+score);
             System.out.print("PVs: ");
-            for(int i=0;i<pvLength[0];i++){
+            for(int i=0;i<moveEvaluation.pvLength[0];i++){
 
-                System.out.print(BitBoard.toAlgebra(pvTable[0][i])+", ");
+                System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
             }
             System.out.println();
         }
 
         System.out.println("Best score: "+score);
-        return pvTable[0][0];
+        return moveEvaluation.pvTable[0][0];
     }
-    public static int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
+    public int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         //ZobristHash.initializeHashes();
         nodes=0;
         ply=0;
-        scorePv=false;
-        followPv=false;
+        moveEvaluation.scorePv=false;
+        moveEvaluation.followPv=false;
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);
         System.out.print("PVs: ");
-        for(int i=0;i<pvLength[0];i++){
+        for(int i=0;i<moveEvaluation.pvLength[0];i++){
 
-            System.out.print(BitBoard.toAlgebra(pvTable[0][i])+", ");
+            System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
         }
         System.out.println();
-        return pvTable[0][0];
+        return moveEvaluation.pvTable[0][0];
     }
 
 }

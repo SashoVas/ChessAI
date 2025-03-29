@@ -27,7 +27,7 @@ public class UCIProtocol {
             }
             else if("ucinewgame".equals(line)){
                 board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-                AIBot.historyPly=0;
+                board.aiBot.historyPly=0;
             }
             else if(line.startsWith("position")){
                 processPositionCommand(line);
@@ -66,16 +66,16 @@ public class UCIProtocol {
         if(line.contains("moves")){
             line=line.substring(line.indexOf("moves")+6);
             String[] moves=line.split(" ");
-            AIBot.historyPly=0;
+            board.aiBot.historyPly=0;
 
             for(String move: moves){
                 int moveCode=board.algebraToCode(move);
-                AIBot.historySet.clear();
+                board.aiBot.historySet.clear();
                 board.makeAMove(moveCode);
                 long hash=board.getBoardHash();
-                AIBot.history[AIBot.historyPly]=hash;
-                AIBot.historyPly++;
-                AIBot.historySet.add(hash);
+                board.aiBot.history[board.aiBot.historyPly]=hash;
+                board.aiBot.historyPly++;
+                board.aiBot.historySet.add(hash);
             }
 
         }
@@ -87,7 +87,7 @@ public class UCIProtocol {
         System.out.println("uciok");
 
         //Reset history of the AI bot
-        AIBot.historyPly=0;
+        board.aiBot.historyPly=0;
     }
     public void playWithHimself(){
         //TODO:Use string builder

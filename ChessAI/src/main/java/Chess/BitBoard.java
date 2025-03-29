@@ -20,6 +20,7 @@ public class BitBoard {
     boolean cqb=true;
     int currentTurn=1;//1-White,0-Black
     int lastMove=0;
+    public AIBot aiBot;
 
 
     private BitBoard(){
@@ -29,11 +30,12 @@ public class BitBoard {
         }
         BitBoardMovesGenerator.movesOverTheBoardMaskRight=~(BitBoardMovesGenerator.FILE_MASKS[6]|BitBoardMovesGenerator.FILE_MASKS[7]);
         BitBoardMovesGenerator.movesOverTheBoardMaskLeft=~(BitBoardMovesGenerator.FILE_MASKS[0]|BitBoardMovesGenerator.FILE_MASKS[1]);
-
+        aiBot=new AIBot();
         ZobristHash.initializeHashes();
         BoardEvaluation.generatePawnMasks();
-        AIBot.tt.clear();
-        AIBot.historySet.clear();
+        aiBot.tt.clear();
+        aiBot.historySet.clear();
+
 
     }
     public long perftWithUndo(int depth){
@@ -52,10 +54,10 @@ public class BitBoard {
             moves=generateMovesB();
         }
         moves.sort((a,b)-> Integer.compare(
-                MoveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0),
-                MoveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0))*-1);
+                aiBot.moveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,0),
+                aiBot.moveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,0))*-1);
         for(int move:moves){
-            System.out.println(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0));
+            System.out.println(aiBot.moveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,0));
         }
         return moves;
 
@@ -70,7 +72,7 @@ public class BitBoard {
         }
         List<Integer>result=new ArrayList<>();
         for(int move:moves){
-            result.add(MoveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0));
+            result.add(aiBot.moveEvaluation.scoreMove(move,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,0,0));
         }
         return result;
     }
@@ -115,14 +117,14 @@ public class BitBoard {
         makeAMove(getBestMove(depth));
     }
     public int getBestMove(int depth){
-        AIBot.hash=getBoardHash();
-        AIBot.tt.clear();
-        return AIBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
+        aiBot.hash=getBoardHash();
+        aiBot.tt.clear();
+        return aiBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
     public int getBestMoveIterativeDeepening(int depth){
-        AIBot.hash=getBoardHash();
-        AIBot.tt.clear();
-        return AIBot.getBestMoveIterativeDeepening(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
+        aiBot.hash=getBoardHash();
+        aiBot.tt.clear();
+        return aiBot.getBestMoveIterativeDeepening(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
     public int evaluate(){
         return BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,currentTurn);

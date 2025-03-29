@@ -16,7 +16,7 @@ public class Main {
         //BitBoard board=BitBoard.createBoardFromFen("5rk1/2pbb1pp/p7/2PP1pq1/2BB4/5P2/PP2QP1P/R4RK1 w - - 1 25 ");
         //System.out.println(board.perft(6));
 
-        BitBoard board=BitBoard.createBoardFromFen("3rr1k1/1p3pp1/p6p/3pq3/3Nn3/4P3/PPR1QPPP/2R3K1 w - - 0 20 ");
+        BitBoard board=BitBoard.createBoardFromFen("8/5p2/r7/6R1/3k4/6KP/5P2/8 b - - 2 56 ");
         //BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
 
         //System.out.println(board.evaluate());
@@ -30,12 +30,9 @@ public class Main {
         //int move=board.getBestMoveIterativeDeepening(8);
 
         long start=System.currentTimeMillis();
-        int move=board.getBestMoveIterativeDeepening(11);
+        int move=board.getBestMoveIterativeDeepening(14);
         long end=System.currentTimeMillis();
         System.out.println(board.getBoardHash());
-        System.out.println(MoveUtilities.extractStart(move));
-        System.out.println(MoveUtilities.extractEnd(move));
-        System.out.println(AIBot.nodes);
         System.out.println(BitBoard.toAlgebra(move));
         board.makeAMove(move);
         System.out.println(board.evaluate());
