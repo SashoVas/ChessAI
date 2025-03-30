@@ -29,6 +29,8 @@ public class AIBot {
     public static final int UPPER_BOUND_TYPE=3;
     public static final int EXACT_BOUND_TYPE=2;
     public static final int INVALID_VALUE=-999999;
+    public static final int MIN_MILLISECONDS_PER_MOVE=5000;
+    public static final int MIN_SEARCHED_NODES_PER_MOVE=2000000;
     public long hash=0L;
     public long lastHash=0L;
     public TranspositionTable tt=new TranspositionTable();
@@ -399,28 +401,53 @@ public class AIBot {
         moveEvaluation.pvTable=new int[MAX_PLY][64];
         moveEvaluation.killerMoves=new long[2][64];
         moveEvaluation.historyMoves=new int[12][64];
-        for(int current_depth=1;current_depth<=depth;current_depth++){
-            //nodes=0;
+
+        int currentDepth=1;
+        long start=System.currentTimeMillis();
+        long end=System.currentTimeMillis();
+        while(currentDepth<=depth || (currentDepth<15 && MIN_SEARCHED_NODES_PER_MOVE>nodes)){
             moveEvaluation.followPv=true;
             extensions=0;
-            score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
+            score=negmax(alpha,beta,currentDepth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
             if ((score <= alpha) || (score >= beta)) {
                 alpha = -INFINITY;
                 beta = INFINITY;
-                current_depth--;
                 continue;
             }
             alpha = score - alphaIncrement;
             beta = score + bettaIncrement;
-
-            System.out.println("depth "+current_depth+","+"Nodes: "+nodes+","+"score: "+score);
+//
+            System.out.println("depth "+currentDepth+","+"Nodes: "+nodes+","+"score: "+score);
             System.out.print("PVs: ");
-            for(int i=0;i<moveEvaluation.pvLength[0];i++){
-
+            for(int i=0;i<moveEvaluation.pvLength[0];i++)
                 System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
-            }
+//
             System.out.println();
+//
+            end=System.currentTimeMillis();
+            currentDepth++;
         }
+
+        //for(int current_depth=1;current_depth<=depth;current_depth++){
+        //    //nodes=0;
+        //    moveEvaluation.followPv=true;
+        //    extensions=0;
+        //    score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
+        //    if ((score <= alpha) || (score >= beta)) {
+        //        alpha = -INFINITY;
+        //        beta = INFINITY;
+        //        current_depth--;
+        //        continue;
+        //    }
+        //    alpha = score - alphaIncrement;
+        //    beta = score + bettaIncrement;
+        //    System.out.println("depth "+current_depth+","+"Nodes: "+nodes+","+"score: "+score);
+        //    System.out.print("PVs: ");
+        //    for(int i=0;i<moveEvaluation.pvLength[0];i++){
+        //        System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
+        //    }
+        //    System.out.println();
+        //}
 
         System.out.println("Best score: "+score);
         return moveEvaluation.pvTable[0][0];
