@@ -30,7 +30,7 @@ public class AIBot {
     public static final int EXACT_BOUND_TYPE=2;
     public static final int INVALID_VALUE=-999999;
     public static final int MIN_MILLISECONDS_PER_MOVE=5000;
-    public static final int MIN_SEARCHED_NODES_PER_MOVE=2000000;
+    public static final int MIN_SEARCHED_NODES_PER_MOVE=3000000;
     public long hash=0L;
     public long lastHash=0L;
     public TranspositionTable tt=new TranspositionTable();
@@ -48,8 +48,27 @@ public class AIBot {
     public static final int MAX_EXTENSIONS=3;
     public int extensions=0;
     public static final int INVALID_MOVE=-700000;
-    public int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int lastMove){
+    public static final int MOVES_BETWEEN_TIME_CHECK=1<<13;
+    public int maxTimePerMove=40000;
+    public long moveStartTime=0;
+    public boolean isOutOfTime=false;
+    private boolean checkTime(){
 
+        if(isOutOfTime)
+            return true;
+        if(nodes%MOVES_BETWEEN_TIME_CHECK==0){
+            long end=System.currentTimeMillis();
+            if((end-moveStartTime)>maxTimePerMove) {
+                isOutOfTime=true;
+                return true;
+            }
+
+        }
+        return false;
+    }
+    public int quiescence(int alpha,int beta,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,int color,int lastMove){
+        if(checkTime())
+            return 0;
         nodes++;
         //Prune
         int eval= BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
@@ -234,6 +253,8 @@ public class AIBot {
     public static int pastBestMove=0;
     public int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
+        if(checkTime())
+            return 0;
         moveEvaluation.pvLength[ply]=ply;
         //Check if current move is repeated(helps avoid 3-fold repetition)
         //if(ply!=0 && detectRepetitions())
@@ -371,7 +392,7 @@ public class AIBot {
                 }
             }
             fullMovesSearched++;
-
+            moveEvaluation.followPv=true;
         }
         if(isMate){
             //Check if, im in check, or stalemate
@@ -401,11 +422,12 @@ public class AIBot {
         moveEvaluation.pvTable=new int[MAX_PLY][64];
         moveEvaluation.killerMoves=new long[2][64];
         moveEvaluation.historyMoves=new int[12][64];
-
+        isOutOfTime=false;
         int currentDepth=1;
-        long start=System.currentTimeMillis();
-        long end=System.currentTimeMillis();
-        while(currentDepth<=depth || (currentDepth<15 && MIN_SEARCHED_NODES_PER_MOVE>nodes)){
+        moveStartTime=System.currentTimeMillis();
+
+        int currentBestMove=0;
+        while(!isOutOfTime&&(currentDepth<=depth || MIN_SEARCHED_NODES_PER_MOVE>nodes)){
             moveEvaluation.followPv=true;
             extensions=0;
             score=negmax(alpha,beta,currentDepth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
@@ -416,41 +438,20 @@ public class AIBot {
             }
             alpha = score - alphaIncrement;
             beta = score + bettaIncrement;
-//
+
             System.out.println("depth "+currentDepth+","+"Nodes: "+nodes+","+"score: "+score);
             System.out.print("PVs: ");
             for(int i=0;i<moveEvaluation.pvLength[0];i++)
                 System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
-//
+
             System.out.println();
-//
-            end=System.currentTimeMillis();
+            if(!isOutOfTime)
+                currentBestMove=moveEvaluation.pvTable[0][0];
             currentDepth++;
         }
 
-        //for(int current_depth=1;current_depth<=depth;current_depth++){
-        //    //nodes=0;
-        //    moveEvaluation.followPv=true;
-        //    extensions=0;
-        //    score=negmax(alpha,beta,current_depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
-        //    if ((score <= alpha) || (score >= beta)) {
-        //        alpha = -INFINITY;
-        //        beta = INFINITY;
-        //        current_depth--;
-        //        continue;
-        //    }
-        //    alpha = score - alphaIncrement;
-        //    beta = score + bettaIncrement;
-        //    System.out.println("depth "+current_depth+","+"Nodes: "+nodes+","+"score: "+score);
-        //    System.out.print("PVs: ");
-        //    for(int i=0;i<moveEvaluation.pvLength[0];i++){
-        //        System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
-        //    }
-        //    System.out.println();
-        //}
-
         System.out.println("Best score: "+score);
-        return moveEvaluation.pvTable[0][0];
+        return currentBestMove;
     }
     public int getBestMove(int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
         //ZobristHash.initializeHashes();
