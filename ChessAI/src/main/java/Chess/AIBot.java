@@ -7,9 +7,8 @@ import Chess.Moves.MoveUtilities;
 import Chess.TranspositionTable.TranspositionTable;
 import Chess.TranspositionTable.ZobristHash;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 public class AIBot {
     public static final int MOVE_TO_BE_SEARCHED=4;
@@ -31,27 +30,53 @@ public class AIBot {
     public static final int INVALID_VALUE=-999999;
     public static final int MIN_MILLISECONDS_PER_MOVE=5000;
     public static final int MIN_SEARCHED_NODES_PER_MOVE=3000000;
-    public long hash=0L;
-    public long lastHash=0L;
-    public TranspositionTable tt=new TranspositionTable();
-    public static int MAX_PLY=64;
-    public static int MAX_MOVES_IN_GAME=1000;
-    public int nodes=0;
-    public int ply=0;
-    public int historyPly=0;
-    public long history[]=new long[MAX_MOVES_IN_GAME];
-    public Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
-    public MoveEvaluation moveEvaluation=new MoveEvaluation();
+    public static final int MAX_PLY=64;
+    public static final int MAX_MOVES_IN_GAME=1000;
     public static final int INFINITY =50000;
     public static final int MATE_VAL=49000;
     public static final int MATE_SCORE=48000;
     public static final int MAX_EXTENSIONS=3;
-    public int extensions=0;
     public static final int INVALID_MOVE=-700000;
     public static final int MOVES_BETWEEN_TIME_CHECK=1<<13;
-    public int maxTimePerMove=40000;
-    public long moveStartTime=0;
-    public boolean isOutOfTime=false;
+    private long hash=0L;
+    private TranspositionTable tt=new TranspositionTable();
+    private int nodes=0;
+    private int ply=0;
+    private int historyPly=0;
+    private long[] history=new long[MAX_MOVES_IN_GAME];
+    //public Set<Long> historySet=new HashSet<>(MAX_MOVES_IN_GAME);
+    private final MoveEvaluation moveEvaluation=new MoveEvaluation();
+    private int extensions=0;
+    private int maxTimePerMove=40000;
+    private int maxTimePerMoveEarlyAndMidGame=40000;
+    private int maxTimePerMoveEndGame=40000;
+    private long moveStartTime=0;
+    private boolean isOutOfTime=false;
+    public static int pastBestMove=0;
+
+    public AIBot(){}
+    public void setHash(long hash){
+        this.hash=hash;
+    }
+    public TranspositionTable getTranspositionTable(){
+        return tt;
+    }
+    public AIBot(int  maxTimePerMoveEarlyAndMidGame,int maxTimePerMoveEndGame){
+        this.maxTimePerMoveEarlyAndMidGame=maxTimePerMoveEarlyAndMidGame;
+        this.maxTimePerMoveEndGame=maxTimePerMoveEndGame;
+    }
+    public int getHistoryPly(){
+        return historyPly;
+    }
+    public void resetHistoryPly(){
+        this.historyPly=0;
+    }
+    public void updateHistory(int index,long value){
+
+    }
+    public void incrementHistoryPly(){
+        historyPly++;
+    }
     private boolean checkTime(){
 
         if(isOutOfTime)
@@ -250,7 +275,6 @@ public class AIBot {
         }
         return score;
     }
-    public static int pastBestMove=0;
     public int negmax(int alpha,int beta,int depth,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ckw,boolean cqw,boolean ckb,boolean cqb,int color,int lastMove){
 
         if(checkTime())
@@ -304,7 +328,7 @@ public class AIBot {
             return beta;
         }
 
-        //razoring 9237667 66684248 11813067
+        //razoring
         int score;
         if (!inCheck && depth <= 3)
         {
@@ -427,6 +451,13 @@ public class AIBot {
         moveStartTime=System.currentTimeMillis();
 
         int currentBestMove=0;
+
+        int gamePhase=BoardEvaluation.getGamePhase(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+        switch (gamePhase){
+            case BoardEvaluation.OPENING_PHASE -> this.maxTimePerMove=this.maxTimePerMoveEarlyAndMidGame;
+            case BoardEvaluation.MIDGAME_PHASE -> this.maxTimePerMove=this.maxTimePerMoveEarlyAndMidGame;
+            case BoardEvaluation.ENDGAME_PHASE -> this.maxTimePerMove=this.maxTimePerMoveEndGame;
+        }
         while(!isOutOfTime&&(currentDepth<=depth || MIN_SEARCHED_NODES_PER_MOVE>nodes)){
             moveEvaluation.followPv=true;
             extensions=0;

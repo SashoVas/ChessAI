@@ -318,6 +318,13 @@ public class BoardEvaluation {
         }
         return color==1?score:-score;
     }
+    public static int getGamePhase(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
+        int gamePhaseScore = get_game_phase_score(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
+
+        if (gamePhaseScore > OPENING_PHASE_SCORE) return OPENING_PHASE;
+        else if (gamePhaseScore < ENDGAME_PHASE_SCORE) return ENDGAME_PHASE_SCORE;
+        return MIDGAME_PHASE;
+    }
 
     public static int getRookScore(int rookIndex,long pawns,long enemyPawns){
         int score=0;

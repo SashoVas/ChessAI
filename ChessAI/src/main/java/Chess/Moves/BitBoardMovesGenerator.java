@@ -163,90 +163,40 @@ public class BitBoardMovesGenerator {
                 if((currentIndex & br &blackRooksPositions[0])!=0){cqbc=false;}
             }
 
-            //hash move
-            //hash=ZobristHash.hashMove(hash,move,lastMove,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw,cqw,ckb,cqb,ckwc,cqwc,ckbc,cqbc,color);
-            //process next moves
-            //long expected=ZobristHash.hashBoard(wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
-            //if(expected!=hash){
-            //    throw new InternalError();
-            //}
             movesCount+=perft( wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,depth-1,1-color,move);
-
-            //undo hash
-            //hash=oldHash;
 
         }
         return movesCount;
     }
-    public static String promotionToAlgebra(int promotion){
-        switch (promotion){
-            case(1):
-                return "Q";
-            case(2):
-                return "N";
-            case(3):
-                return "R";
-            case(4):
-                return "B";
-            case(5):
-                return "q";
-            case(6):
-                return "n";
-            case(7):
-                return "r";
-            case(8):
-                return "b";
-            default:
-                return "";
-        }
-    }
+
     public static int getPieceType(long pieceIndex,long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp){
         long pieceMask=1L<<pieceIndex;
 
-        if((wk&pieceMask)!=0){
+        if((wk&pieceMask)!=0)
             return WKING_INDEX;
-        }
-        else if((wq&pieceMask)!=0){
+        else if((wq&pieceMask)!=0)
             return WQUEEN_INDEX;
-
-        }
-        else if((wn&pieceMask)!=0){
+        else if((wn&pieceMask)!=0)
             return WKNIGHT_INDEX;
-
-        }
-        else if((wb&pieceMask)!=0){
+        else if((wb&pieceMask)!=0)
             return WBISHOP_INDEX;
-
-        }
-        else if((wr&pieceMask)!=0){
+        else if((wr&pieceMask)!=0)
             return WROOK_INDEX;
-
-        }
-        else if((wp&pieceMask)!=0){
+        else if((wp&pieceMask)!=0)
             return WPAWN_INDEX;
-        }
-        else if((bk&pieceMask)!=0){
+        else if((bk&pieceMask)!=0)
             return BKING_INDEX;
-        }
-        else if((bq&pieceMask)!=0){
+        else if((bq&pieceMask)!=0)
             return BQUEEN_INDEX;
-
-        }
-        else if((bn&pieceMask)!=0){
+        else if((bn&pieceMask)!=0)
             return BKNIGHT_INDEX;
-
-        }
-        else if((bb&pieceMask)!=0){
+        else if((bb&pieceMask)!=0)
             return BBISHOP_INDEX;
-
-        }
-        else if((br&pieceMask)!=0){
+        else if((br&pieceMask)!=0)
             return BROOK_INDEX;
-
-        }
-        else if((bp&pieceMask)!=0){
+        else if((bp&pieceMask)!=0)
             return BPAWN_INDEX;
-        }
+
         return -1;
     }
     private static List<Integer>generateMovesFromBitBoard(long bitBoard,long startRowIncrement,long startColIncrement,boolean isPromotion,boolean isWhite,List<Integer> result){
@@ -316,7 +266,6 @@ public class BitBoardMovesGenerator {
 
         return moves;
     }
-
     public static List<Integer> generateMovesW(long wk,long wq,long wn,long wb,long wr,long wp,long bk,long bq,long bn,long bb,long br,long bp,boolean ck,boolean cq,int lastMove){
         //Optimize using int instead of string
         long empty=~(wk|wq|wn|wb|wr|wp|bk|bq|bn|bb|br|bp);
@@ -724,7 +673,6 @@ public class BitBoardMovesGenerator {
                 int moveIndex=Long.numberOfTrailingZeros(j);
                 result.add(MoveUtilities.codeMove(bishopIndex/8,bishopIndex%8,moveIndex/8,moveIndex%8,0,0,0));
 
-                //result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
                 moves&=~j;
                 j=moves& -moves;
             }
@@ -758,7 +706,6 @@ public class BitBoardMovesGenerator {
                 int moveIndex=Long.numberOfTrailingZeros(j);
                 result.add(MoveUtilities.codeMove(bishopIndex/8,bishopIndex%8,moveIndex/8,moveIndex%8,0,0,0));
 
-                //result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
                 moves&=~j;
                 j=moves& -moves;
             }
@@ -779,7 +726,6 @@ public class BitBoardMovesGenerator {
                 int moveIndex=Long.numberOfTrailingZeros(j);
                 result.add(MoveUtilities.codeMove(bishopIndex/8,bishopIndex%8,moveIndex/8,moveIndex%8,0,0,0));
 
-                //result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
                 moves&=~j;
                 j=moves& -moves;
             }
@@ -799,7 +745,6 @@ public class BitBoardMovesGenerator {
             while(j!=0){
                 int moveIndex=Long.numberOfTrailingZeros(j);
                 result.add(MoveUtilities.codeMove(bishopIndex/8,bishopIndex%8,moveIndex/8,moveIndex%8,0,0,0));
-                //result.add(""+bishopIndex/8+bishopIndex%8+moveIndex/8+moveIndex%8);
                 moves&=~j;
                 j=moves& -moves;
             }
@@ -849,7 +794,6 @@ public class BitBoardMovesGenerator {
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
             result.add(MoveUtilities.codeMove(index/8,((index%8)+1),((index/8)+1),index%8,0,1,0));
-            //result.add(""+index/8+""+((index%8)+1)+""+((index/8)+1)+""+index%8+"E");
         }
 
         //en passant left
@@ -857,7 +801,6 @@ public class BitBoardMovesGenerator {
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
             result.add(MoveUtilities.codeMove(index/8,((index%8)-1),((index/8)+1),index%8,0,1,0));
-            //result.add(""+index/8+""+((index%8)-1)+""+((index/8)+1)+""+index%8+"E");
         }
     }
     public static void generateEnPassantMovesW(long pawns,long toTake,int lastMove,List<Integer> result){
@@ -873,7 +816,6 @@ public class BitBoardMovesGenerator {
 
             long index=Long.numberOfTrailingZeros(moves);
             result.add(MoveUtilities.codeMove(index/8,((index%8)-1),((index/8)-1),index%8,0,1,0));
-            //result.add(""+index/8+""+((index%8)-1)+""+((index/8)-1)+""+index%8+"E");
         }
 
         //en passant left
@@ -881,7 +823,6 @@ public class BitBoardMovesGenerator {
         if(moves!=0){
             long index=Long.numberOfTrailingZeros(moves);
             result.add(MoveUtilities.codeMove(index/8,((index%8)+1),((index/8)-1),index%8,0,1,0));
-            //result.add(""+index/8+""+((index%8)+1)+""+((index/8)-1)+""+index%8+"E");
         }
     }
     public static void generatePawnMovesW(long pieces,long empty,long toTake,List<Integer> result,boolean attacksOnly){

@@ -52,4 +52,26 @@ public class MoveUtilities {
     public static int extractPromotion(int code){
         return (code>>15&FIRST_FIVE_BITS);
     }
+    public static String promotionToAlgebra(int promotion){
+        switch (promotion){
+            case(1):
+                return "Q";
+            case(2):
+                return "N";
+            case(3):
+                return "R";
+            case(4):
+                return "B";
+            case(5):
+                return "q";
+            case(6):
+                return "n";
+            case(7):
+                return "r";
+            case(8):
+                return "b";
+            default:
+                return "";
+        }
+    }
 }

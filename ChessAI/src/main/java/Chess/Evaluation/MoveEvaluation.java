@@ -11,7 +11,7 @@ public class MoveEvaluation {
     public  int[][] pvTable=new int[AIBot.MAX_PLY][64];
     public boolean followPv=false;
     public boolean scorePv=false;
-    public final int MVV_LVA[][] = {
+    private final int MVV_LVA[][] = {
             {600, 500, 200, 300, 400, 100,  600, 500, 200, 300, 400, 100},
             {601, 501, 201, 301, 401, 101,  601, 501, 201, 301, 401, 101},
             {604, 504, 204, 304, 404, 104,  604, 504, 204, 304, 404, 104},
