@@ -38,6 +38,5 @@ public class Main {
         //System.out.println(board.evaluate());
         //System.out.println(((end-start)/1000)+" Sec.");
 
-
     }
 }

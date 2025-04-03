@@ -65,6 +65,10 @@ public class AIBot {
         this.maxTimePerMoveEarlyAndMidGame=maxTimePerMoveEarlyAndMidGame;
         this.maxTimePerMoveEndGame=maxTimePerMoveEndGame;
     }
+    public void setTimeControls(int maxTimePerMoveEarlyAndMidGame,int maxTimePerMoveEndGame){
+        this.maxTimePerMoveEarlyAndMidGame=maxTimePerMoveEarlyAndMidGame;
+        this.maxTimePerMoveEndGame=maxTimePerMoveEndGame;
+    }
     public int getHistoryPly(){
         return historyPly;
     }
@@ -72,7 +76,7 @@ public class AIBot {
         this.historyPly=0;
     }
     public void updateHistory(int index,long value){
-
+        history[index]=value;
     }
     public void incrementHistoryPly(){
         historyPly++;
@@ -204,8 +208,8 @@ public class AIBot {
         long bpc=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
 
         //Check if move is legal
-        boolean whiteCheck=(BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0;
-        boolean blackCheck=(BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0;
+        boolean whiteCheck=(BitBoardMovesGenerator.attackedByBlack(wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0;
+        boolean blackCheck=(BitBoardMovesGenerator.attackedByWhite(wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0;
         if((color==1 && whiteCheck)||
                 (color==0&& blackCheck)){
             return INVALID_MOVE;
@@ -243,6 +247,7 @@ public class AIBot {
             inExtencion=true;
         }
         if(fullMovesSearched==0){
+            //Search first move fully
             score=-negmax(-beta,-alpha,depth-1,wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc,ckwc,cqwc,ckbc,cqbc,1-color,move);
         }
         else{
@@ -303,12 +308,11 @@ public class AIBot {
         nodes++;
 
         boolean inCheck;
-        if(color==1){
+        if(color==1)
             inCheck=(BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0;
-        }
-        else{
+        else
             inCheck=(BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0;
-        }
+
         int staticEval= BoardEvaluation.evaluate(wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color);
         if (depth < 3 && !pvNode && !inCheck  &&  Math.abs(beta - 1) > -INFINITY + 100)
         {
@@ -339,14 +343,14 @@ public class AIBot {
                 if (depth == 1)
                 {
                     new_score = quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
-                    return (new_score > score) ? new_score : score;
+                    return Math.max(new_score, score);
                 }
                 score += 175;
                 if (score < beta && depth <= 2)
                 {
                     new_score = quiescence(alpha,beta,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,color,lastMove);
                     if (new_score < beta)
-                        return (new_score > score) ? new_score : score;
+                        return Math.max(new_score, score);
                 }
             }
         }
@@ -369,7 +373,6 @@ public class AIBot {
         moves.sort((a, b)-> Integer.compare(
                 moveEvaluation.scoreMove(a,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove,ply),
                 moveEvaluation.scoreMove(b,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp, currentBestMove,ply))*-1);
-
 
         moveEvaluation.followPv=moveEvaluation.scorePv;
         moveEvaluation.scorePv=false;
@@ -451,7 +454,7 @@ public class AIBot {
         moveStartTime=System.currentTimeMillis();
 
         int currentBestMove=0;
-
+        //Time controls
         int gamePhase=BoardEvaluation.getGamePhase(wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp);
         switch (gamePhase){
             case BoardEvaluation.OPENING_PHASE -> this.maxTimePerMove=this.maxTimePerMoveEarlyAndMidGame;
@@ -493,10 +496,9 @@ public class AIBot {
         int score=negmax(-50000,50000,depth,wk,wq,wn,wb,wr,wp,bk,bq,bn,bb,br,bp,ckw,cqw,ckb,cqb,color,lastMove);
         System.out.println("Best score: "+score);
         System.out.print("PVs: ");
-        for(int i=0;i<moveEvaluation.pvLength[0];i++){
-
+        for(int i=0;i<moveEvaluation.pvLength[0];i++)
             System.out.print(BitBoard.toAlgebra(moveEvaluation.pvTable[0][i])+", ");
-        }
+
         System.out.println();
         return moveEvaluation.pvTable[0][0];
     }

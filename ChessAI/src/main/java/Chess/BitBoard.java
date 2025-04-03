@@ -88,7 +88,8 @@ public class BitBoard {
         aiBot.getTranspositionTable().clear();
         return aiBot.getBestMove(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);
     }
-    public int getBestMoveIterativeDeepening(int depth){
+    public int getBestMoveIterativeDeepening(int depth,int earlyGameTime,int lateGameTime){
+        aiBot.setTimeControls(earlyGameTime,lateGameTime);
         aiBot.setHash(getBoardHash());
         aiBot.getTranspositionTable().clear();
         return aiBot.getBestMoveIterativeDeepening(depth,wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp,ckw, cqw, ckb, cqb,currentTurn,lastMove);

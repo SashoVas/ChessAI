@@ -9,8 +9,20 @@ public class UCIProtocol {
 
     BitBoard board;
     int depth=11;
+    int earlyGameMaxTimePerMove=40000;
+    int lateGameMaxTimePerMove=20000;
     public UCIProtocol(){
         board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+    }
+    public UCIProtocol(int timePerMove){
+        board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        this.earlyGameMaxTimePerMove=timePerMove;
+        this.lateGameMaxTimePerMove=timePerMove;
+    }
+    public UCIProtocol(int earlyGameMaxTimePerMove,int lateGameMaxTimePerMove){
+        board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
+        this.earlyGameMaxTimePerMove=earlyGameMaxTimePerMove;
+        this.lateGameMaxTimePerMove=lateGameMaxTimePerMove;
     }
     public void startGame(){
         Scanner input=new Scanner(System.in);
@@ -45,7 +57,7 @@ public class UCIProtocol {
         }
     }
     public String getBestMove(){
-        int move=board.getBestMoveIterativeDeepening(depth);
+        int move=board.getBestMoveIterativeDeepening(depth,earlyGameMaxTimePerMove,lateGameMaxTimePerMove);
         System.out.println("bestmove "+BitBoard.toAlgebra(move));
         return BitBoard.toAlgebra(move);
     }
