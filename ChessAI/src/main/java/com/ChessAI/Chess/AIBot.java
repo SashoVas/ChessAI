@@ -1,11 +1,11 @@
-package Chess;
+package com.ChessAI.Chess;
 
-import Chess.Evaluation.BoardEvaluation;
-import Chess.Evaluation.MoveEvaluation;
-import Chess.Moves.BitBoardMovesGenerator;
-import Chess.Moves.MoveUtilities;
-import Chess.TranspositionTable.TranspositionTable;
-import Chess.TranspositionTable.ZobristHash;
+import com.ChessAI.Chess.Evaluation.BoardEvaluation;
+import com.ChessAI.Chess.Evaluation.MoveEvaluation;
+import com.ChessAI.Chess.Moves.BitBoardMovesGenerator;
+import com.ChessAI.Chess.Moves.MoveUtilities;
+import com.ChessAI.Chess.TranspositionTable.TranspositionTable;
+import com.ChessAI.Chess.TranspositionTable.ZobristHash;
 
 import java.util.List;
 

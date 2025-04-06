@@ -1,4 +1,4 @@
-package Chess.TranspositionTable;
+package com.ChessAI.Chess.TranspositionTable;
 
 public class TranspositionTableEntry {
     int score;

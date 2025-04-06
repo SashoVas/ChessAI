@@ -1,4 +1,4 @@
-package Chess;
+package com.ChessAI.Chess;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

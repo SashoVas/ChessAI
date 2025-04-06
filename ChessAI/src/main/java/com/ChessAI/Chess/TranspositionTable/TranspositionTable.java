@@ -1,6 +1,6 @@
-package Chess.TranspositionTable;
+package com.ChessAI.Chess.TranspositionTable;
 
-import Chess.AIBot;
+import com.ChessAI.Chess.AIBot;
 
 import java.util.HashMap;
 import java.util.Map;

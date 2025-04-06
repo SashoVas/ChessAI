@@ -1,7 +1,7 @@
-package Chess.Evaluation;
+package com.ChessAI.Chess.Evaluation;
 
-import Chess.AIBot;
-import Chess.Moves.BitBoardMovesGenerator;
+import com.ChessAI.Chess.AIBot;
+import com.ChessAI.Chess.Moves.BitBoardMovesGenerator;
 
 public class BoardEvaluation {
 

@@ -1,11 +1,11 @@
-package Chess.Moves;
+package com.ChessAI.Chess.Moves;
 
-import Chess.Moves.MoveUtilities;
+import com.ChessAI.Chess.Moves.MoveUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static Chess.AIBot.*;
+import static com.ChessAI.Chess.AIBot.*;
 
 public class BitBoardMovesGenerator {
     public static long hash=0;

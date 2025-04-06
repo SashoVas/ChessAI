@@ -1,8 +1,8 @@
-package Chess.Evaluation;
+package com.ChessAI.Chess.Evaluation;
 
-import Chess.AIBot;
-import Chess.Moves.BitBoardMovesGenerator;
-import Chess.Moves.MoveUtilities;
+import com.ChessAI.Chess.AIBot;
+import com.ChessAI.Chess.Moves.BitBoardMovesGenerator;
+import com.ChessAI.Chess.Moves.MoveUtilities;
 
 public class MoveEvaluation {
     public long[][] killerMoves=new long[2][64];

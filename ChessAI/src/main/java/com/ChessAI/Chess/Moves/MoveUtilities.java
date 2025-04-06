@@ -1,4 +1,4 @@
-package Chess.Moves;
+package com.ChessAI.Chess.Moves;
 
 public class MoveUtilities {
     public static final int FIRST_FIVE_BITS=63;
