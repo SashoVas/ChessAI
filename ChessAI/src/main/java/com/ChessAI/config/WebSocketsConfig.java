@@ -1,6 +1,7 @@
 package com.ChessAI.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -30,9 +31,11 @@ public class WebSocketsConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
+    @Autowired
+    private RoomEnterInterceptor roomEnterInterceptor;
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new RoomEnterInterceptor());
+        registration.interceptors(roomEnterInterceptor);
     }
     @Override
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
