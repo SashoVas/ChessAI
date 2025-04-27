@@ -22,6 +22,10 @@ jobs:
           distribution: 'temurin'
           java-version: '20'
 
+      - name: Start Docker Compose
+        working-directory: ./ChessAI
+        run: docker compose up -d
+
       - name: Build and run tests
         working-directory: ./ChessAI
         run: mvn -B test --file pom.xml
