@@ -1,14 +1,22 @@
 package com.ChessAI.dto;
 
-import com.ChessAI.models.ApplicationUser;
+import com.ChessAI.models.User;
 
 public class UserDTO {
     private String username;
     private String password;
+    private String email;
 
-    public UserDTO(String username, String password) {
+    public UserDTO(String username, String password, String email) {
         this.username = username;
         this.password = password;
+        this.email = email;
+    }
+
+    public UserDTO(User user) {
+        this.username = user.getUsername();
+        this.password = user.getPassword();
+        this.email = user.getEmail();
     }
 
     public String getUsername() {
@@ -27,7 +35,10 @@ public class UserDTO {
         this.password = password;
     }
 
-    public static UserDTO fromEntity(ApplicationUser user){
-        return new UserDTO(user.getUsername(),user.getPassword());
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
