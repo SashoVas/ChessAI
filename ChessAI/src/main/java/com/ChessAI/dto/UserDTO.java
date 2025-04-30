@@ -1,10 +1,15 @@
 package com.ChessAI.dto;
 
 import com.ChessAI.models.User;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 public class UserDTO {
+    @NotBlank(message = "Username is required")
     private String username;
+    @NotBlank(message = "Password is required")
     private String password;
+    @Email
     private String email;
 
     public UserDTO(String username, String password, String email) {

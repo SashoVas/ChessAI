@@ -2,6 +2,7 @@ package com.ChessAI.controllers;
 
 import com.ChessAI.dto.UserDTO;
 import com.ChessAI.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,14 +15,13 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public UserDTO register(@RequestBody UserDTO user) {
+    public UserDTO register(@RequestBody @Valid UserDTO user) {
         return service.register(user);
 
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody UserDTO user) {
-
+    public String login(@RequestBody @Valid UserDTO user) {
         return service.verify(user);
     }
 }
