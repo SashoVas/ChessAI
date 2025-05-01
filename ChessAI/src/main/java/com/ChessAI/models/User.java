@@ -1,27 +1,32 @@
-package com.ChessAI.dto;
+package com.ChessAI.models;
 
-import com.ChessAI.models.User;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.*;
 
-public class UserDTO {
-    @NotBlank(message = "Username is required")
+import com.ChessAI.dto.UserDTO;
+
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Integer id;
     private String username;
-    @NotBlank(message = "Password is required")
     private String password;
-    @Email
     private String email;
 
-    public UserDTO(String username, String password, String email) {
+    public User() {}
+
+    public User(String username, String password, String email) {
         this.username = username;
         this.password = password;
         this.email = email;
     }
 
-    public UserDTO(User user) {
-        this.username = user.getUsername();
-        this.password = user.getPassword();
-        this.email = user.getEmail();
+    public User(UserDTO userDTO) {
+        this.username = userDTO.getUsername();
+        this.password = userDTO.getPassword();
+        this.email = userDTO.getEmail();
     }
 
     public String getUsername() {
@@ -43,6 +48,7 @@ public class UserDTO {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }

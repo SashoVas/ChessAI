@@ -3,7 +3,6 @@ package com.ChessAI.config;
 import com.ChessAI.services.ApplicationUserDetailsService;
 import com.ChessAI.services.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -12,18 +11,22 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+
+import com.ChessAI.exceptions.JWTException.JWTTokenException;
+import com.ChessAI.exceptions.HTTPException.HTTPHeaderException;
+import org.slf4j.Logger;
 
 @Component
 public class RoomEnterInterceptor implements ChannelInterceptor {
-    private final JWTService jwtService;
-    private final ApplicationUserDetailsService userDetailsService;
+    @Autowired
+    private JWTService jwtService;
 
-    public RoomEnterInterceptor(JWTService jwtService, ApplicationUserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
-    }
+    @Autowired
+    private ApplicationUserDetailsService userDetailsService;
+
+    @Autowired
+    private Logger logger;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -33,7 +36,7 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                System.out.println(token);
+                logger.debug("Auth token: {}", token);
                 String username = jwtService.extractUserName(token);
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -42,19 +45,19 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
                                 userDetails, null, userDetails.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                         accessor.setUser(authToken);
-                        System.out.println("Enter");
+                        logger.debug("RoomEnterInterceptor: User authenticated: {}", username);
                     } else {
-                        throw new RuntimeException("Invalid JWT token");
+                        throw new JWTTokenException();
                     }
-                } else {
-                    throw new RuntimeException("JWT token is missing or invalid");
+                } else{
+                    throw new JWTTokenException("JWT token is missing or invalid");
                 }
             } else {
-                throw new RuntimeException("Authorization header is missing");
+                throw new HTTPHeaderException("Authorization header is missing");
             }
         }
-        else{
-            System.out.println("Pre send");
+        else {
+            logger.debug("preSend(): STOMP command is not CONNECT: {}", accessor.getCommand());
         }
 
         return message;
