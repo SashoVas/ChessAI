@@ -11,6 +11,7 @@ public class UserDTO {
     private String password;
     @Email
     private String email;
+    public UserDTO() {}
 
     public UserDTO() {}
 

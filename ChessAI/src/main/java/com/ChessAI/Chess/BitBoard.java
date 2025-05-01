@@ -34,6 +34,117 @@ public class BitBoard {
         aiBot.getTranspositionTable().clear();
         //aiBot.historySet.clear();
     }
+    public boolean isMoveLegal(int move){
+        long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
+        long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
+        long wnc=BitBoardMovesGenerator.makeAMoveOnBoard(wn,move,2);
+        long wbc=BitBoardMovesGenerator.makeAMoveOnBoard(wb,move,4);
+        long wrc=BitBoardMovesGenerator.makeAMoveOnBoard(wr,move,3);
+        long wpc=BitBoardMovesGenerator.makeAMoveOnBoard(wp,move,9);
+        long bkc=BitBoardMovesGenerator.makeAMoveOnBoard(bk,move,12);
+        long bqc=BitBoardMovesGenerator.makeAMoveOnBoard(bq,move,5);
+        long bnc=BitBoardMovesGenerator.makeAMoveOnBoard(bn,move,6);
+        long bbc=BitBoardMovesGenerator.makeAMoveOnBoard(bb,move,8);
+        long brc=BitBoardMovesGenerator.makeAMoveOnBoard(br,move,7);
+        long bpc=BitBoardMovesGenerator.makeAMoveOnBoard(bp,move,10);
+
+        //Check if move is legal
+        if((currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&wkc)!=0))||
+                (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wkc, wqc, wnc, wbc, wrc, wpc, bkc, bqc, bnc, bbc, brc, bpc)&bkc)!=0))){
+            return false;
+        }
+        return true;
+    }
+    private void bitBoardToArray(String[][]board,String initial,long bitBoard){
+        long i=bitBoard& -bitBoard;
+
+        while(i!=0){
+            int index=Long.numberOfTrailingZeros(i);
+
+            int row=index/8;
+            int col=index%8;
+            board[row][col]=initial;
+            bitBoard&=~i;
+            i=bitBoard& -bitBoard;
+        }
+    }
+    private String parseBoardToFen(){
+        String[][]board=new String[8][8];
+        bitBoardToArray(board,"K",wk);
+        bitBoardToArray(board,"Q",wq);
+        bitBoardToArray(board,"R",wr);
+        bitBoardToArray(board,"B",wb);
+        bitBoardToArray(board,"N",wn);
+        bitBoardToArray(board,"P",wp);
+
+        bitBoardToArray(board,"k",bk);
+        bitBoardToArray(board,"q",bq);
+        bitBoardToArray(board,"r",br);
+        bitBoardToArray(board,"b",bb);
+        bitBoardToArray(board,"n",bn);
+        bitBoardToArray(board,"p",bp);
+        String result="";
+        for(int i=0;i<8;i++){
+            int counter=0;
+            for (int j=0;j<8;j++){
+                if(board[i][j]==null){
+                    counter++;
+                }
+                else
+                {
+                    if (counter!=0)
+                        result+=counter;
+                    result+=board[i][j];
+                    counter=0;
+                }
+            }
+            if(counter!=0)
+                result+=counter;
+            if(i!=7)
+                result+="/";
+
+        }
+        return result;
+    }
+    public String getFen(){
+        String result=parseBoardToFen();
+
+        //Turn
+        if (isWhiteOnTurn())
+            result+=" w ";
+        else
+            result+=" b ";
+        //Castle rights
+        if(ckw)
+            result+="K";
+        if (cqw)
+            result+="Q";
+        if(ckb)
+            result+="k";
+        if(cqb)
+            result+="q";
+        if(!(ckw|cqw|ckb|cqb))
+            result+="-";
+        //EnPassant
+        if (MoveUtilities.isEnPassant(lastMove))
+            result+=toAlgebra(lastMove);
+        else
+            result+=" - ";
+
+        //Half and Full move clock
+        result+="0 1";
+
+        return result;
+    }
+    public boolean isWhiteOnTurn(){
+        return currentTurn==1;
+    }
+    public List<String>getPossibleNextMoves(){
+        List<Integer> nextMoves;
+        if (isWhiteOnTurn()) nextMoves=generateMovesW();
+        else nextMoves=generateMovesB();
+        return nextMoves.stream().map(BitBoard::toAlgebra).toList();
+    }
     public AIBot getAiBot(){
         return aiBot;
     }

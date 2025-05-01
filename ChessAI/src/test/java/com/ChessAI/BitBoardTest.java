@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,6 +61,21 @@ class BitBoardTest {
                 Arguments.of("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 b - - 0 10")
         );
     }
+    static Stream<Arguments> provideTestCasesForFenGeneration() {
+        return Stream.of(
+                Arguments.of(BitBoard.defaultFen),
+                Arguments.of("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"),
+                Arguments.of("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"),
+                Arguments.of("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"),
+                Arguments.of("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 0 1"),
+                Arguments.of("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 1"),
+                Arguments.of("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1"),
+                Arguments.of("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 b - - 0 1"),
+                Arguments.of("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 b kq - 0 1"),
+                Arguments.of("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R b KQ - 0 1"),
+                Arguments.of("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 b - - 0 1")
+        );
+    }
     @ParameterizedTest
     @MethodSource("provideTestCasesForPerf")
     void TestPerft(String fen,int depth,int expected) {
@@ -75,13 +91,29 @@ class BitBoardTest {
     @ParameterizedTest
     @MethodSource("provideTestCasesForAlgebra")
     void TestAlgebraTransformations(String fen){
-        BitBoard board=BitBoard.createBoardFromFen(BitBoard.defaultFen);
-
-        for(int move:board.generateMovesW()){
+        BitBoard board=BitBoard.createBoardFromFen(fen);
+        List<Integer> moves;
+        if (board.isWhiteOnTurn()){
+            moves=board.generateMovesW();
+        }
+        else moves=board.generateMovesB();
+        for(int move:moves){
             String algebraMove=BitBoard.toAlgebra(move);
             long fromAlgebra=board.algebraToCode(algebraMove);
+            if(fromAlgebra==-1){
+                fromAlgebra=board.algebraToCode(algebraMove);
+            }
             assertEquals(fromAlgebra,move);
         }
 
     }
+
+    @ParameterizedTest
+    @MethodSource("provideTestCasesForFenGeneration")
+    void TestFenGeneration(String fen){
+        BitBoard board=BitBoard.createBoardFromFen(fen);
+        String generatedFen=board.getFen();
+        assertEquals(generatedFen,fen);
+    }
+
 }
