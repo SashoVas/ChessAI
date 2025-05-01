@@ -273,7 +273,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"gameType\" : \"BOT\",\r\n    \"gameTimeSeconds\" : 123\r\n}",
+					"raw": "{\r\n    \"gameType\" : \"MULTIPLAYER\",\r\n    \"gameTimeSeconds\" : 123\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
