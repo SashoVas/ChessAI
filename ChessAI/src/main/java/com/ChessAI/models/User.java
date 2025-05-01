@@ -10,6 +10,7 @@ import com.ChessAI.dto.UserDTO;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "user_id")
     private Integer id;
     private String username;
     private String password;
