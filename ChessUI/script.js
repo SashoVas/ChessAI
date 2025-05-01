@@ -108,3 +108,31 @@ document.addEventListener('DOMContentLoaded', () => {
     createChessboard();
     document.getElementById('chessboard').addEventListener('mousedown', handleMouseDown);
 });
+
+const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxMDYwODAsImV4cCI6MTc2MTY1ODA4MH0.jCKHJIiEo1xnWDyD0t22EsRyFQAyBbfiZjz994Wmjf4uS289U6m4TmBA40-D9JN8lZgYLw-hQFCJO9mc1tAvag'; 
+
+const socket = new SockJS('http://localhost:8080/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({
+    Authorization: `Bearer ${jwtToken}`,
+    'heart-beat': '10000,10000'
+}, function (frame) {
+    console.log('Connected: ' + frame);
+
+    const roomId = "room123";
+    stompClient.subscribe('/room/game.' + roomId, function (messageOutput) {
+        const message = JSON.parse(messageOutput.body);
+        console.log("Received message:", message);
+    });
+});
+
+// Sending a message
+function sendMessage(move, roomId) {
+    const moveObj = {
+        move: move,
+        roomId: roomId
+    };
+
+    stompClient.send("/app/game.makeMove", {}, JSON.stringify(moveObj));
+}
