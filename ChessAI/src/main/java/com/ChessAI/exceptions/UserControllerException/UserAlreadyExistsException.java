@@ -1,4 +1,4 @@
-package com.ChessAI.exceptions;
+package com.ChessAI.exceptions.UserControllerException;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 
