@@ -13,7 +13,16 @@ public class WebSocketTestController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+
     String currentFen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";//TODO:Take from db
+
+    @MessageMapping("/game.initialConnect")
+    public void initialConnect(@Payload InitialConnectDTO input){
+        BitBoard bitboard=BitBoard.createBoardFromFen(currentFen);
+        MoveResult result=new MoveResult(currentFen,null,bitboard.getPossibleNextMoves());
+        String destination = "/room/game." + input.roomId;
+        messagingTemplate.convertAndSend(destination, result);
+    }
     @MessageMapping("/game.makeMove")
     public void move(@Payload Move move) {
         System.out.println(move.move);
