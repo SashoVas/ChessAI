@@ -8,35 +8,75 @@ const initialPosition = [
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
 ];
-let whitePieceInitials={
-    "k":"♔",
-    "q":"♕",
-    "n":"♘",
-    "r":"♖",
-    "b":"♗",
-    "p":"♙",
+let blackPieceInitials={
+    "k":"♚",
+    "q":"♛",
+    "n":"♞",
+    "r":"♜",
+    "b":"♝",
+    "p":"♟",
 
 }
-let blackPieceInitials={
-    "K":"♚",
-    "Q":"♛",
-    "N":"♞",
-    "R":"♜",
-    "B":"♝",
-    "P":"♟",
+let whitePieceInitials={
+    "K":"♔",
+    "Q":"♕",
+    "N":"♘",
+    "R":"♖",
+    "B":"♗",
+    "P":"♙",
 }
+const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxODExMjUsImV4cCI6MTc2MTczMzEyNX0.mQGSjqG3WC0pbzFQMsClUf7qcLHNHLo-M-XMUgjrLXn5PA0F0wz5Mzh0mS_jnDsScr2vCblAbfTB_upjfoDMew'; 
+
+const socket = new SockJS('http://localhost:8080/ws');
+const stompClient = Stomp.over(socket);
+let currentRoomId="room123"
 let draggedPiece = null;
 let offsetX = 0;
 let offsetY = 0;
 let from;
 let to;
+let possibleMoves=[];
+let firstBoardColor="#f0d9b5";
+let secondBoardColor="#b58863";
+let highlightColor='#a9a9a9';
 
+function toChessAlgebraMove(move){
+    var row=8-Math.floor(move/8);
+    var col=move%8;
+    return String.fromCharCode('a'.charCodeAt(0)+col) + row
+}
+function fromAlgebraToPosition(move){
+    return 8*(8 - (move.charCodeAt(1) - '0'.charCodeAt(0))) + (move.charCodeAt(0) - 'a'.charCodeAt(0))
+}
+function getAttackedPositions(){
+    return possibleMoves
+    .filter((possibleMove)=>possibleMove.startsWith(toChessAlgebraMove(from)))
+    .map((possibleMove)=>fromAlgebraToPosition(possibleMove.substring(2, 4)));
+}
+function highlightPosition(pos){
+    const square = document.getElementById('chessboard').children[pos];
+    square.style.backgroundColor = highlightColor;
+}
+function unHighlightPosition(pos){
+    const square = document.getElementById('chessboard').children[pos];
+    var evenPosColor=firstBoardColor;
+    var oddPosColor=secondBoardColor;
 
+    if(pos<8 || (pos>=16 && pos<24)|| (pos>=32 && pos<40)|| (pos>=48 && pos<56)){
+        var evenPosColor=secondBoardColor;
+        var oddPosColor=firstBoardColor;
+    }
+    if(pos%2==0){
+        square.style.backgroundColor = evenPosColor;
+    }
+    else{
+        square.style.backgroundColor = oddPosColor;
+    }
+}
 function getSquarePos(element){
     const chessboard = document.getElementById('chessboard');
     return Array.prototype.indexOf.call(chessboard.children, element);
 }
-
 function emptyBoard(){
     for(let i=0;i<8;i++){
         for(let j=0;j<8;j++){
@@ -44,25 +84,29 @@ function emptyBoard(){
         }
     }
 }
+function getElementByPos(pos){
+    const chessboard = document.getElementById('chessboard');
+    return chessboard.children[pos]
+}
 function fenToBoard(fen){
     emptyBoard()
     let currentIndex=0;
     let boardFen=fen.split(" ")[0]
     for(let i=0;i<boardFen.length;i++){
         var currentLetter=boardFen[i]
-        var convertDict=whitePieceInitials;
+        var convertDict=blackPieceInitials;
         if(currentLetter=='/')continue;
         if(currentLetter>='0' && currentLetter<='9'){
             currentIndex+=currentLetter - '0';
             continue;
         }
         else if(currentLetter==currentLetter.toUpperCase()){
-            convertDict=blackPieceInitials;
+            convertDict=whitePieceInitials;
         }
         var row=Math.floor(currentIndex/8);
         var col=currentIndex%8;
 
-        initialPosition[7-row][col]=convertDict[currentLetter];
+        initialPosition[row][col]=convertDict[currentLetter];
         currentIndex++;
     }
 
@@ -118,6 +162,8 @@ function handleMouseDown(e) {
     draggedPiece.style.cursor=`grabbing`
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+
+    getAttackedPositions().forEach((pos)=>highlightPosition(pos));
 }
 
 function handleMouseMove(e) {
@@ -151,8 +197,11 @@ function handleMouseUp(e) {
     const row = Math.floor(y / 60);
     const index = row * 8 + col;
     const targetSquare = chessboard.children[index];
+
     to=getSquarePos(targetSquare)//The position of the end square
-    if(targetSquare.hasChildNodes()){
+    var isMovePossible=possibleMoves.includes((toChessAlgebraMove(from)+toChessAlgebraMove(to)))
+
+    if(isMovePossible && targetSquare.hasChildNodes()){
         targetSquare.removeChild(targetSquare.lastChild)
     }
     // Reset styles and move to new square
@@ -162,11 +211,22 @@ function handleMouseUp(e) {
     draggedPiece.style.left = '';
     draggedPiece.style.top = '';
     draggedPiece.style.cursor= 'grab';
-    targetSquare.appendChild(draggedPiece);
+
+    if(isMovePossible)
+        targetSquare.appendChild(draggedPiece);
+    else{
+        chessboard.children[from].appendChild(draggedPiece);
+        draggedPiece.style.cursor= '';
+    }
 
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
     draggedPiece = null;
+
+    getAttackedPositions().forEach((pos)=>unHighlightPosition(pos));
+    if(isMovePossible && from!=to){
+        sendMessage(toChessAlgebraMove(from)+toChessAlgebraMove(to),currentRoomId)
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -174,23 +234,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chessboard').addEventListener('mousedown', handleMouseDown);
 });
 
-const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxODExMjUsImV4cCI6MTc2MTczMzEyNX0.mQGSjqG3WC0pbzFQMsClUf7qcLHNHLo-M-XMUgjrLXn5PA0F0wz5Mzh0mS_jnDsScr2vCblAbfTB_upjfoDMew'; 
-
-const socket = new SockJS('http://localhost:8080/ws');
-const stompClient = Stomp.over(socket);
-
 stompClient.connect({
     Authorization: `Bearer ${jwtToken}`,
     'heart-beat': '10000,10000'
 }, function (frame) {
     console.log('Connected: ' + frame);
 
-    const roomId = "room123";
-    stompClient.subscribe('/room/game.' + roomId, function (messageOutput) {
+    stompClient.subscribe('/room/game.' + currentRoomId, function (messageOutput) {
         const message = JSON.parse(messageOutput.body);
+        possibleMoves=message.nextMoves;
         loadFen(message.fen)
         console.log("Received message:", message);
-    });
+    })
+    initialConnect(currentRoomId)
 });
 
 function sendMessage(move, roomId) {
