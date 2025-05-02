@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chessnet
     restart: unless-stopped
 
   pgadmin:
@@ -24,9 +26,14 @@ services:
       PGADMIN_DEFAULT_PASSWORD: "123456/"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-    restart: unless-stopped
     depends_on:
       - postgres
+    networks:
+      - chessnet
+    restart: unless-stopped
+
+networks:
+  chessnet:
 
 volumes:
   postgres_data:

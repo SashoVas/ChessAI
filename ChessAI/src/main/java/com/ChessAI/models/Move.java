@@ -8,7 +8,10 @@ public class Move {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Integer id;
-    private Integer GameId;
+
+    @ManyToOne
+    @JoinColumn(name = "game_id")
+    private Game game;
     private String initialFen;
     private String finalFen;
     private String moveNr;
