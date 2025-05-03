@@ -39,6 +39,9 @@ let possibleMoves=[];
 let firstBoardColor="#f0d9b5";
 let secondBoardColor="#b58863";
 let highlightColor='#a9a9a9';
+let isBotMode=true;
+let botEndpoint='/app/game.makeMoveToBot';
+let multiplayerEndpoint='/app/game.makeMoveToPlayer';
 
 function toChessAlgebraMove(move){
     var row=8-Math.floor(move/8);
@@ -255,7 +258,7 @@ function sendMessage(move, roomId) {
         roomId: roomId
     };
 
-    stompClient.send("/app/game.makeMove", {}, JSON.stringify(moveObj));
+    stompClient.send(isBotMode?botEndpoint:multiplayerEndpoint , {}, JSON.stringify(moveObj));
 }
 
 function initialConnect(roomId){
