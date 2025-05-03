@@ -1,10 +1,7 @@
 package com.ChessAI.services;
 
 import com.ChessAI.dto.CreateGameDTO;
-import com.ChessAI.models.Game;
-import com.ChessAI.models.GameStatus;
-import com.ChessAI.models.GameType;
-import com.ChessAI.models.PlayerColor;
+import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +21,11 @@ public class GameService {
     public Game createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
+        User user=userRepository.findByUsername(userDetails.getUsername()).get();
         //Since user is authorized, we know that user exists
-        game.setUser1(userRepository.findByUsername(userDetails.getUsername()).get());
-
+        game.setUser1(user);
+        //TODO:Make so the user choose who is first
+        game.setCurrentTurnUser(user);
         PlayerColor u1Color = PlayerColor.getRandomColor();
         game.setUser1Color(u1Color);
         game.setUser2Color(PlayerColor.getOpponentColor(u1Color));

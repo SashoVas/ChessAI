@@ -69,8 +69,15 @@ public class Game {
     @JoinColumn(name = "loser_id", referencedColumnName = "user_id")
     private User loser = null;
 
+    @ManyToOne
+    @JoinColumn(name = "current_turn_user", referencedColumnName = "user_id")
+    private User currentTurnUser = null;
+
     @Column(name = "game_time_seconds")
     private Integer gameTimeSeconds = -1;
+
+    @Column(name = "currentTurn")
+    private Integer currentTurn = 0;
 
     public Game() {}
 
@@ -84,7 +91,20 @@ public class Game {
         this.gameType = gameType;
         this.gameTimeSeconds = gameTimeSeconds;
     }
+    public User getCurrentTurnUser() {
+        return currentTurnUser;
+    }
 
+    public void setCurrentTurnUser(User currentTurnUser) {
+        this.currentTurnUser = currentTurnUser;
+    }
+    public Integer getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public void setCurrentTurn(Integer currentTurn) {
+        this.gameId = currentTurn;
+    }
     public Integer getGameId() {
         return gameId;
     }
