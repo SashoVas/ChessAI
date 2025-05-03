@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - miro
   pull_request:
     branches:
       - main
+      - miro
 
 jobs:
   test:
@@ -29,4 +31,34 @@ jobs:
       - name: Build and run tests
         working-directory: ./ChessAI
         run: mvn -B test --file pom.xml
+
+      - name: Start backend server
+        run: mvn spring-boot:run &
+        working-directory: ChessAI
+
+      - name: Wait for backend to start
+        run: sleep 20
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Newman and HTML Reporter
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-html
+
+      - name: Run API Tests
+        run: |
+          newman run ChessAI/src/test/postman/ChessAI.postman_collection.json \
+            --reporters cli,html \
+            --reporter-html-export newman-report.html
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-report
+          path: newman-report.html
 

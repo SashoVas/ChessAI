@@ -1,24 +1,30 @@
 {
 	"info": {
-		"_postman_id": "2bc375be-3be5-4129-98e7-0bc1136a8ef6",
+		"_postman_id": "cd9ae99a-e3c9-42ff-a561-a25c42529e28",
 		"name": "ChessAI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "44330844",
-		"_collection_link": "https://miroslavstoyanovski.postman.co/workspace/3bdb9851-0f05-45e2-8938-f4763a179303/collection/44330844-2bc375be-3be5-4129-98e7-0bc1136a8ef6?action=share&source=collection_link&creator=44330844"
+		"_collection_link": "https://miroslavstoyanovski.postman.co/workspace/Miroslav-Stoyanovski's-Workspac~3bdb9851-0f05-45e2-8938-f4763a179303/collection/44330844-cd9ae99a-e3c9-42ff-a561-a25c42529e28?action=share&source=collection_link&creator=44330844"
 	},
 	"item": [
 		{
 			"name": "createGamenoAuth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 403\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
-				"header": [
-					{
-						"key": "",
-						"value": "",
-						"type": "text",
-						"disabled": true
-					}
-				],
+				"header": [],
 				"url": {
 					"raw": "http://localhost:8080/createGame",
 					"protocol": "http",
@@ -35,6 +41,19 @@
 		},
 		{
 			"name": "getFreeRoomsNoAuth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 403\", function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
@@ -54,6 +73,20 @@
 		},
 		{
 			"name": "loginNoRegister",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -82,6 +115,19 @@
 		},
 		{
 			"name": "register",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -115,10 +161,12 @@
 					"listen": "test",
 					"script": {
 						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
 							"pm.globals.set(\"jwt_token\", pm.response.text());"
 						],
-						"type": "text/javascript",
-						"packages": {}
+						"type": "text/javascript"
 					}
 				}
 			],
@@ -150,6 +198,20 @@
 		},
 		{
 			"name": "registerExisting",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -178,6 +240,19 @@
 		},
 		{
 			"name": "getFreeRoomsEmpty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [
@@ -203,6 +278,19 @@
 		},
 		{
 			"name": "createGameBot",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -237,6 +325,19 @@
 		},
 		{
 			"name": "getFreeRoomsEmpty1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [
@@ -262,6 +363,20 @@
 		},
 		{
 			"name": "createGameMultiplayer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -273,7 +388,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"gameType\" : \"MULTIPLAYER\",\r\n    \"gameTimeSeconds\" : 123\r\n}",
+					"raw": "{\r\n    \"gameType\" : \"MULTIPLAYER\",\r\n    \"gameTimeSeconds\" : 300\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -295,7 +410,21 @@
 			"response": []
 		},
 		{
-			"name": "createGameNonExistant",
+			"name": "createGameTypeNonExistant",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -329,7 +458,20 @@
 			"response": []
 		},
 		{
-			"name": "getFreeRoomsEmpty2",
+			"name": "getFreeRoomsNotEmpty",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [
