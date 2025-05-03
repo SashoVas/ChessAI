@@ -1,9 +1,10 @@
-package com.ChessAI.Test;
+package com.ChessAI.dto;
 
 import java.util.List;
 
-public class MoveResult {
-    public MoveResult(String fen, String move, List<String> nextMoves) {
+public class MoveResultDTO {
+
+    public MoveResultDTO(String fen, String move, List<String> nextMoves) {
         this.fen = fen;
         this.move = move;
         this.nextMoves = nextMoves;
@@ -36,4 +37,5 @@ public class MoveResult {
     public void setNextMoves(List<String> nextMoves) {
         this.nextMoves = nextMoves;
     }
+
 }

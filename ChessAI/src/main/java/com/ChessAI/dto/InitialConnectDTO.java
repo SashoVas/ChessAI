@@ -1,4 +1,4 @@
-package com.ChessAI.Test;
+package com.ChessAI.dto;
 
 public class InitialConnectDTO {
     public String getRoomId() {

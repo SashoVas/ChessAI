@@ -143,7 +143,11 @@ public class BitBoard {
         List<Integer> nextMoves;
         if (isWhiteOnTurn()) nextMoves=generateMovesW();
         else nextMoves=generateMovesB();
-        return nextMoves.stream().map(BitBoard::toAlgebra).toList();
+        return nextMoves
+                .stream()
+                .filter(this::isMoveLegal)
+                .map(BitBoard::toAlgebra)
+                .toList();
     }
     public AIBot getAiBot(){
         return aiBot;

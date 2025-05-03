@@ -1,6 +1,6 @@
-package com.ChessAI.Test;
+package com.ChessAI.dto;
 
-public class Move {
+public class MoveInputDTO {
     public String move;
     public String roomId;
 
