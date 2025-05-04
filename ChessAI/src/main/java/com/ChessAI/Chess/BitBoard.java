@@ -4,6 +4,7 @@ import com.ChessAI.Chess.Evaluation.BoardEvaluation;
 import com.ChessAI.Chess.Moves.BitBoardMovesGenerator;
 import com.ChessAI.Chess.Moves.MoveUtilities;
 import com.ChessAI.Chess.TranspositionTable.ZobristHash;
+import com.ChessAI.models.GameStatus;
 
 import java.util.List;
 
@@ -348,6 +349,16 @@ public class BitBoard {
         System.out.println("");
 
     }
+
+    //TODO: implement this
+    public GameStatus getCurrentGameStatus() {
+        //if player1_won return GameStatus.PLAYER1_WON;
+        //if player2_won return GameStatus.PLAYER2_WON;
+        //if draw return GameStatus.DRAW;
+        //else return GameStatus.IN_PROGRESS;
+        return GameStatus.IN_PROGRESS;
+    }
+
 
     public static BitBoard createBoardFromFen(String fen){
         BitBoard board=new BitBoard();

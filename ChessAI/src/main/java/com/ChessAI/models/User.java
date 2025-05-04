@@ -3,6 +3,7 @@ package com.ChessAI.models;
 import jakarta.persistence.*;
 
 import com.ChessAI.dto.UserDTO;
+import jakarta.validation.constraints.NotNull;
 
 
 @Entity
@@ -12,6 +13,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "user_id")
     private Integer id;
+    @Column(name = "elo_rating")
+    @NotNull
+    private Integer elo = 1500; //TODO: get from config
+    @Column(name = "is_elo_provisional")
+    private Boolean isEloProvisional = true;
     private String username;
     private String password;
     private String email;
@@ -52,5 +58,21 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Integer getEloRating() {
+        return elo;
+    }
+
+    public void setEloRating(Integer elo) {
+        this.elo = elo;
+    }
+
+    public Boolean IsEloProvisional() {
+        return isEloProvisional;
+    }
+
+    public void setIsEloProvisional(Boolean isEloProvisional) {
+        this.isEloProvisional = isEloProvisional;
     }
 }

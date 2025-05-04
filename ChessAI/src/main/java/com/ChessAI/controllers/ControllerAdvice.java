@@ -1,14 +1,12 @@
 package com.ChessAI.controllers;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.ChessAI.exceptions.UserControllerException.UserNotFoundException;
-import com.ChessAI.exceptions.UserControllerException.UserAlreadyExistsException;
+import com.ChessAI.exceptions.UserException.UserNotFoundException;
+import com.ChessAI.exceptions.UserException.UserAlreadyExistsException;
 
 @RestControllerAdvice
 public class ControllerAdvice {

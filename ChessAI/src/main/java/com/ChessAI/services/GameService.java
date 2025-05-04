@@ -18,17 +18,24 @@ public class GameService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EloCalculatorService eloCalculatorService;
+
     public Game createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
-        User user=userRepository.findByUsername(userDetails.getUsername()).get();
         //Since user is authorized, we know that user exists
+        User user=userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
         game.setUser1(user);
+
         //TODO:Make so the user choose who is first
         game.setCurrentTurnUser(user);
         PlayerColor u1Color = PlayerColor.getRandomColor();
         game.setUser1Color(u1Color);
         game.setUser2Color(PlayerColor.getOpponentColor(u1Color));
+
+        game.setUser1Elo(user.getEloRating());
+        game.setIsUser1EloProvisional(user.IsEloProvisional());
 
         game.setGameType(createGameDTO.getGameType());
         game.setUser1TimeLeft(createGameDTO.getGameTimeSeconds());
