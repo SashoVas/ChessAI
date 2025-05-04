@@ -25,7 +25,7 @@ let whitePieceInitials={
     "B":"♗",
     "P":"♙",
 }
-const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxODExMjUsImV4cCI6MTc2MTczMzEyNX0.mQGSjqG3WC0pbzFQMsClUf7qcLHNHLo-M-XMUgjrLXn5PA0F0wz5Mzh0mS_jnDsScr2vCblAbfTB_upjfoDMew'; 
+const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYzNzkxNjgsImV4cCI6MTc2MTkzMTE2OH0.nH9IcNIWKZYRr2rYDzHkwyFTt7khtOw5qweIT9aEgMG0isi0UUlxLDXOJ2Nxpqvn0gbhiKAEMb4Jp5SNWvCgrQ'; 
 
 const socket = new SockJS('http://localhost:8080/ws');
 const stompClient = Stomp.over(socket);
