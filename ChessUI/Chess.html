@@ -7,11 +7,17 @@
 </head>
 <body>
     <div id="chessboard" class="chessboard"></div>
-    <div>
+    <section>
         <label for="FEN">FEN</label>
         <input id="FEN" type="text" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1">
         <button onclick="loadFenButtonClick()"> Load FEN</button>
-    </div>
+    </section>
+    <section>
+        <label for="FEN">Room</label>
+        <input id="Room" type="text" value="">
+        <button onclick="joinRoom()"> Join Room</button>
+        <button onclick="createRoom()"> Create Room</button>
+    </section>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script src="script.js"></script>

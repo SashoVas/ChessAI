@@ -29,7 +29,7 @@ const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxODExM
 
 const socket = new SockJS('http://localhost:8080/ws');
 const stompClient = Stomp.over(socket);
-let currentRoomId="room123"
+let currentRoomId="1"
 let draggedPiece = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -59,6 +59,7 @@ function getAttackedPositions(){
 function highlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
     square.style.backgroundColor = highlightColor;
+    square.style.borderColor = "black";
 }
 function unHighlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
@@ -75,6 +76,7 @@ function unHighlightPosition(pos){
     else{
         square.style.backgroundColor = oddPosColor;
     }
+    square.style.borderColor = "";
 }
 function getSquarePos(element){
     const chessboard = document.getElementById('chessboard');
@@ -237,21 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chessboard').addEventListener('mousedown', handleMouseDown);
 });
 
-stompClient.connect({
-    Authorization: `Bearer ${jwtToken}`,
-    'heart-beat': '10000,10000'
-}, function (frame) {
-    console.log('Connected: ' + frame);
-
-    stompClient.subscribe('/room/game.' + currentRoomId, function (messageOutput) {
-        const message = JSON.parse(messageOutput.body);
-        possibleMoves=message.nextMoves;
-        loadFen(message.fen)
-        console.log("Received message:", message);
-    })
-    initialConnect(currentRoomId)
-});
-
 function sendMessage(move, roomId) {
     const moveObj = {
         move: move,
@@ -273,4 +260,41 @@ function loadFenButtonClick(){
     const input = document.getElementById('FEN');
     fen=input.value;
     loadFen(fen);
+}
+stompClient.connect({
+    Authorization: `Bearer ${jwtToken}`,
+    'heart-beat': '10000,10000'
+}, function (frame) {
+    console.log('Connected: ' + frame);
+});
+function joinRoom(){
+    currentRoomId= document.getElementById('Room').value;
+
+    
+    stompClient.subscribe('/room/game.' + currentRoomId, function (messageOutput) {
+        const message = JSON.parse(messageOutput.body);
+        possibleMoves=message.nextMoves;
+        loadFen(message.fen)
+        console.log("Received message:", message);
+    })
+    initialConnect(currentRoomId)
+}
+
+function createRoom(){
+    fetch("http://localhost:8080/createGame",
+        {
+            method: "POST",
+            body: JSON
+            .stringify
+            ({
+              gameType: "BOT",
+              gameTimeSeconds: 60,
+            }),
+            headers: {
+              "Content-type": "application/json",
+              "Authorization":`Bearer ${jwtToken}`
+            },
+          })
+            .then((response) => response.json())
+            .then((json) => console.log(json));
 }
