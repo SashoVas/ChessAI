@@ -3,7 +3,7 @@ package com.ChessAI.controllers.WebSockets;
 import com.ChessAI.dto.InitialConnectDTO;
 import com.ChessAI.dto.MoveInputDTO;
 import com.ChessAI.dto.MoveResultDTO;
-import com.ChessAI.services.MoveService;
+import com.ChessAI.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -16,11 +16,11 @@ public class MoveWebSocketController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
-    private MoveService moveService;
+    private GameService gameService;
 
     @MessageMapping("/game.initialConnect")
     public void initialConnect(@Payload InitialConnectDTO input){
-        MoveResultDTO result=moveService.getCurrentGameState(input);
+        MoveResultDTO result=gameService.getCurrentGameState(input);
         String destination = "/room/game." + input.getRoomId();
         messagingTemplate.convertAndSend(destination, result);
     }
@@ -29,7 +29,7 @@ public class MoveWebSocketController {
         System.out.println(move.move);
         System.out.println(move.roomId);
 
-        MoveResultDTO result=moveService.makeAMoveToBot(move);
+        MoveResultDTO result=gameService.makeAMoveToBot(move);
         String destination = "/room/game." + move.roomId;
         messagingTemplate.convertAndSend(destination, result);
     }
@@ -39,7 +39,7 @@ public class MoveWebSocketController {
         System.out.println(move.move);
         System.out.println(move.roomId);
 
-        MoveResultDTO result=moveService.makeAMoveToPlayer(move);
+        MoveResultDTO result=gameService.makeAMoveToPlayer(move);
 
         String destination = "/room/game." + move.roomId;
         messagingTemplate.convertAndSend(destination, result);

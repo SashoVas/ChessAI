@@ -21,6 +21,7 @@ import java.util.UUID;
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    //TODO:Make gameId string
     private Integer gameId;
 
     //Game creator is user1
@@ -103,7 +104,7 @@ public class Game {
     }
 
     public void setCurrentTurn(Integer currentTurn) {
-        this.gameId = currentTurn;
+        this.currentTurn = currentTurn;
     }
     public Integer getGameId() {
         return gameId;
