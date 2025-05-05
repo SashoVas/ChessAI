@@ -42,6 +42,10 @@ let highlightColor='#a9a9a9';
 let isBotMode=true;
 let botEndpoint='/app/game.makeMoveToBot';
 let multiplayerEndpoint='/app/game.makeMoveToPlayer';
+let stompMessageHeaders={
+    Authorization: `Bearer ${jwtToken}`,
+    'heart-beat': '10000,10000'
+}
 
 function toChessAlgebraMove(move){
     var row=8-Math.floor(move/8);
@@ -245,7 +249,7 @@ function sendMessage(move, roomId) {
         roomId: roomId
     };
 
-    stompClient.send(isBotMode?botEndpoint:multiplayerEndpoint , {}, JSON.stringify(moveObj));
+    stompClient.send(isBotMode?botEndpoint:multiplayerEndpoint , stompMessageHeaders, JSON.stringify(moveObj));
 }
 
 function initialConnect(roomId){
@@ -253,7 +257,7 @@ function initialConnect(roomId){
         roomId: roomId
     };
 
-    stompClient.send("/app/game.initialConnect", {}, JSON.stringify(moveObj));
+    stompClient.send("/app/game.initialConnect", stompMessageHeaders, JSON.stringify(moveObj));
 }
 
 function loadFenButtonClick(){
@@ -261,10 +265,7 @@ function loadFenButtonClick(){
     fen=input.value;
     loadFen(fen);
 }
-stompClient.connect({
-    Authorization: `Bearer ${jwtToken}`,
-    'heart-beat': '10000,10000'
-}, function (frame) {
+stompClient.connect(stompMessageHeaders, function (frame) {
     console.log('Connected: ' + frame);
 });
 function joinRoom(){
@@ -276,7 +277,7 @@ function joinRoom(){
         possibleMoves=message.nextMoves;
         loadFen(message.fen)
         console.log("Received message:", message);
-    })
+    },stompMessageHeaders)
     initialConnect(currentRoomId)
 }
 
