@@ -25,11 +25,6 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
     @Query("SELECT COUNT(g) FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
     Integer findGameCount(String username, GameType gameType);
 
-    @Transactional
-    @Modifying
-    @Query("UPDATE Game g SET g.gameStatus = :gameStatus WHERE g.gameId = :gameId")
-    void updateGameStatusByGameId(GameStatus gameStatus, Integer gameId);
-
     @Query("SELECT COUNT(g) FROM Game g WHERE g.gameType = :gameType AND ((g.user1.username = :username AND g.gameStatus = 'FIRST_PLAYER_WON') OR (g.user2.username = :username AND g.gameStatus = 'SECOND_PLAYER_WON'))")
     Integer findWinCountByUsername(String username, GameType gameType);
 

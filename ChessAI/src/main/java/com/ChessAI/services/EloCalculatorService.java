@@ -116,13 +116,12 @@ public class EloCalculatorService {
         return currentGameScorePlayer1;
     }
 
-    public void updateElo(Integer roomId, GameStatus gameStatus) {
-        Game currentGame = gameRepository.findByGameId(roomId).orElseThrow();
-        if (currentGame.getGameType() == GameType.BOT) {
+    public void updateElo(Game game) {
+        if (game.getGameType() == GameType.BOT) {
             return; //No elo calculation for bot games
         }
-        User user1 = currentGame.getUser1();
-        User user2 = currentGame.getUser2();
+        User user1 = game.getUser1();
+        User user2 = game.getUser2();
 
         //extract total multiplayer games played by each player
         int player1Games = gameRepository.findGameCount(user1.getUsername(), GameType.MULTIPLAYER);
@@ -145,7 +144,7 @@ public class EloCalculatorService {
         }
 
         //if players have played more than minimumGamesForElo, update their actual elo
-        double currentGameScorePlayer1 = getPlayer1Score(currentGame.getUser1Color(), gameStatus);
+        double currentGameScorePlayer1 = getPlayer1Score(game.getUser1Color(), game.getGameStatus());
         if (player1Games >= minimumGamesForElo) {
             updateActualElo(user1, user2, currentGameScorePlayer1);
         }

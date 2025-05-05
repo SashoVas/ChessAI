@@ -91,7 +91,7 @@ public class GameService {
         game.setGameStatus(bitboard.getState());
         gameRepository.save(game);
         if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
-            eloCalculatorService.updateElo(game.getGameId(), game.getGameStatus());
+            eloCalculatorService.updateElo(game);
         }
     }
     private BitBoard makeAMove(Game game, MoveInputDTO move){
