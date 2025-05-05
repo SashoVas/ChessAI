@@ -268,17 +268,20 @@ function loadFenButtonClick(){
 stompClient.connect(stompMessageHeaders, function (frame) {
     console.log('Connected: ' + frame);
 });
-function joinRoom(){
-    currentRoomId= document.getElementById('Room').value;
+
+function joinRoom(roomId){
 
     
-    stompClient.subscribe('/room/game.' + currentRoomId, function (messageOutput) {
+    stompClient.subscribe('/room/game.' + roomId, function (messageOutput) {
         const message = JSON.parse(messageOutput.body);
         possibleMoves=message.nextMoves;
         loadFen(message.fen)
         console.log("Received message:", message);
     },stompMessageHeaders)
-    initialConnect(currentRoomId)
+    initialConnect(roomId)
+}
+function joinRoomOnClick(){
+    joinRoom(document.getElementById('Room').value)
 }
 
 function createRoom(){
@@ -297,5 +300,6 @@ function createRoom(){
             },
           })
             .then((response) => response.json())
-            .then((json) => console.log(json));
+            .then((json) => console.log(json))
+            .then(joinRoom);
 }

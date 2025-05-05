@@ -32,27 +32,29 @@ public class MoveWebSocketController {
         System.out.println(username);
 
         //System.out.println(userDetails.getUsername());
-        MoveResultDTO result=gameService.getCurrentGameState(input);
+        MoveResultDTO result=gameService.getCurrentGameState(input,username);
         String destination = "/room/game." + input.getRoomId();
         messagingTemplate.convertAndSend(destination, result);
     }
     @MessageMapping("/game.makeMoveToBot")
-    public void moveOnBot(@Payload MoveInputDTO move) {
+    public void moveOnBot(Principal principal,@Payload MoveInputDTO move) {
         //System.out.println(userDetails.getUsername());
         System.out.println(move.move);
         System.out.println(move.roomId);
+        String username=principal.getName();
 
-        MoveResultDTO result=gameService.makeAMoveToBot(move);
+        MoveResultDTO result=gameService.makeAMoveToBot(move,username);
         String destination = "/room/game." + move.roomId;
         messagingTemplate.convertAndSend(destination, result);
     }
     @MessageMapping("/game.makeMoveToPlayer")
 
-    public void moveOnPlayer(@Payload MoveInputDTO move){
+    public void moveOnPlayer(Principal principal,@Payload MoveInputDTO move){
         System.out.println(move.move);
         System.out.println(move.roomId);
+        String username=principal.getName();
 
-        MoveResultDTO result=gameService.makeAMoveToPlayer(move);
+        MoveResultDTO result=gameService.makeAMoveToPlayer(move,username);
 
         String destination = "/room/game." + move.roomId;
         messagingTemplate.convertAndSend(destination, result);

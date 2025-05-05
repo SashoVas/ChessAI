@@ -1,12 +1,10 @@
 package com.ChessAI.services;
 
 import com.ChessAI.Chess.BitBoard;
-import com.ChessAI.dto.CreateGameDTO;
-import com.ChessAI.dto.InitialConnectDTO;
-import com.ChessAI.dto.MoveInputDTO;
-import com.ChessAI.dto.MoveResultDTO;
+import com.ChessAI.dto.*;
 import com.ChessAI.exceptions.InvalidActionException.InvalidMoveException;
 import com.ChessAI.exceptions.InvalidActionException.InvalidRoomException;
+import com.ChessAI.exceptions.InvalidActionException.UnauthorizedGameAccessException;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
@@ -51,8 +49,19 @@ public class GameService {
     public Set<Game> getFreeRooms() {
         return gameRepository.findByGameStatusAndGameType(GameStatus.NOT_STARTED, GameType.MULTIPLAYER);
     }
+    public GameResultDTO joinRoom(String roomId, String username){
+        Game game=getGame(roomId);
+        if(game.getUser2()!=null || game.getGameType() != GameType.MULTIPLAYER){
+            throw new UnauthorizedGameAccessException();
+        }
+        User user=userRepository.findByUsername(username).get();
+        game.setUser2(user);
+        gameRepository.save(game);
+        return GameResultDTO.fromEntity(game);
+    }
 
     private Game getGame(String roomId){
+        //TODO: Fix so that the rooms/games have string as id
         Optional<Game> currentGame=gameRepository.findById(Integer.parseInt(roomId));
         if (currentGame.isEmpty()){
             throw new InvalidRoomException();
@@ -99,8 +108,11 @@ public class GameService {
         return new MoveResultDTO(bitBoard.getFen(),nextMove,bitBoard.getPossibleNextMoves(),bitBoard.getState());
     }
     @Transactional
-    public MoveResultDTO makeAMoveToBot(MoveInputDTO move){
+    public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
+        if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
+            throw new UnauthorizedGameAccessException();
+        }
         BitBoard bitboard=makeAMove(game,move);
         GameStatus state=bitboard.getState();
         if (state != GameStatus.NOT_STARTED && state != GameStatus.IN_PROGRESS && state != GameStatus.UNKNOWN){
@@ -110,15 +122,20 @@ public class GameService {
         return getBotMove(game,bitboard);
     }
     @Transactional
-    public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move){
+    public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
-
+        if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
+            throw new UnauthorizedGameAccessException();
+        }
         BitBoard bitBoard= makeAMove(game,move);
 
         return new MoveResultDTO(bitBoard.getFen(),move.move,bitBoard.getPossibleNextMoves(),bitBoard.getState());
     }
-    public MoveResultDTO getCurrentGameState(InitialConnectDTO input){
+    public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         Game game=getGame(input.getRoomId());
+        if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
+            throw new UnauthorizedGameAccessException();
+        }
         String currentFen=game.getCurrentFen();
 
         BitBoard bitboard=BitBoard.createBoardFromFen(currentFen);
