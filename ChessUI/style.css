@@ -47,3 +47,7 @@
 .piece:active {
     cursor: grabbing;
 }
+
+section{
+    padding:5px;
+}

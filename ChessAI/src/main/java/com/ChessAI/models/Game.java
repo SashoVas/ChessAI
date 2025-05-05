@@ -22,6 +22,7 @@ import java.util.Set;
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    //TODO:Make gameId string
     private Integer gameId;
 
     //Game creator is user1
@@ -78,18 +79,9 @@ public class Game {
     @Enumerated(EnumType.STRING)
     @Column(name = "game_status")
     private GameStatus gameStatus;
-
-    @ManyToOne
-    @JoinColumn(name = "winner_id", referencedColumnName = "user_id")
-    private User winner = null;
-
-    @ManyToOne
-    @JoinColumn(name = "loser_id", referencedColumnName = "user_id")
-    private User loser = null;
-
-    @ManyToOne
-    @JoinColumn(name = "current_turn_user", referencedColumnName = "user_id")
-    private User currentTurnUser = null;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_turn_color")
+    private PlayerColor currentTurnColor;
 
     @Column(name = "game_time_seconds")
     private Integer gameTimeSeconds = -1;
@@ -109,19 +101,12 @@ public class Game {
         this.gameType = gameType;
         this.gameTimeSeconds = gameTimeSeconds;
     }
-    public User getCurrentTurnUser() {
-        return currentTurnUser;
-    }
-
-    public void setCurrentTurnUser(User currentTurnUser) {
-        this.currentTurnUser = currentTurnUser;
-    }
     public Integer getCurrentTurn() {
         return currentTurn;
     }
 
     public void setCurrentTurn(Integer currentTurn) {
-        this.gameId = currentTurn;
+        this.currentTurn = currentTurn;
     }
     public Integer getGameId() {
         return gameId;
@@ -211,22 +196,6 @@ public class Game {
         this.gameStatus = gameStatus;
     }
 
-    public User getWinner() {
-        return winner;
-    }
-
-    public void setWinner(User winner) {
-        this.winner = winner;
-    }
-
-    public User getLoser() {
-        return loser;
-    }
-
-    public void setLoser(User loser) {
-        this.loser = loser;
-    }
-
     public Integer getGameTimeSeconds() {
         return gameTimeSeconds;
     }
@@ -265,5 +234,12 @@ public class Game {
 
     public void setIsUser2EloProvisional(Boolean isUser2EloProvisional) {
         this.isUser2EloProvisional = isUser2EloProvisional;
+    }
+    public PlayerColor getCurrentTurnColor() {
+        return currentTurnColor;
+    }
+
+    public void setCurrentTurnColor(PlayerColor currentTurnColor) {
+        this.currentTurnColor = currentTurnColor;
     }
 }

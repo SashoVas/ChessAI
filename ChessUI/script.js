@@ -25,11 +25,11 @@ let whitePieceInitials={
     "B":"♗",
     "P":"♙",
 }
-const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYxODExMjUsImV4cCI6MTc2MTczMzEyNX0.mQGSjqG3WC0pbzFQMsClUf7qcLHNHLo-M-XMUgjrLXn5PA0F0wz5Mzh0mS_jnDsScr2vCblAbfTB_upjfoDMew'; 
+const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYzNzkxNjgsImV4cCI6MTc2MTkzMTE2OH0.nH9IcNIWKZYRr2rYDzHkwyFTt7khtOw5qweIT9aEgMG0isi0UUlxLDXOJ2Nxpqvn0gbhiKAEMb4Jp5SNWvCgrQ'; 
 
 const socket = new SockJS('http://localhost:8080/ws');
 const stompClient = Stomp.over(socket);
-let currentRoomId="room123"
+let currentRoomId="1"
 let draggedPiece = null;
 let offsetX = 0;
 let offsetY = 0;
@@ -42,6 +42,10 @@ let highlightColor='#a9a9a9';
 let isBotMode=true;
 let botEndpoint='/app/game.makeMoveToBot';
 let multiplayerEndpoint='/app/game.makeMoveToPlayer';
+let stompMessageHeaders={
+    Authorization: `Bearer ${jwtToken}`,
+    'heart-beat': '10000,10000'
+}
 
 function toChessAlgebraMove(move){
     var row=8-Math.floor(move/8);
@@ -59,6 +63,7 @@ function getAttackedPositions(){
 function highlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
     square.style.backgroundColor = highlightColor;
+    square.style.borderColor = "black";
 }
 function unHighlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
@@ -75,6 +80,7 @@ function unHighlightPosition(pos){
     else{
         square.style.backgroundColor = oddPosColor;
     }
+    square.style.borderColor = "";
 }
 function getSquarePos(element){
     const chessboard = document.getElementById('chessboard');
@@ -237,28 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('chessboard').addEventListener('mousedown', handleMouseDown);
 });
 
-stompClient.connect({
-    Authorization: `Bearer ${jwtToken}`,
-    'heart-beat': '10000,10000'
-}, function (frame) {
-    console.log('Connected: ' + frame);
-
-    stompClient.subscribe('/room/game.' + currentRoomId, function (messageOutput) {
-        const message = JSON.parse(messageOutput.body);
-        possibleMoves=message.nextMoves;
-        loadFen(message.fen)
-        console.log("Received message:", message);
-    })
-    initialConnect(currentRoomId)
-});
-
 function sendMessage(move, roomId) {
     const moveObj = {
         move: move,
         roomId: roomId
     };
 
-    stompClient.send(isBotMode?botEndpoint:multiplayerEndpoint , {}, JSON.stringify(moveObj));
+    stompClient.send(isBotMode?botEndpoint:multiplayerEndpoint , stompMessageHeaders, JSON.stringify(moveObj));
 }
 
 function initialConnect(roomId){
@@ -266,11 +257,49 @@ function initialConnect(roomId){
         roomId: roomId
     };
 
-    stompClient.send("/app/game.initialConnect", {}, JSON.stringify(moveObj));
+    stompClient.send("/app/game.initialConnect", stompMessageHeaders, JSON.stringify(moveObj));
 }
 
 function loadFenButtonClick(){
     const input = document.getElementById('FEN');
     fen=input.value;
     loadFen(fen);
+}
+stompClient.connect(stompMessageHeaders, function (frame) {
+    console.log('Connected: ' + frame);
+});
+
+function joinRoom(roomId){
+
+    
+    stompClient.subscribe('/room/game.' + roomId, function (messageOutput) {
+        const message = JSON.parse(messageOutput.body);
+        possibleMoves=message.nextMoves;
+        loadFen(message.fen)
+        console.log("Received message:", message);
+    },stompMessageHeaders)
+    initialConnect(roomId)
+}
+function joinRoomOnClick(){
+    joinRoom(document.getElementById('Room').value)
+}
+
+function createRoom(){
+    fetch("http://localhost:8080/createGame",
+        {
+            method: "POST",
+            body: JSON
+            .stringify
+            ({
+              gameType: "BOT",
+              gameTimeSeconds: 60,
+            }),
+            headers: {
+              "Content-type": "application/json",
+              "Authorization":`Bearer ${jwtToken}`
+            },
+          })
+            .then((response) => response.json())
+            .then((json) => console.log(json))
+            .then(joinRoom);
 }

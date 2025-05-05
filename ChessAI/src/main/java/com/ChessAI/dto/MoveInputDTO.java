@@ -2,17 +2,17 @@ package com.ChessAI.dto;
 
 public class MoveInputDTO {
     public String move;
-    public Integer roomId;
+    public String roomId;
 
     public void setMove(String move) {
         this.move = move;
     }
 
-    public void setRoomId(Integer roomId) {
+    public void setRoomId(String roomId) {
         this.roomId = roomId;
     }
 
-    public Integer getRoomId() {
+    public String getRoomId() {
         return roomId;
     }
 

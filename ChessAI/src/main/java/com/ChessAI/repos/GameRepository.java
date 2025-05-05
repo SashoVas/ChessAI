@@ -11,11 +11,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
 public interface GameRepository extends JpaRepository<Game, Integer> {
     Set<Game> findByGameStatusAndGameType(GameStatus gameStatus, GameType gameType);
+    Optional<Game> findByGameId(Integer id);
 
     @Query("SELECT g FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
     List<Game> findByUsernameAndGameType(String username, GameType gameType);

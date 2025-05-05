@@ -2,8 +2,8 @@ package com.ChessAI.models;
 
 public enum GameStatus {
     IN_PROGRESS,
-    FIRST_PLAYER_WON,
-    SECOND_PLAYER_WON,
+    WINNER_WHITE,
+    WINNER_BLACK,
     DRAW,
     NOT_STARTED,
     UNKNOWN;

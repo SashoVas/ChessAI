@@ -1,18 +1,24 @@
 package com.ChessAI.dto;
 
+import com.ChessAI.models.GameStatus;
+import com.ChessAI.models.PlayerColor;
+
 import java.util.List;
 
 public class MoveResultDTO {
 
-    public MoveResultDTO(String fen, String move, List<String> nextMoves) {
+    public MoveResultDTO(String fen, String move, List<String> nextMoves,GameStatus gameState) {
         this.fen = fen;
         this.move = move;
         this.nextMoves = nextMoves;
+        this.gameState=gameState;
     }
 
     String fen;
     String move;
     List<String> nextMoves;
+    GameStatus gameState;
+    PlayerColor currentColor;
 
     public String getFen() {
         return fen;
@@ -38,4 +44,19 @@ public class MoveResultDTO {
         this.nextMoves = nextMoves;
     }
 
+    public GameStatus getGameState() {
+        return gameState;
+    }
+
+    public void setGameState(GameStatus gameState) {
+        this.gameState = gameState;
+    }
+
+    public PlayerColor getCurrentColor() {
+        return currentColor;
+    }
+
+    public void setCurrentColor(PlayerColor currentColor) {
+        this.currentColor = currentColor;
+    }
 }

@@ -35,6 +35,25 @@ public class BitBoard {
         aiBot.getTranspositionTable().clear();
         //aiBot.historySet.clear();
     }
+
+    public GameStatus getState(){
+        if (!getPossibleNextMoves().isEmpty()){
+            return GameStatus.IN_PROGRESS;
+        }
+        if(isTie()){
+            return GameStatus.DRAW;
+        }
+        if (currentTurn==1) return GameStatus.WINNER_BLACK;
+        return GameStatus.WINNER_WHITE;
+    }
+    public boolean isTie(){
+        return getPossibleNextMoves().isEmpty() && !isInCheck();
+    }
+    public boolean isInCheck(){
+        return (currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0))||
+                (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0));
+    }
+
     public boolean isMoveLegal(int move){
         long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
         long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);
@@ -349,16 +368,6 @@ public class BitBoard {
         System.out.println("");
 
     }
-
-    //TODO: implement this
-    public GameStatus getCurrentGameStatus() {
-        //if player1_won return GameStatus.PLAYER1_WON;
-        //if player2_won return GameStatus.PLAYER2_WON;
-        //if draw return GameStatus.DRAW;
-        //else return GameStatus.IN_PROGRESS;
-        return GameStatus.IN_PROGRESS;
-    }
-
 
     public static BitBoard createBoardFromFen(String fen){
         BitBoard board=new BitBoard();

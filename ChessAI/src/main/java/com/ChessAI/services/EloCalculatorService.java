@@ -1,13 +1,10 @@
 package com.ChessAI.services;
 
-import com.ChessAI.models.Game;
-import com.ChessAI.models.GameStatus;
-import com.ChessAI.models.GameType;
+import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ChessAI.models.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,25 +104,39 @@ public class EloCalculatorService {
         userRepository.updateEloByUsername(updatedElo, user.getUsername());
     }
 
+    private double getPlayer1Score(PlayerColor color, GameStatus gameStatus) {
+        double currentGameScorePlayer1 = switch (gameStatus) {
+            case WINNER_WHITE -> 1;
+            case DRAW -> 0.5;
+            default -> 0;
+        };
+        if (color == PlayerColor.BLACK) {
+            currentGameScorePlayer1 = 1 - currentGameScorePlayer1;
+        }
+        return currentGameScorePlayer1;
+    }
+
     public void updateElo(Integer roomId, GameStatus gameStatus) {
-        Game currentGame = gameRepository.findById(roomId).orElseThrow();
+        Game currentGame = gameRepository.findByGameId(roomId).orElseThrow();
         if (currentGame.getGameType() == GameType.BOT) {
             return; //No elo calculation for bot games
         }
         User user1 = currentGame.getUser1();
         User user2 = currentGame.getUser2();
 
+        //extract total multiplayer games played by each player
         int player1Games = gameRepository.findGameCount(user1.getUsername(), GameType.MULTIPLAYER);
         int player2Games = gameRepository.findGameCount(user2.getUsername(), GameType.MULTIPLAYER);
 
+        //if players have played less than minimumGamesForElo, update provisional elo
         if (player1Games < minimumGamesForElo) {
             updateProvisionalElo(user1);
         }
-
         if (player2Games < minimumGamesForElo) {
             updateProvisionalElo(user2);
         }
 
+        //if players just played their minimumGamesForElo game, update their elo status to non-provisional
         if (player1Games == minimumGamesForElo) {
             userRepository.updateEloIsProvisionalByUsername(false, user1.getUsername());
         }
@@ -133,16 +144,11 @@ public class EloCalculatorService {
             userRepository.updateEloIsProvisionalByUsername(false, user2.getUsername());
         }
 
-        double currentGameScorePlayer1 = switch (gameStatus) {
-            case FIRST_PLAYER_WON -> 1;
-            case DRAW -> 0.5;
-            default -> 0;
-        };
-
+        //if players have played more than minimumGamesForElo, update their actual elo
+        double currentGameScorePlayer1 = getPlayer1Score(currentGame.getUser1Color(), gameStatus);
         if (player1Games >= minimumGamesForElo) {
             updateActualElo(user1, user2, currentGameScorePlayer1);
         }
-
         if (player2Games >= minimumGamesForElo) {
             updateActualElo(user2, user1, 1 - currentGameScorePlayer1);
         }
