@@ -2,11 +2,12 @@ package com.ChessAI.controllers;
 
 import com.ChessAI.dto.CreateGameDTO;
 import com.ChessAI.dto.GameResultDTO;
-import com.ChessAI.dto.JoinRoomDTO;
 import com.ChessAI.models.Game;
 import com.ChessAI.services.GameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,10 @@ public class GameController {
     private GameService gameService;
 
     @PostMapping("/createGame")
-    public Game createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
-                           @AuthenticationPrincipal UserDetails userDetails) {
-        return gameService.createGame(createGameDTO, userDetails);
+    public ResponseEntity<Game> createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        Game game = gameService.createGame(createGameDTO, userDetails);
+        return ResponseEntity.status(HttpStatus.CREATED).body(game);
     }
 
     @GetMapping("/getFreeRooms")
@@ -32,8 +34,7 @@ public class GameController {
 
     @PatchMapping("game/{roomId}")
     public GameResultDTO joinRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetails userDetails){
-        GameResultDTO result=gameService.joinRoom(roomId,userDetails.getUsername());
-        return result;
+        return gameService.joinRoom(roomId,userDetails.getUsername());
     }
 
 }

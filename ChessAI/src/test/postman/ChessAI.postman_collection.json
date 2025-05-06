@@ -120,11 +120,12 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -133,7 +134,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test123\",\r\n  \"email\": \"test@example.com\"\r\n}",
+					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test1234\",\r\n  \"email\": \"test@example.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -166,7 +167,8 @@
 							"});",
 							"pm.globals.set(\"jwt_token\", pm.response.text());"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -175,7 +177,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test123\",\r\n  \"email\": \"test@example.com\"\r\n}",
+					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test1234\",\r\n  \"email\": \"test@example.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -217,7 +219,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test123\",\r\n  \"email\": \"test@example.com\"\r\n}",
+					"raw": "{\r\n  \"username\": \"testuser\",\r\n  \"password\": \"Test1234\",\r\n  \"email\": \"test@example.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -245,11 +247,13 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
+							"pm.test(\"Status code is 200 and response is empty\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    pm.expect(pm.response.json()).to.eql([]);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -283,11 +287,12 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -332,9 +337,12 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    const response = pm.response.json();",
+							"    pm.expect(pm.response.json()).to.eql([]);",
 							"});"
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -368,9 +376,16 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData).to.not.be.an(\"array\");",
+							"    pm.expect(Object.keys(jsonData).length).to.be.greaterThan(0);",
+							"    pm.expect(jsonData).to.have.property(\"gameId\");",
+							"",
+							"});",
+							""
 						],
 						"type": "text/javascript",
 						"packages": {}

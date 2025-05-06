@@ -6,6 +6,8 @@ import com.ChessAI.exceptions.UserException.UserNotFoundException;
 import com.ChessAI.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,15 +17,16 @@ public class UserController {
     @Autowired
     private UserService service;
 
-
+    //tested by postman collection
     @PostMapping("/register")
-    public UserDTO register(@RequestBody @Valid UserDTO user) {
+    public ResponseEntity<UserDTO> register(@RequestBody @Valid UserDTO user) {
         if (service.userExists(user)) {
             throw new UserAlreadyExistsException();
         }
-        return service.register(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.register(user));
     }
 
+    //tested by postman collection
     @PostMapping("/login")
     public String login(@RequestBody @Valid UserDTO user) {
         if (!service.userExists(user)) {
