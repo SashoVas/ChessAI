@@ -35,8 +35,9 @@ public class BitBoard {
         aiBot.getTranspositionTable().clear();
         //aiBot.historySet.clear();
     }
+
     public GameStatus getState(){
-        if (getPossibleNextMoves().size()!=0){
+        if (!getPossibleNextMoves().isEmpty()){
             return GameStatus.IN_PROGRESS;
         }
         if(isTie()){
@@ -46,12 +47,13 @@ public class BitBoard {
         return GameStatus.WINNER_WHITE;
     }
     public boolean isTie(){
-        return getPossibleNextMoves().size()==0 && !isInCheck();
+        return getPossibleNextMoves().isEmpty() && !isInCheck();
     }
     public boolean isInCheck(){
         return (currentTurn==1 && ((BitBoardMovesGenerator.attackedByBlack(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&wk)!=0))||
                 (currentTurn==0&& ((BitBoardMovesGenerator.attackedByWhite(  wk, wq, wn, wb, wr, wp, bk, bq, bn, bb, br, bp)&bk)!=0));
     }
+
     public boolean isMoveLegal(int move){
         long wkc=BitBoardMovesGenerator.makeAMoveOnBoard(wk,move,11);
         long wqc=BitBoardMovesGenerator.makeAMoveOnBoard(wq,move,1);

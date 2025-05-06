@@ -23,17 +23,24 @@ public class GameService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EloCalculatorService eloCalculatorService;
+
     public Game createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
-        User user=userRepository.findByUsername(userDetails.getUsername()).get();
         //Since user is authorized, we know that user exists
+        User user=userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
         game.setUser1(user);
-        //TODO:Implement random colors
-        PlayerColor u1Color = PlayerColor.WHITE;
+
+        //TODO:Make so the user choose who is first
+
+        PlayerColor u1Color = PlayerColor.getRandomColor();
         game.setUser1Color(u1Color);
         game.setUser2Color(PlayerColor.getOpponentColor(u1Color));
         game.setCurrentTurnColor(PlayerColor.WHITE);
+        game.setUser1Elo(user.getEloRating());
+        game.setIsUser1EloProvisional(user.IsEloProvisional());
         game.setGameType(createGameDTO.getGameType());
         game.setUser1TimeLeft(createGameDTO.getGameTimeSeconds());
         if (game.getGameType() == GameType.MULTIPLAYER) {
@@ -49,12 +56,15 @@ public class GameService {
     public Set<Game> getFreeRooms() {
         return gameRepository.findByGameStatusAndGameType(GameStatus.NOT_STARTED, GameType.MULTIPLAYER);
     }
+
     public GameResultDTO joinRoom(String roomId, String username){
         Game game=getGame(roomId);
-        if(game.getUser2()!=null || game.getGameType() != GameType.MULTIPLAYER){
+        if(game.getUser2() != null || game.getGameType() != GameType.MULTIPLAYER){
             throw new UnauthorizedGameAccessException();
         }
-        User user=userRepository.findByUsername(username).get();
+
+        //User is authorized, so he exists
+        User user=userRepository.findByUsername(username).orElseThrow();
         game.setUser2(user);
         gameRepository.save(game);
         return GameResultDTO.fromEntity(game);
@@ -62,7 +72,7 @@ public class GameService {
 
     private Game getGame(String roomId){
         //TODO: Fix so that the rooms/games have string as id
-        Optional<Game> currentGame=gameRepository.findById(Integer.parseInt(roomId));
+        Optional<Game> currentGame=gameRepository.findByGameId(Integer.parseInt(roomId));
         if (currentGame.isEmpty()){
             throw new InvalidRoomException();
         }
@@ -80,6 +90,9 @@ public class GameService {
         game.getMoves().add(currentMove);
         game.setGameStatus(bitboard.getState());
         gameRepository.save(game);
+        if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
+            eloCalculatorService.updateElo(game);
+        }
     }
     private BitBoard makeAMove(Game game, MoveInputDTO move){
         String currentFen=game.getCurrentFen();
@@ -97,6 +110,7 @@ public class GameService {
 
         return bitboard;
     }
+
     private MoveResultDTO getBotMove(Game game, BitBoard bitBoard){
         String currentFen=bitBoard.getFen();
         int hashMove=bitBoard.getBestMoveIterativeDeepening(10,1,1);
@@ -107,6 +121,7 @@ public class GameService {
 
         return new MoveResultDTO(bitBoard.getFen(),nextMove,bitBoard.getPossibleNextMoves(),bitBoard.getState());
     }
+
     @Transactional
     public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
@@ -121,6 +136,7 @@ public class GameService {
 
         return getBotMove(game,bitboard);
     }
+
     @Transactional
     public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
@@ -131,6 +147,7 @@ public class GameService {
 
         return new MoveResultDTO(bitBoard.getFen(),move.move,bitBoard.getPossibleNextMoves(),bitBoard.getState());
     }
+
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         Game game=getGame(input.getRoomId());
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){

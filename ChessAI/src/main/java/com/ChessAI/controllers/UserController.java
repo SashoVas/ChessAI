@@ -1,8 +1,8 @@
 package com.ChessAI.controllers;
 
 import com.ChessAI.dto.UserDTO;
-import com.ChessAI.exceptions.UserControllerException.UserAlreadyExistsException;
-import com.ChessAI.exceptions.UserControllerException.UserNotFoundException;
+import com.ChessAI.exceptions.UserException.UserAlreadyExistsException;
+import com.ChessAI.exceptions.UserException.UserNotFoundException;
 import com.ChessAI.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

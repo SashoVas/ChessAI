@@ -12,9 +12,10 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "games")
@@ -46,6 +47,23 @@ public class Game {
     @Enumerated(EnumType.STRING)
     @Column(name = "user2_color")
     private PlayerColor user2Color = PlayerColor.UNKNOWN;
+
+    //Elos prior to game start
+    //User's ELOs for this game may be different than current ELOs in User table
+    //This is why we need to save them here
+    @Column(name = "user1_elo")
+    @NotNull
+    private Integer user1Elo = 1500; //TODO: get from config
+
+    @Column(name = "user2_elo")
+    @NotNull
+    private Integer user2Elo = 1500; //TODO: get from config
+
+    @Column(name = "is_user1_elo_provisional")
+    private Boolean isUser1EloProvisional = true;
+
+    @Column(name = "is_user2_elo_provisional")
+    private Boolean isUser2EloProvisional = true;
 
     //TODO: See if there is a better way to handle time left
     @Column(name = "user1_time_left")
@@ -186,6 +204,37 @@ public class Game {
         this.gameTimeSeconds = gameTimeSeconds;
     }
 
+    public Integer getUser1Elo() {
+        return user1Elo;
+    }
+
+    public void setUser1Elo(Integer elo) {
+        this.user1Elo = elo;
+    }
+
+    public Integer getUser2Elo() {
+        return user2Elo;
+    }
+
+    public void setUser2Elo(Integer elo) {
+        this.user2Elo = elo;
+    }
+
+    public Boolean getIsUser1EloProvisional() {
+        return isUser1EloProvisional;
+    }
+
+    public void setIsUser1EloProvisional(Boolean isUser1EloProvisional) {
+        this.isUser1EloProvisional = isUser1EloProvisional;
+    }
+
+    public Boolean getIsUser2EloProvisional() {
+        return isUser2EloProvisional;
+    }
+
+    public void setIsUser2EloProvisional(Boolean isUser2EloProvisional) {
+        this.isUser2EloProvisional = isUser2EloProvisional;
+    }
     public PlayerColor getCurrentTurnColor() {
         return currentTurnColor;
     }
