@@ -21,15 +21,20 @@ public class GameController {
     private GameService gameService;
 
     @PostMapping("/createGame")
-    public ResponseEntity<Game> createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
+    public ResponseEntity<GameResultDTO> createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
                                            @AuthenticationPrincipal UserDetails userDetails) {
-        Game game = gameService.createGame(createGameDTO, userDetails);
+        GameResultDTO game = gameService.createGame(createGameDTO, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(game);
     }
 
     @GetMapping("/getFreeRooms")
-    public Set<Game> getFreeRooms() {
+    public Set<GameResultDTO> getFreeRooms() {
         return gameService.getFreeRooms();
+    }
+
+    @GetMapping("/{roomId}")
+    public GameResultDTO getGame(@PathVariable String roomId){
+        return gameService.getGameState(roomId);
     }
 
     @PatchMapping("game/{roomId}")

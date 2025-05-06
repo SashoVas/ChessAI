@@ -137,8 +137,10 @@ public class GameResultDTO {
     public static GameResultDTO fromEntity(Game game){
         GameResultDTO gameDTO=new GameResultDTO();
         gameDTO.setGameId(game.getGameId());
-        gameDTO.setUser1Username(game.getUser1().getUsername());
-        gameDTO.setUser2Username(game.getUser2().getUsername());
+        if (game.getUser1()!=null)
+            gameDTO.setUser1Username(game.getUser1().getUsername());
+        if (game.getUser2()!=null)
+            gameDTO.setUser2Username(game.getUser2().getUsername());
         gameDTO.setUser1Color(game.getUser1Color());
         gameDTO.setUser2Color(game.getUser2Color());
         //TODO:Optimize n+1 problem

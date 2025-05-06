@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -27,7 +28,7 @@ public class GameService {
     @Autowired
     private EloCalculatorService eloCalculatorService;
 
-    public Game createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
+    public GameResultDTO createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
         //Since user is authorized, we know that user exists
@@ -51,11 +52,15 @@ public class GameService {
         game.setGameStatus(GameStatus.NOT_STARTED);
         game.setGameTimeSeconds(createGameDTO.getGameTimeSeconds());
 
-        return gameRepository.save(game);
+        return GameResultDTO.fromEntity(gameRepository.save(game));
     }
 
-    public Set<Game> getFreeRooms() {
-        return gameRepository.findByGameStatusAndGameType(GameStatus.NOT_STARTED, GameType.MULTIPLAYER);
+    public Set<GameResultDTO> getFreeRooms() {
+        return gameRepository
+                .findByGameStatusAndGameType(GameStatus.NOT_STARTED, GameType.MULTIPLAYER)
+                .stream()
+                .map(GameResultDTO::fromEntity)
+                .collect(Collectors.toSet());
     }
 
     public GameResultDTO joinRoom(String roomId, String username){
@@ -78,6 +83,9 @@ public class GameService {
             throw new InvalidRoomException();
         }
         return currentGame.get();
+    }
+    public GameResultDTO getGameState(String roomId){
+        return GameResultDTO.fromEntity(getGame(roomId));
     }
     private void updateGameAfterMove(Game game, String moveNr, String currentFen, BitBoard bitboard){
         String fenAfterMove=bitboard.getFen();

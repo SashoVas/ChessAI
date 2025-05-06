@@ -1,6 +1,7 @@
 package com.ChessAI;
 
 import com.ChessAI.dto.CreateGameDTO;
+import com.ChessAI.dto.GameResultDTO;
 import com.ChessAI.dto.UserDTO;
 import com.ChessAI.exceptions.InvalidActionException.UnauthorizedGameAccessException;
 import com.ChessAI.models.Game;
@@ -101,7 +102,8 @@ public class GameControllerTest {
     void joinRoomTest() throws Exception {
         UserDetails mockUser = User.withUsername("user1").password("SecurePass23").roles("USER").build();
         userService.register(new UserDTO("user1", "SecurePass23", "emailemail@abv.bg"));
-        Game game = gameService.createGame(new CreateGameDTO(GameType.MULTIPLAYER, 60), mockUser);
+        GameResultDTO game = gameService.createGame(new CreateGameDTO(GameType.MULTIPLAYER, 60), mockUser);
+
         userService.register(new UserDTO("user2", "Pass1234", "myemail@gmail.com"));
         String roomId = String.valueOf(game.getGameId());
 
@@ -109,18 +111,19 @@ public class GameControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        assertNull(game.getUser2());
+        assertNull(game.getUser2Username());
 
         assertThrows(UnauthorizedGameAccessException.class, () -> {
             gameService.joinRoom(roomId, "user1");
         });
 
-        assertNull(game.getUser2());
+        assertNull(game.getUser2Username());
 
         mockMvc.perform(patch("/game/" + roomId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-
-        assertThat(game.getUser2().getUsername()).isEqualTo("user2");
+        //After the update we need to get the new dto
+        game=gameService.getGameState(game.getGameId().toString());
+        assertThat(game.getUser2Username()).isEqualTo("user2");
     }
 }
