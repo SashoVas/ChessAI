@@ -7,11 +7,12 @@ import java.util.List;
 
 public class MoveResultDTO {
 
-    public MoveResultDTO(String fen, String move, List<String> nextMoves,GameStatus gameState) {
+    public MoveResultDTO(String fen, String move, List<String> nextMoves,GameStatus gameState,PlayerColor currentColor) {
         this.fen = fen;
         this.move = move;
         this.nextMoves = nextMoves;
         this.gameState=gameState;
+        this.currentColor=currentColor;
     }
 
     String fen;
