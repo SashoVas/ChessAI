@@ -1,5 +1,7 @@
-package com.ChessAI.controllers;
+package com.ChessAI.exceptions;
 
+import com.ChessAI.exceptions.InvalidActionException.InvalidRoomException;
+import com.ChessAI.exceptions.InvalidActionException.UnauthorizedGameAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,7 +11,7 @@ import com.ChessAI.exceptions.UserException.UserNotFoundException;
 import com.ChessAI.exceptions.UserException.UserAlreadyExistsException;
 
 @RestControllerAdvice
-public class ControllerAdvice {
+public class ExceptionAdvice {
    @ExceptionHandler
     public ResponseEntity<String> handleException(Exception e) {
        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -25,5 +27,13 @@ public class ControllerAdvice {
     @ExceptionHandler
     public ResponseEntity<String> handleMessageNotReadableException(HttpMessageNotReadableException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler
+    public ResponseEntity<String> handleInvalidRoomException(InvalidRoomException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler
+    public ResponseEntity<String> handleUnauthorizedGameAccessException(UnauthorizedGameAccessException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 }

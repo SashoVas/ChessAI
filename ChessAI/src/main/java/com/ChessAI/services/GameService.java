@@ -59,7 +59,7 @@ public class GameService {
 
     public GameResultDTO joinRoom(String roomId, String username){
         Game game=getGame(roomId);
-        if(game.getUser2() != null || game.getGameType() != GameType.MULTIPLAYER){
+        if(game.getUser2() != null || game.getGameType() != GameType.MULTIPLAYER || username.equals(game.getUser1().getUsername())){
             throw new UnauthorizedGameAccessException();
         }
 

@@ -29,6 +29,7 @@ public class UserService {
     public boolean userExists(UserDTO userDTO) {
         return repo.findByUsername(userDTO.getUsername()).isPresent();
     }
+
     public UserDTO register(UserDTO userDTO) {
         User user = new User(userDTO);
         user.setPassword(encoder.encode(userDTO.getPassword()));

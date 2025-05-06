@@ -1,4 +1,4 @@
-name: Test Engine
+name: Newman API Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - miro
 
 jobs:
-  test:
+  newman-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,10 +27,6 @@ jobs:
       - name: Start Docker Compose
         working-directory: ./ChessAI
         run: docker compose up -d
-
-      - name: Build and run tests
-        working-directory: ./ChessAI
-        run: mvn -B test --file pom.xml
 
       - name: Start backend server
         run: mvn spring-boot:run &
@@ -61,4 +57,3 @@ jobs:
         with:
           name: newman-report
           path: newman-report.html
-
