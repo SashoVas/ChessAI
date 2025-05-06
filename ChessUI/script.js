@@ -25,7 +25,7 @@ let whitePieceInitials={
     "B":"♗",
     "P":"♙",
 }
-const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDYzNzkxNjgsImV4cCI6MTc2MTkzMTE2OH0.nH9IcNIWKZYRr2rYDzHkwyFTt7khtOw5qweIT9aEgMG0isi0UUlxLDXOJ2Nxpqvn0gbhiKAEMb4Jp5SNWvCgrQ'; 
+const jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDY1NDIxMTYsImV4cCI6MTc2MjA5NDExNn0.Oku93E1p2ivhrGAgRFVuIN6Qsgz_w4yDMmF4Y8DPbn_I8Q0lss4amnHSp1GVw72jA0m0Esck6WleGrmcspGnqg'; 
 
 const socket = new SockJS('http://localhost:8080/ws');
 const stompClient = Stomp.over(socket);
@@ -46,7 +46,7 @@ let stompMessageHeaders={
     Authorization: `Bearer ${jwtToken}`,
     'heart-beat': '10000,10000'
 }
-
+let currentColor="";
 function toChessAlgebraMove(move){
     var row=8-Math.floor(move/8);
     var col=move%8;
@@ -55,15 +55,33 @@ function toChessAlgebraMove(move){
 function fromAlgebraToPosition(move){
     return 8*(8 - (move.charCodeAt(1) - '0'.charCodeAt(0))) + (move.charCodeAt(0) - 'a'.charCodeAt(0))
 }
+function toChessAlgebraMoveWhenBlack(move){
+    var row=Math.floor(move/8)+1;
+    var col=move%8;
+    return String.fromCharCode('a'.charCodeAt(0)+col) + row
+}
+function fromAlgebraToPositionWhenBlack(move){
+    return 8*((move.charCodeAt(1) - '0'.charCodeAt(0))-1) + (move.charCodeAt(0) - 'a'.charCodeAt(0))
+}   
 function getAttackedPositions(){
-    return possibleMoves
-    .filter((possibleMove)=>possibleMove.startsWith(toChessAlgebraMove(from)))
-    .map((possibleMove)=>fromAlgebraToPosition(possibleMove.substring(2, 4)));
+    if(currentColor=="WHITE"){
+
+        return possibleMoves
+        .filter((possibleMove)=>possibleMove.startsWith(toChessAlgebraMove(from)))
+        .map((possibleMove)=>fromAlgebraToPosition(possibleMove.substring(2, 4)));
+    }
+    else{
+        return possibleMoves
+        .filter((possibleMove)=>possibleMove.startsWith(toChessAlgebraMoveWhenBlack(from)))
+        .map((possibleMove)=>fromAlgebraToPositionWhenBlack(possibleMove.substring(2, 4)));
+    }
 }
 function highlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
     square.style.backgroundColor = highlightColor;
     square.style.borderColor = "black";
+    square.style.borderRadius="10px";
+
 }
 function unHighlightPosition(pos){
     const square = document.getElementById('chessboard').children[pos];
@@ -81,6 +99,7 @@ function unHighlightPosition(pos){
         square.style.backgroundColor = oddPosColor;
     }
     square.style.borderColor = "";
+    square.style.borderRadius="0px";
 }
 function getSquarePos(element){
     const chessboard = document.getElementById('chessboard');
@@ -116,6 +135,7 @@ function fenToBoard(fen){
         var col=currentIndex%8;
 
         initialPosition[row][col]=convertDict[currentLetter];
+        
         currentIndex++;
     }
 
@@ -129,8 +149,15 @@ function createChessboard() {
             const square = document.createElement('div');
             square.className = 'square';
             chessboard.appendChild(square);
-            
-            const piece = initialPosition[row][col];
+            var piece;
+            if(currentColor=="BLACK"){
+                piece=initialPosition[7-row][col];
+    
+            }
+            else{
+                piece = initialPosition[row][col];
+
+            }
             if (piece) {
                 const pieceElement = document.createElement('div');
                 pieceElement.className = 'piece';
@@ -209,7 +236,9 @@ function handleMouseUp(e) {
 
     to=getSquarePos(targetSquare)//The position of the end square
     var isMovePossible=possibleMoves.includes((toChessAlgebraMove(from)+toChessAlgebraMove(to)))
-
+    if(currentColor=="BLACK"){
+        isMovePossible=possibleMoves.includes((toChessAlgebraMoveWhenBlack(from)+toChessAlgebraMoveWhenBlack(to)))
+    }
     if(isMovePossible && targetSquare.hasChildNodes()){
         targetSquare.removeChild(targetSquare.lastChild)
     }
@@ -234,7 +263,13 @@ function handleMouseUp(e) {
 
     getAttackedPositions().forEach((pos)=>unHighlightPosition(pos));
     if(isMovePossible && from!=to){
-        sendMessage(toChessAlgebraMove(from)+toChessAlgebraMove(to),currentRoomId)
+        if(currentColor=="BLACK"){
+            sendMessage(toChessAlgebraMoveWhenBlack(from)+toChessAlgebraMoveWhenBlack(to),currentRoomId)
+        }
+        else{
+            sendMessage(toChessAlgebraMove(from)+toChessAlgebraMove(to),currentRoomId)
+
+        }
     }
 }
 
@@ -300,6 +335,11 @@ function createRoom(){
             },
           })
             .then((response) => response.json())
-            .then((json) => console.log(json))
+            .then((json) => {
+                console.log(json);
+                currentRoomId=json["gameId"]
+                currentColor=json["user1Color"]
+                joinRoom(currentRoomId)
+            })
             .then(joinRoom);
 }
