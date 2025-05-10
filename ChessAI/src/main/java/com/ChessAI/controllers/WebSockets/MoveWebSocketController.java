@@ -42,10 +42,14 @@ public class MoveWebSocketController {
         System.out.println(move.move);
         System.out.println(move.roomId);
         String username=principal.getName();
+        String destination = "/room/game." + move.roomId;
 
         MoveResultDTO result=gameService.makeAMoveToBot(move,username);
-        String destination = "/room/game." + move.roomId;
         messagingTemplate.convertAndSend(destination, result);
+
+        result=gameService.getBotMove(move.roomId,username);
+        messagingTemplate.convertAndSend(destination, result);
+
     }
     @MessageMapping("/game.makeMoveToPlayer")
 

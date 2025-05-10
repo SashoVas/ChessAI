@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
 @WithMockUser(username = "user1", password = "SecurePass23", roles = {"USER"})

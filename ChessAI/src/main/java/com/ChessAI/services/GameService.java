@@ -8,6 +8,7 @@ import com.ChessAI.exceptions.InvalidActionException.NotUserTurnException;
 import com.ChessAI.exceptions.InvalidActionException.UnauthorizedGameAccessException;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
+import com.ChessAI.repos.MoveRepository;
 import com.ChessAI.repos.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class GameService {
 
     @Autowired
     private EloCalculatorService eloCalculatorService;
+    @Autowired
+    private MoveRepository moveRepository;
 
     public GameResultDTO createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
@@ -94,15 +97,19 @@ public class GameService {
         currentMove.setMoveNr(moveNr);
         currentMove.setInitialFen(currentFen);
         currentMove.setFinalFen(fenAfterMove);
+        currentMove.setGame(game);
         game.setCurrentTurn(game.getCurrentTurn() + 1);
         game.setCurrentTurnColor(PlayerColor.getOpponentColor(game.getCurrentTurnColor()));
-        game.getMoves().add(currentMove);
+        //game.getMoves().add(currentMove);
         game.setGameStatus(bitboard.getState());
+
         gameRepository.save(game);
+        moveRepository.save(currentMove);
         if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
             eloCalculatorService.updateElo(game);
         }
     }
+    @Transactional
     private BitBoard makeAMove(Game game, MoveInputDTO move){
         String currentFen=game.getCurrentFen();
 
@@ -119,7 +126,8 @@ public class GameService {
 
         return bitboard;
     }
-    private MoveResultDTO getBotMove(Game game, BitBoard bitBoard){
+    @Transactional
+    private MoveResultDTO makeBotMove(Game game,BitBoard bitBoard){
         String currentFen=bitBoard.getFen();
         int hashMove=bitBoard.getBestMoveIterativeDeepening(10,1,1);
         String nextMove=BitBoard.toAlgebra(hashMove);
@@ -129,7 +137,21 @@ public class GameService {
 
         return new MoveResultDTO(bitBoard.getFen(),nextMove,bitBoard.getPossibleNextMoves(),bitBoard.getState(),game.getCurrentTurnColor());
     }
-    @Transactional
+    public MoveResultDTO getBotMove(String roomId,String username){
+        Game game=getGame(roomId);
+        if(!game.getUser1().getUsername().equals(username)){
+            throw new UnauthorizedGameAccessException();
+        }
+        //It should be the bot's turn.
+        if(game.getCurrentTurnColor()==game.getUser1Color()){
+            throw new NotUserTurnException();
+        }
+        String currentFen=game.getCurrentFen();
+
+        BitBoard bitBoard=BitBoard.createBoardFromFen(currentFen);
+
+        return makeBotMove(game,bitBoard);
+    }
     public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
@@ -140,15 +162,9 @@ public class GameService {
         }
 
         BitBoard bitboard=makeAMove(game,move);
-        GameStatus state=bitboard.getState();
-        if (state != GameStatus.NOT_STARTED && state != GameStatus.IN_PROGRESS && state != GameStatus.UNKNOWN){
-            return new MoveResultDTO(bitboard.getFen(),move.move,Collections.emptyList(),state,game.getCurrentTurnColor());
-        }
-
-        return getBotMove(game,bitboard);
+        return new MoveResultDTO(bitboard.getFen(),move.move,Collections.emptyList(),bitboard.getState(),game.getCurrentTurnColor());
     }
 
-    @Transactional
     public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
@@ -164,7 +180,6 @@ public class GameService {
 
         return new MoveResultDTO(bitBoard.getFen(),move.move,bitBoard.getPossibleNextMoves(),bitBoard.getState(),game.getCurrentTurnColor());
     }
-    @Transactional
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         Game game=getGame(input.getRoomId());
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
@@ -174,7 +189,7 @@ public class GameService {
         BitBoard bitboard=BitBoard.createBoardFromFen(currentFen);
 
         if(game.getGameType()==GameType.BOT && game.getUser1Color()==PlayerColor.BLACK && game.getCurrentTurn()==0){
-            return getBotMove(game,bitboard);
+            return makeBotMove(game,bitboard);
         }
 
         return new MoveResultDTO(currentFen,null,bitboard.getPossibleNextMoves(),bitboard.getState(),game.getCurrentTurnColor());
