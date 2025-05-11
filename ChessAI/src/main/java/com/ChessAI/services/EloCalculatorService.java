@@ -3,6 +3,7 @@ package com.ChessAI.services;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,11 +46,16 @@ public class EloCalculatorService {
     //FIDE ELO rating system constants
     public static final Integer minimumGamesForElo = 5;
     public static final Integer minGameKFactor = 30;
+    public static final Integer provisionalScalingConstant = 200;
+    public static final Integer maxProvisionalElo = 2000;
+    public static final Integer minProvisionalElo = 400;
     public static final Integer bigKFactor = 40;
     public static final Integer midKFactor = 20;
     public static final Integer smallKFactor = 10;
 
+
     private List<Integer> getOtherUsersElo(User currentUser) {
+        //NOTE: This list is always non-empty, because the user has played at least the current game
         List<Game> games = gameRepository.findByUsernameAndGameType(currentUser.getUsername(), GameType.MULTIPLAYER);
         List<Integer> eloList = new ArrayList<>();
         Integer opponentElo;
@@ -69,14 +75,24 @@ public class EloCalculatorService {
 
     private void updateProvisionalElo(User user) {
         List<Integer> elos = getOtherUsersElo(user);
-        int gameCount = elos.size();
+        double gameCount = elos.size(); //non-empty
 
-        int winCount = gameRepository.findWinCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
-        int tieCount = gameRepository.findTieCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
+        double winCount = gameRepository.findWinCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
+        double tieCount = gameRepository.findTieCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
 
-        double scoreSum = winCount + (double) tieCount / 2;
-        double provisionalElo = elos.stream().reduce(0, Integer::sum) / (double)gameCount;
-        provisionalElo +=  800 * (scoreSum - gameCount / 2.0) / gameCount;
+        //Elo delta bounded between [-1, 1]
+        double delta = (2 * winCount + tieCount) / gameCount - 1;
+        //Scale the delta
+        delta *= provisionalScalingConstant;
+
+        //avg opponent elo
+        double provisionalElo = elos.stream().reduce(0, Integer::sum) / gameCount;
+
+        //current provisional elo is average score of opps + delta
+        provisionalElo +=  delta;
+
+        //Clip elo just in case
+        provisionalElo = Math.max(minProvisionalElo, Math.min(maxProvisionalElo, provisionalElo));
 
         userRepository.updateEloByUsername((int)provisionalElo, user.getUsername());
     }
@@ -116,6 +132,8 @@ public class EloCalculatorService {
         return currentGameScorePlayer1;
     }
 
+
+    @Transactional
     public void updateElo(Game game) {
         if (game.getGameType() == GameType.BOT) {
             return; //No elo calculation for bot games
