@@ -16,19 +16,17 @@ import java.util.Set;
 
 @Repository
 public interface GameRepository extends JpaRepository<Game, Integer> {
+
     Set<Game> findByGameStatusAndGameType(GameStatus gameStatus, GameType gameType);
+
     Optional<Game> findByGameId(Integer id);
+
     @Query("SELECT g FROM Game g LEFT JOIN FETCH g.moves m WHERE g.gameId = :id")
     Optional<Game> findByGameIdWithMoves(Integer id); //Solves n+1 problem
+
     @Query("SELECT g FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
     List<Game> findByUsernameAndGameType(String username, GameType gameType);
 
     @Query("SELECT COUNT(g) FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
     Integer findGameCount(String username, GameType gameType);
-
-    @Query("SELECT COUNT(g) FROM Game g WHERE g.gameType = :gameType AND ((g.user1.username = :username AND g.gameStatus = 'FIRST_PLAYER_WON') OR (g.user2.username = :username AND g.gameStatus = 'SECOND_PLAYER_WON'))")
-    Integer findWinCountByUsername(String username, GameType gameType);
-
-    @Query("SELECT COUNT(g) FROM Game g WHERE g.gameStatus = 'DRAW' AND (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
-    Integer findTieCountByUsername(String username, GameType gameType);
 }
