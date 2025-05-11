@@ -1,8 +1,10 @@
 package com.ChessAI.services;
 
+import com.ChessAI.config.EloCalculatorConfig;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,8 @@ Note: This is provisional elo rating, and is only used for players with less tha
 due to the fact that the player has not played enough games to have a stable rating.
 */
 
+//TODO: the description above is outdated - changes in provisional formula
+
 @Service
 public class EloCalculatorService {
     @Autowired
@@ -42,55 +46,86 @@ public class EloCalculatorService {
     @Autowired
     private UserRepository userRepository;
 
-    //FIDE ELO rating system constants
-    public static final Integer minimumGamesForElo = 5;
-    public static final Integer minGameKFactor = 30;
-    public static final Integer bigKFactor = 40;
-    public static final Integer midKFactor = 20;
-    public static final Integer smallKFactor = 10;
+    @Autowired
+    private EloCalculatorConfig eloConfig;
 
-    private List<Integer> getOtherUsersElo(User currentUser) {
-        List<Game> games = gameRepository.findByUsernameAndGameType(currentUser.getUsername(), GameType.MULTIPLAYER);
-        List<Integer> eloList = new ArrayList<>();
-        Integer opponentElo;
+
+    private double getAverageOpponentElo(User currentUser, List<Game> games) {
+        double averageOpponentElo = 0;
 
         for (Game game : games) {
             if (!game.getUser1().getUsername().equals(currentUser.getUsername())) {
-                opponentElo = game.getUser1().getEloRating();
+                averageOpponentElo += game.getUser1().getEloRating();
             }
             else {
-                opponentElo = game.getUser2().getEloRating();
+                averageOpponentElo += game.getUser2().getEloRating();
             }
-            eloList.add(opponentElo);
         }
 
-        return eloList;
+        return averageOpponentElo / games.size();
     }
 
+    private double getDelta(String username, List<Game> games) {
+        double winCount = 0;
+        double tieCount = 0;
+        for (Game game : games) {
+            if (game.getUser1().getUsername().equals(username)) {
+                if (game.getUser1Color() == PlayerColor.WHITE && game.getGameStatus() == GameStatus.WINNER_WHITE) {
+                    winCount++;
+                }
+                else if (game.getUser1Color() == PlayerColor.BLACK && game.getGameStatus() == GameStatus.WINNER_BLACK) {
+                    winCount++;
+                }
+            }
+            else {
+                if (game.getUser2Color() == PlayerColor.WHITE && game.getGameStatus() == GameStatus.WINNER_WHITE) {
+                    winCount++;
+                }
+                else if (game.getUser2Color() == PlayerColor.BLACK && game.getGameStatus() == GameStatus.WINNER_BLACK) {
+                    winCount++;
+                }
+            }
+            if (game.getGameStatus() == GameStatus.DRAW) {
+               tieCount++;
+            }
+        }
+
+        //Elo delta bounded between [-1, 1]
+        double delta = (2 * winCount + tieCount) / games.size() - 1;
+        //Scale the delta
+        delta *= eloConfig.getProvisionalScalingConstant();
+
+        return delta;
+    }
+
+
     private void updateProvisionalElo(User user) {
-        List<Integer> elos = getOtherUsersElo(user);
-        int gameCount = elos.size();
+        //NOTE: This list is always non-empty, because the user has played at least the current game
+        List<Game> games = gameRepository.findByUsernameAndGameType(user.getUsername(), GameType.MULTIPLAYER);
 
-        int winCount = gameRepository.findWinCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
-        int tieCount = gameRepository.findTieCountByUsername(user.getUsername(), GameType.MULTIPLAYER);
+        //avg opponent elo
+        double provisionalElo = getAverageOpponentElo(user, games);
 
-        double scoreSum = winCount + (double) tieCount / 2;
-        double provisionalElo = elos.stream().reduce(0, Integer::sum) / (double)gameCount;
-        provisionalElo +=  800 * (scoreSum - gameCount / 2.0) / gameCount;
+        //current provisional elo is average score of opps + delta
+        provisionalElo += getDelta(user.getUsername(), games);
 
-        userRepository.updateEloByUsername((int)provisionalElo, user.getUsername());
+        //Clip elo just in case
+        provisionalElo = Math.max(eloConfig.getMinProvisionalElo(), Math.min(eloConfig.getMaxProvisionalElo(), provisionalElo));
+
+        int roundedElo = (int) Math.round(provisionalElo);
+        userRepository.updateEloByUsername(roundedElo, user.getUsername());
     }
 
     private int getEloKFactor(String username) {
         Integer gameCount = gameRepository.findGameCount(username, GameType.MULTIPLAYER);
-        if (gameCount < minGameKFactor) {
-            return bigKFactor;
+        if (gameCount < eloConfig.getMinGameKFactor()) {
+            return eloConfig.getBigKFactor();
         }
         Integer elo = userRepository.getEloByUsername(username);
         if (elo < 2400) {
-            return midKFactor;
+            return eloConfig.getMidKFactor();
         }
-        return smallKFactor;
+        return eloConfig.getSmallKFactor();
     }
 
     private void updateActualElo(User user, User opponent,  double score) {
@@ -116,6 +151,8 @@ public class EloCalculatorService {
         return currentGameScorePlayer1;
     }
 
+
+    @Transactional
     public void updateElo(Game game) {
         if (game.getGameType() == GameType.BOT) {
             return; //No elo calculation for bot games
@@ -128,27 +165,27 @@ public class EloCalculatorService {
         int player2Games = gameRepository.findGameCount(user2.getUsername(), GameType.MULTIPLAYER);
 
         //if players have played less than minimumGamesForElo, update provisional elo
-        if (player1Games < minimumGamesForElo) {
+        if (player1Games < eloConfig.getMinimumGamesForElo()) {
             updateProvisionalElo(user1);
         }
-        if (player2Games < minimumGamesForElo) {
+        if (player2Games < eloConfig.getMinimumGamesForElo()) {
             updateProvisionalElo(user2);
         }
 
         //if players just played their minimumGamesForElo game, update their elo status to non-provisional
-        if (player1Games == minimumGamesForElo) {
+        if (player1Games == eloConfig.getMinimumGamesForElo()) {
             userRepository.updateEloIsProvisionalByUsername(false, user1.getUsername());
         }
-        if (player2Games == minimumGamesForElo) {
+        if (player2Games == eloConfig.getMinimumGamesForElo()) {
             userRepository.updateEloIsProvisionalByUsername(false, user2.getUsername());
         }
 
         //if players have played more than minimumGamesForElo, update their actual elo
         double currentGameScorePlayer1 = getPlayer1Score(game.getUser1Color(), game.getGameStatus());
-        if (player1Games >= minimumGamesForElo) {
+        if (player1Games >= eloConfig.getMinimumGamesForElo()) {
             updateActualElo(user1, user2, currentGameScorePlayer1);
         }
-        if (player2Games >= minimumGamesForElo) {
+        if (player2Games >= eloConfig.getMinimumGamesForElo()) {
             updateActualElo(user2, user1, 1 - currentGameScorePlayer1);
         }
 
