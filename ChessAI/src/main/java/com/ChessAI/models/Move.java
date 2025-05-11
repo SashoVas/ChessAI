@@ -1,6 +1,7 @@
 package com.ChessAI.models;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 
 @Entity
 @Table(name = "moves")
@@ -15,6 +16,7 @@ public class Move {
     private String initialFen;
     private String finalFen;
     private String moveNr;
+    private Integer turn;
     public Move(){};
 
     public Move(Integer id, Game game, String initialFen, String finalFen, String moveNr) {
@@ -63,5 +65,13 @@ public class Move {
 
     public void setMoveNr(String moveNr) {
         this.moveNr = moveNr;
+    }
+
+    public Integer getTurn() {
+        return turn;
+    }
+
+    public void setTurn(Integer turn) {
+        this.turn = turn;
     }
 }

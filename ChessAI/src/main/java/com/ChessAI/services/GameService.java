@@ -2,10 +2,7 @@ package com.ChessAI.services;
 
 import com.ChessAI.Chess.BitBoard;
 import com.ChessAI.dto.*;
-import com.ChessAI.exceptions.InvalidActionException.InvalidMoveException;
-import com.ChessAI.exceptions.InvalidActionException.InvalidRoomException;
-import com.ChessAI.exceptions.InvalidActionException.NotUserTurnException;
-import com.ChessAI.exceptions.InvalidActionException.UnauthorizedGameAccessException;
+import com.ChessAI.exceptions.InvalidActionException.*;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.MoveRepository;
@@ -87,8 +84,15 @@ public class GameService {
         }
         return currentGame.get();
     }
+    private Game getGameWithMoves(String roomId){
+        Optional<Game> currentGame=gameRepository.findByGameIdWithMoves(Integer.parseInt(roomId));
+        if (currentGame.isEmpty()){
+            throw new InvalidRoomException();
+        }
+        return currentGame.get();
+    }
     public GameResultDTO getGameState(String roomId){
-        return GameResultDTO.fromEntity(getGame(roomId));
+        return GameResultDTO.fromEntity(getGameWithMoves(roomId));
     }
     private void updateGameAfterMove(Game game, String moveNr, String currentFen, BitBoard bitboard){
         String fenAfterMove=bitboard.getFen();
@@ -98,6 +102,7 @@ public class GameService {
         currentMove.setInitialFen(currentFen);
         currentMove.setFinalFen(fenAfterMove);
         currentMove.setGame(game);
+        currentMove.setTurn(game.getCurrentTurn());
         game.setCurrentTurn(game.getCurrentTurn() + 1);
         game.setCurrentTurnColor(PlayerColor.getOpponentColor(game.getCurrentTurnColor()));
         //game.getMoves().add(currentMove);
@@ -160,6 +165,8 @@ public class GameService {
         if(game.getUser1().getUsername().equals(username) && game.getCurrentTurnColor()!=game.getUser1Color()){
             throw new NotUserTurnException();
         }
+        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
+            throw new GameEndedException();
 
         BitBoard bitboard=makeAMove(game,move);
         return new MoveResultDTO(bitboard.getFen(),move.move,Collections.emptyList(),bitboard.getState(),game.getCurrentTurnColor());
@@ -176,6 +183,9 @@ public class GameService {
         else if(game.getUser2().getUsername().equals(username) && game.getCurrentTurnColor()!=game.getUser2Color()){
             throw new NotUserTurnException();
         }
+        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
+            throw new GameEndedException();
+
         BitBoard bitBoard= makeAMove(game,move);
 
         return new MoveResultDTO(bitBoard.getFen(),move.move,bitBoard.getPossibleNextMoves(),bitBoard.getState(),game.getCurrentTurnColor());

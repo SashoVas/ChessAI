@@ -3,6 +3,7 @@ package com.ChessAI.dto;
 import com.ChessAI.models.*;
 import jakarta.persistence.*;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -143,8 +144,13 @@ public class GameResultDTO {
             gameDTO.setUser2Username(game.getUser2().getUsername());
         gameDTO.setUser1Color(game.getUser1Color());
         gameDTO.setUser2Color(game.getUser2Color());
-        //TODO:Optimize n+1 problem
-        //gameDTO.setMoves(game.getMoves().stream().map(Move::getMoveNr).toList());
+
+        gameDTO.setMoves(
+                game.getMoves().stream()
+                        .sorted(Comparator.comparing(Move::getTurn))
+                        .map(Move::getMoveNr)
+                        .toList());
+
         gameDTO.setCurrentFen(game.getCurrentFen());
         gameDTO.setUser1TimeLeft(game.getUser1TimeLeft());
         gameDTO.setUser2TimeLeft(game.getUser2TimeLeft());

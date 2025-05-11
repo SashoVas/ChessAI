@@ -3,6 +3,7 @@ package com.ChessAI.controllers.WebSockets;
 import com.ChessAI.dto.InitialConnectDTO;
 import com.ChessAI.dto.MoveInputDTO;
 import com.ChessAI.dto.MoveResultDTO;
+import com.ChessAI.models.GameStatus;
 import com.ChessAI.models.UserPrincipal;
 import com.ChessAI.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,9 @@ public class MoveWebSocketController {
 
         MoveResultDTO result=gameService.makeAMoveToBot(move,username);
         messagingTemplate.convertAndSend(destination, result);
+
+        if (result.getGameState() != GameStatus.IN_PROGRESS)
+            return;
 
         result=gameService.getBotMove(move.roomId,username);
         messagingTemplate.convertAndSend(destination, result);
