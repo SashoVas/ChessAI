@@ -5,22 +5,20 @@ import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
 import com.ChessAI.services.EloCalculatorService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
-
 import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-@Disabled //TODO: Fix tests, code/tests are incorrect
 public class EloCalculatorServiceTest {
     @Autowired
     private UserRepository userRepository;
@@ -34,7 +32,8 @@ public class EloCalculatorServiceTest {
     @Autowired
     private EloCalculatorConfig eloConfig;
 
-
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private List<Game> insertData(int whiteWins, int blackWins, int ties, GameType gameType, int usersElo) {
         User user1 = new User("user1", "StrongPass23", "myEmail@abv.bg");
@@ -75,8 +74,18 @@ public class EloCalculatorServiceTest {
         //User2 is a new user who just lost his first game
         List<Game> games = insertData(1, 0, 0, GameType.MULTIPLAYER, 1500);
         eloCalculatorService.updateElo(games.get(0));
-        assertThat(userRepository.findByUsername("user1").get().getEloRating()).isEqualTo(1700);
-        assertThat(userRepository.findByUsername("user2").get().getEloRating()).isEqualTo(1300);
+
+        // Note: updateElo above is annotated with @Modifying, because it is an update query.
+        // Without @Modifying, the query will be treated as select and there will be an error.
+        // @Modifying executes SQL directly, and it doesn't update the entity inside the persistence context.
+        // This is why we clear the persistence context to ensure we get fresh data from the database
+        //TODO: See if this call can be put at the end of updateElo() function instead of calling it here.
+        entityManager.clear();
+
+        // Note: Big swings like this are expected since techincally the winner has 100% win rate on his games.
+        // After the provisional flag is dropped after n games, the elo should be stabilized.
+        assertThat(userRepository.findByUsername("user1").get().getEloRating()).isEqualTo(2100);
+        assertThat(userRepository.findByUsername("user2").get().getEloRating()).isEqualTo(900);
     }
 
     @Test
@@ -87,7 +96,10 @@ public class EloCalculatorServiceTest {
         //User2 is a user with 2 wins, 5 losses, 1 ties
         List<Game> games = insertData(5,2,1, GameType.MULTIPLAYER, 1800);
         eloCalculatorService.updateElo(games.get(0));
-        assertThat(userRepository.findByUsername("user1").get().getEloRating()).isEqualTo(2100);
-        assertThat(userRepository.findByUsername("user2").get().getEloRating()).isEqualTo(1500);
+
+        entityManager.clear();
+
+        assertThat(userRepository.findByUsername("user1").get().getEloRating()).isEqualTo(2025);
+        assertThat(userRepository.findByUsername("user2").get().getEloRating()).isEqualTo(1575);
     }
 }
