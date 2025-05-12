@@ -35,12 +35,10 @@ public class EloCalculatorServiceTest {
     @PersistenceContext
     private EntityManager entityManager;
 
+    User user1 = new User("user1", "StrongPass23", "myEmail@abv.bg");
+    User user2 = new User("user2", "AnotherStrongPass34", "anotherEmail@gmail.com");
+
     private List<Game> insertData(int whiteWins, int blackWins, int ties, GameType gameType, int usersElo) {
-        User user1 = new User("user1", "StrongPass23", "myEmail@abv.bg");
-        User user2 = new User("user2", "AnotherStrongPass34", "anotherEmail@gmail.com");
-
-        userRepository.saveAll(List.of(user1, user2));
-
         int gameCount = whiteWins + blackWins + ties;
 
         List<Game> games = new ArrayList<Game>();
@@ -72,7 +70,12 @@ public class EloCalculatorServiceTest {
 
         //User1 is a new user who just won his first game
         //User2 is a new user who just lost his first game
+        userRepository.saveAll(List.of(user1, user2));
         List<Game> games = insertData(1, 0, 0, GameType.MULTIPLAYER, 1500);
+
+        //insert some bot games to test if they will be counted in elo calculation(they shouldn't)
+        insertData(10,9,8, GameType.BOT, 9999);
+
         eloCalculatorService.updateElo(games.get(0));
 
         // Note: updateElo above is annotated with @Modifying, because it is an update query.
@@ -94,12 +97,46 @@ public class EloCalculatorServiceTest {
 
         //User1 is a user with 5 wins, 2 losses, 1 ties
         //User2 is a user with 2 wins, 5 losses, 1 ties
+        userRepository.saveAll(List.of(user1, user2));
         List<Game> games = insertData(5,2,1, GameType.MULTIPLAYER, 1800);
+
+        //insert some bot games to test if they will be counted in elo calculation(they shouldn't)
+        insertData(10,9,8, GameType.BOT, 9999);
+
         eloCalculatorService.updateElo(games.get(0));
 
         entityManager.clear();
 
         assertThat(userRepository.findByUsername("user1").get().getEloRating()).isEqualTo(2025);
         assertThat(userRepository.findByUsername("user2").get().getEloRating()).isEqualTo(1575);
+    }
+
+    @Test
+    public void testIsProvisionalFlag() {
+        userRepository.saveAll(List.of(user1, user2));
+
+        assertThat(userRepository.findByUsername("user1").get().IsEloProvisional() == true);
+        assertThat(userRepository.findByUsername("user2").get().IsEloProvisional() == true);
+
+        List<Game> games = insertData(eloConfig.getMinimumGamesForElo() - 1,0,0, GameType.MULTIPLAYER, 1800);
+        eloCalculatorService.updateElo(games.get(0));
+        entityManager.clear();
+
+        assertThat(userRepository.findByUsername("user1").get().IsEloProvisional() == true);
+        assertThat(userRepository.findByUsername("user2").get().IsEloProvisional() == true);
+
+        insertData(1,0,0,GameType.MULTIPLAYER,1800);
+        eloCalculatorService.updateElo(games.get(0));
+        entityManager.clear();
+
+        assertThat(userRepository.findByUsername("user1").get().IsEloProvisional() == false);
+        assertThat(userRepository.findByUsername("user2").get().IsEloProvisional() == false);
+
+        insertData(5,7,8,GameType.MULTIPLAYER,1800);
+        eloCalculatorService.updateElo(games.get(0));
+        entityManager.clear();
+
+        assertThat(userRepository.findByUsername("user1").get().IsEloProvisional() == false);
+        assertThat(userRepository.findByUsername("user2").get().IsEloProvisional() == false);
     }
 }
