@@ -320,7 +320,7 @@ function joinRoomOnClick(){
 }
 
 function createRoom(){
-    fetch("http://localhost:8080/createGame",
+    fetch("http://localhost:8080/games",
         {
             method: "POST",
             body: JSON
