@@ -55,10 +55,10 @@ public class EloCalculatorService {
 
         for (Game game : games) {
             if (!game.getUser1().getUsername().equals(currentUser.getUsername())) {
-                averageOpponentElo += game.getUser1().getEloRating();
+                averageOpponentElo += game.getUser1Elo();
             }
             else {
-                averageOpponentElo += game.getUser2().getEloRating();
+                averageOpponentElo += game.getUser2Elo();
             }
         }
 

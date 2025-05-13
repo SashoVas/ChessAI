@@ -16,11 +16,13 @@ public interface UserRepository extends JpaRepository<User,Integer> {
     @Query("SELECT u.elo FROM User u WHERE u.username = :username")
     Integer getEloByUsername(String username);
 
+    //NOTE: Run entityManager.clear(); after @Modifying queries!
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.isEloProvisional = :isProvisional WHERE u.username = :username")
     void updateEloIsProvisionalByUsername(Boolean isProvisional, String username);
 
+    //NOTE: Run entityManager.clear(); after @Modifying queries!
     @Transactional
     @Modifying
     @Query("UPDATE User u SET u.elo = :elo WHERE u.username = :username")
