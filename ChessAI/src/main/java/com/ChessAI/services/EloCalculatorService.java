@@ -122,7 +122,7 @@ public class EloCalculatorService {
             return eloConfig.getBigKFactor();
         }
         Integer elo = userRepository.getEloByUsername(username);
-        if (elo < 2400) {
+        if (elo < 2400) { //TODO: export in config - update tests as well
             return eloConfig.getMidKFactor();
         }
         return eloConfig.getSmallKFactor();

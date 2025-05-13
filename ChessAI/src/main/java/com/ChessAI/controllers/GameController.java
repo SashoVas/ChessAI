@@ -20,24 +20,28 @@ public class GameController {
     @Autowired
     private GameService gameService;
 
-    @PostMapping("/createGame")
+    @PostMapping("/games")
     public ResponseEntity<GameResultDTO> createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         GameResultDTO game = gameService.createGame(createGameDTO, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(game);
     }
 
-    @GetMapping("/getFreeRooms")
-    public Set<GameResultDTO> getFreeRooms() {
-        return gameService.getFreeRooms();
+    @GetMapping("/rooms")
+    public Set<GameResultDTO> getRooms(@RequestParam(required = false, defaultValue = "false") boolean free) {
+        if (free) {
+            return gameService.getFreeRooms();
+        }
+        //TODO: return all games
+        return null;
     }
 
-    @GetMapping("/{roomId}")
+    @GetMapping("/games/{roomId}")
     public GameResultDTO getGame(@PathVariable String roomId){
         return gameService.getGameState(roomId);
     }
 
-    @PatchMapping("game/{roomId}")
+    @PatchMapping("games/{roomId}/join")
     public GameResultDTO joinRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetails userDetails){
         return gameService.joinRoom(roomId,userDetails.getUsername());
     }
