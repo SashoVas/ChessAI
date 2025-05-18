@@ -22,13 +22,12 @@ export class ChessBoardComponent {
   @ViewChild('chessboard',{static:true}) chessBoardEl?:ElementRef<HTMLDivElement>
  // two-way bindings
   fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-  roomIdInput = '';
   private roomSubscription!: Subscription;
 
   // board state
   initialPosition: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
   possibleMoves: string[] = [];
-  currentRoomId = '1';
+  currentRoomId = '';
   currentColor = '';
 
   // drag/drop
@@ -69,7 +68,7 @@ export class ChessBoardComponent {
   }
 
   joinRoomOnClick(): void {
-    this.roomSubscription=this.webSocketService.joinRoom(this.roomIdInput).subscribe({
+    this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
       next: (msg) => this.parseMessage(msg),
       error: (err) => console.error('WebSocket error:', err)
     });

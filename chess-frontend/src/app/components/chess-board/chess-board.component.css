@@ -1,17 +1,32 @@
+.center {
+  margin: 20px auto;
+  max-width: 526px; 
+  width: 95%;
+  border: 3px solid green;
+  padding: 10px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+
 ::ng-deep.chessboard {
     display: grid;
-    grid-template-columns: repeat(8, 60px);
-    grid-template-rows: repeat(8, 60px);
-    width: 480px;
-    height: 480px;
-    border: 2px solid #333;
+    grid-template-columns: repeat(8, 12.5%);
+    grid-template-rows: repeat(8, 12.5%);
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
     background-color: #f0d9b5;
     position: relative;
+    margin: 0 auto;
+    max-width: 500px; 
+    max-height: 500px;
 }
 
 ::ng-deep.square {
-    width: 60px;
-    height: 60px;
+    font-size: 6vmin;
+    width: 100%; 
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,7 +45,7 @@
 }
 
 ::ng-deep.piece {
-    font-size: 48px;
+    font-size: 6vmin; 
     user-select: none;
     cursor: grab;
     width: 100%;
@@ -42,8 +57,14 @@
     top: 0;
     left: 0;
     transition: none;
+    font-family: Arial, Helvetica, sans-serif;
 }
-
+@media (hover: none) { 
+    ::ng-deep.piece {
+        font-size: min(8vw, 70px);
+        touch-action: manipulation;
+    }
+}
 ::ng-deep.piece:active {
     cursor: grabbing;
 }

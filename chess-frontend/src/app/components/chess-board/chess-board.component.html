@@ -1,14 +1,18 @@
-<div #chessboard id="chessboard" class="chessboard"></div>
+<div class="center">
+  <div #chessboard id="chessboard" class="chessboard"></div>
 
-<section>
-  <label for="FEN">FEN</label>
-  <input id="FEN" [(ngModel)]="fen" />
-  <button (click)="loadFenButtonClick()">Load FEN</button>
-</section>
+  <div class="settings">
+      <section>
+      <h5 for="FEN">FEN</h5>
+      <input class="form-control" id="FEN" [(ngModel)]="fen" />
+      <button class="m-1 btn" (click)="loadFenButtonClick()">Load FEN</button>
+    </section>
 
-<section>
-  <label for="Room">Room</label>
-  <input id="Room" [(ngModel)]="roomIdInput" />
-  <button (click)="joinRoomOnClick()">Join Room</button>
-  <button (click)="createRoom()">Create Room</button>
-</section>
+    <section>
+      <h5 for="Room">Room</h5>
+      <input class="form-control" id="Room" [(ngModel)]="currentRoomId" />
+      <button class="m-1 btn" (click)="joinRoomOnClick()">Join Room</button>
+      <button class="m-1 btn" (click)="createRoom()">Create Room</button>
+    </section>
+  </div>
+</div>
