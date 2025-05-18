@@ -1,0 +1,14 @@
+<div #chessboard id="chessboard" class="chessboard"></div>
+
+<section>
+  <label for="FEN">FEN</label>
+  <input id="FEN" [(ngModel)]="fen" />
+  <button (click)="loadFenButtonClick()">Load FEN</button>
+</section>
+
+<section>
+  <label for="Room">Room</label>
+  <input id="Room" [(ngModel)]="roomIdInput" />
+  <button (click)="joinRoomOnClick()">Join Room</button>
+  <button (click)="createRoom()">Create Room</button>
+</section>

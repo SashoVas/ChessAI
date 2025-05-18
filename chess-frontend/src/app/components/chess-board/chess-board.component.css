@@ -1,4 +1,4 @@
-.chessboard {
+::ng-deep.chessboard {
     display: grid;
     grid-template-columns: repeat(8, 60px);
     grid-template-rows: repeat(8, 60px);
@@ -9,7 +9,7 @@
     position: relative;
 }
 
-.square {
+::ng-deep.square {
     width: 60px;
     height: 60px;
     display: flex;
@@ -18,18 +18,18 @@
     position: relative;
 }
 
-.square:nth-child(16n + 1),
-.square:nth-child(16n + 3),
-.square:nth-child(16n + 5),
-.square:nth-child(16n + 7),
-.square:nth-child(16n + 10),
-.square:nth-child(16n + 12),
-.square:nth-child(16n + 14),
-.square:nth-child(16n + 16) {
+::ng-deep.square:nth-child(16n + 1),
+::ng-deep.square:nth-child(16n + 3),
+::ng-deep.square:nth-child(16n + 5),
+::ng-deep.square:nth-child(16n + 7),
+::ng-deep.square:nth-child(16n + 10),
+::ng-deep.square:nth-child(16n + 12),
+::ng-deep.square:nth-child(16n + 14),
+::ng-deep.square:nth-child(16n + 16) {
     background-color: #b58863;
 }
 
-.piece {
+::ng-deep.piece {
     font-size: 48px;
     user-select: none;
     cursor: grab;
@@ -44,7 +44,7 @@
     transition: none;
 }
 
-.piece:active {
+::ng-deep.piece:active {
     cursor: grabbing;
 }
 
