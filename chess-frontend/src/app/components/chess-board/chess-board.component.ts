@@ -41,9 +41,10 @@ export class ChessBoardComponent {
   isBotMode = true;
   readonly squareSize = 60;
 
-  private webSocketService:WebSocketsServiceService;
-  constructor(private chessService: ChessBoardServiceService, private roomService:RoomServiceService) {
-    this.webSocketService=new WebSocketsServiceService();
+  constructor(
+    private chessService: ChessBoardServiceService,
+    private roomService:RoomServiceService,
+    private webSocketService:WebSocketsServiceService) {
   }
 
   ngAfterViewInit():void{
@@ -83,7 +84,7 @@ export class ChessBoardComponent {
 
 
   createRoom(): void {
-    this.roomService.createRoom()
+    this.roomService.createRoom(this.isBotMode)
       .then(json => {
         this.currentRoomId = json.gameId;
         this.currentColor = json.user1Color;

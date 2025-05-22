@@ -1,6 +1,7 @@
 package com.ChessAI.controllers;
 
 import com.ChessAI.dto.UserDTO;
+import com.ChessAI.dto.UserLoginDTO;
 import com.ChessAI.exceptions.UserException.UserAlreadyExistsException;
 import com.ChessAI.exceptions.UserException.UserNotFoundException;
 import com.ChessAI.services.UserService;
@@ -28,10 +29,10 @@ public class UserController {
 
     //tested by postman collection
     @PostMapping("/login")
-    public String login(@RequestBody @Valid UserDTO user) {
+    public ResponseEntity<UserLoginDTO> login(@RequestBody @Valid UserDTO user) {
         if (!service.userExists(user)) {
             throw new UserNotFoundException();
         }
-        return service.verify(user);
+        return ResponseEntity.status(HttpStatus.OK).body(service.verify(user));
     }
 }

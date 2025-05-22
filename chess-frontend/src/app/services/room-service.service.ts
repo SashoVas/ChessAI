@@ -1,21 +1,24 @@
 import { Injectable } from '@angular/core';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoomServiceService {
-  private jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDY4OTQ0OTYsImV4cCI6MTc2MjQ0NjQ5Nn0.7JsEnIkUFuOAzJcwYhUsDpRcraM2LwttCPVKIeuH2O-PgZ-o2UMgtweQFwcKk6mx3c2McywP-OsqGA7wV2Dk7Q'; // your full token
 
-  constructor() { }
+  constructor(private authService:AuthService) { }
 
-  public createRoom(){
+  public createRoom(isBotMode:boolean){
       return fetch('http://localhost:8080/createGame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.jwtToken}`
+          Authorization: `Bearer ${this.authService.getToken()}`
         },
-        body: JSON.stringify({ gameType: 'BOT', gameTimeSeconds: 60 })
+        body: JSON.stringify({ gameType:isBotMode? 'BOT':'MULTIPLAYER', gameTimeSeconds: 60 })
       }).then(res => res.json())
+  }
+  public joinRoom(){
+    
   }
 }

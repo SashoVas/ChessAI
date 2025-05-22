@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule,FormsModule,ReactiveFormsModule],
+  imports: [RouterModule,CommonModule,FormsModule,ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -16,13 +16,14 @@ export class LoginComponent {
   errorMessage = '';
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    username: ['', [Validators.required]],
     password: ['', Validators.required],
     rememberMe: [false]
   });
   
     constructor(
     private fb: FormBuilder,
+    private authService:AuthService,
     private router: Router
   ) {}
 
@@ -32,10 +33,12 @@ export class LoginComponent {
     this.errorMessage = '';
 
     const credentials = {
-      email: this.loginForm.value.email!,
+      username: this.loginForm.value.username!,
       password: this.loginForm.value.password!
     };
-
-    console.log(credentials)
+    this.authService.login(credentials).subscribe({
+    next: value =>this.router.navigate(['/']),
+    error: err => this.errorMessage = err instanceof Error ? err.message : 'Login failed'
+  });
   }
 }

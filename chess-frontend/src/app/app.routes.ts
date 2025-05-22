@@ -5,6 +5,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { GameHistoryComponent } from './components/game-history/game-history.component';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
+import { ErrorPageComponent } from './components/error-page/error-page.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -15,17 +17,20 @@ export const routes: Routes = [
     {
         path:'game',
         component: ChessBoardComponent,
-        title: 'Chess Game'
+        title: 'Chess Game',
+        canActivate: [authGuard]
     },
     {
         path:"profile",
         component: ProfileComponent,
-        title: "Profile"
+        title: "Profile",
+        canActivate: [authGuard]
     },
     {
         path:"gameHistory",
         component: GameHistoryComponent,
-        title:"Game History"
+        title:"Game History",
+        canActivate: [authGuard]
     },
     {
         path:"login",
@@ -36,5 +41,10 @@ export const routes: Routes = [
         path:"register",
         component: RegisterComponent,
         title:"Register"
+    },
+    {
+        path:"error",
+        component: ErrorPageComponent,
+        title:"Error"
     }
 ];

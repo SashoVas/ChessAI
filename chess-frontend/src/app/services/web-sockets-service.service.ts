@@ -4,15 +4,16 @@ import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { share } from 'rxjs/operators';
 
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketsServiceService {
   private stompClient: Client;
-  private jwtToken = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzYXNobzMiLCJpYXQiOjE3NDY4OTQ0OTYsImV4cCI6MTc2MjQ0NjQ5Nn0.7JsEnIkUFuOAzJcwYhUsDpRcraM2LwttCPVKIeuH2O-PgZ-o2UMgtweQFwcKk6mx3c2McywP-OsqGA7wV2Dk7Q'; // your full token
   private roomObservables: { [roomId: string]: Observable<any> } = {};
-  constructor() { 
+  
+  constructor(private authService:AuthService) { 
     this.stompClient = new Client({
           webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
           connectHeaders: this.getHeaders(),
@@ -27,7 +28,7 @@ export class WebSocketsServiceService {
 
   private getHeaders() {
     return {
-      Authorization: `Bearer ${this.jwtToken}`,
+      Authorization: `Bearer ${this.authService.getToken()}`,
       'heart-beat': '10000,10000'
     };
   }

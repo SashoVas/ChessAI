@@ -5,7 +5,7 @@
     </h2>
     <p class="mt-2 text-center text-sm text-gray-600">
       Or
-      <a routerLink="/register" class="text-blue-600 hover:text-blue-500">
+      <a href=""  routerLink="/register" class="text-blue-600 hover:text-blue-500">
         create a new account
       </a>
     </p>
@@ -15,21 +15,21 @@
     <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
       <form class="space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">
-            Email address
+          <label for="username" class="block text-sm font-medium text-gray-700">
+            Username
           </label>
           <div class="mt-1">
             <input 
-              id="email"
-              name="email"
-              type="email"
-              formControlName="email"
+              id="username"
+              name="username"
+              type="username"
+              formControlName="username"
               class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              [class.border-red-300]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              [class.border-red-300]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
             >
-            <div *ngIf="loginForm.get('email')?.errors && loginForm.get('email')?.touched" class="text-red-500 text-sm mt-1">
-              <p *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</p>
-              <p *ngIf="loginForm.get('email')?.errors?.['email']">Invalid email format</p>
+            <div *ngIf="loginForm.get('username')?.errors && loginForm.get('username')?.touched" class="text-red-500 text-sm mt-1">
+              <p *ngIf="loginForm.get('username')?.errors?.['required']">username is required</p>
+              <p *ngIf="loginForm.get('username')?.errors?.['username']">Invalid username format</p>
             </div>
           </div>
         </div>

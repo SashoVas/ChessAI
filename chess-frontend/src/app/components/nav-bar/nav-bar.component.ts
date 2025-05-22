@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -10,9 +11,18 @@ import { RouterModule } from '@angular/router';
   styleUrl: './nav-bar.component.css'
 })
 export class NavBarComponent {
-  isUserMenuOpen = false;
+    isUserMenuOpen = false;
+
+  constructor(public authService: AuthService){
+  }
 
   toggleUserMenu() {
     this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+  signOut(){
+    this.authService.logout()
+  }
+  isLoggedIn(){
+    return this.authService.isLoggedIn()
   }
 }

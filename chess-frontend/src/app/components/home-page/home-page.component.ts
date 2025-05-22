@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home-page',
@@ -19,14 +20,11 @@ export class HomePageComponent {
   ];
 
   hoverEffect(timeControl: any) {
-    // Add any hover animation logic here
-  }
+   }
 
   startAIGame() {
-    // Implement AI game logic
-  }
+   }
 
   startCustomGame() {
-    // Implement custom game logic
-  }
+   }
 }
