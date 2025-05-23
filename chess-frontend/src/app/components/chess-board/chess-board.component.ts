@@ -79,10 +79,7 @@ export class ChessBoardComponent {
         error: (err) => console.error('WebSocket error:', err)
       });
     })
-    //this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
-    //  next: (msg) => this.parseMessage(msg),
-    //  error: (err) => console.error('WebSocket error:', err)
-    //});
+
   }
 
   private parseMessage(msg: Move):void{

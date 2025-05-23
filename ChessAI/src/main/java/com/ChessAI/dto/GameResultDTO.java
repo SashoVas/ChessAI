@@ -23,6 +23,9 @@ public class GameResultDTO {
     private PlayerColor currentTurnColor;
     private Integer gameTimeSeconds;
     private Integer currentTurn ;
+    private Integer user1Rating;
+    private Integer user2Rating;
+
 
     public Integer getGameId() {
         return gameId;
@@ -138,10 +141,14 @@ public class GameResultDTO {
     public static GameResultDTO fromEntity(Game game){
         GameResultDTO gameDTO=new GameResultDTO();
         gameDTO.setGameId(game.getGameId());
-        if (game.getUser1()!=null)
+        if (game.getUser1()!=null) {
             gameDTO.setUser1Username(game.getUser1().getUsername());
-        if (game.getUser2()!=null)
+            gameDTO.setUser1Rating(game.getUser1Elo());
+        }
+        if (game.getUser2()!=null) {
             gameDTO.setUser2Username(game.getUser2().getUsername());
+            gameDTO.setUser2Rating(game.getUser2Elo());
+        }
         gameDTO.setUser1Color(game.getUser1Color());
         gameDTO.setUser2Color(game.getUser2Color());
 
@@ -160,5 +167,21 @@ public class GameResultDTO {
         gameDTO.setCurrentTurnColor(game.getCurrentTurnColor());
         gameDTO.setGameType(game.getGameType());
         return gameDTO;
+    }
+
+    public Integer getUser1Rating() {
+        return user1Rating;
+    }
+
+    public void setUser1Rating(Integer user1Rating) {
+        this.user1Rating = user1Rating;
+    }
+
+    public Integer getUser2Rating() {
+        return user2Rating;
+    }
+
+    public void setUser2Rating(Integer user2Rating) {
+        this.user2Rating = user2Rating;
     }
 }

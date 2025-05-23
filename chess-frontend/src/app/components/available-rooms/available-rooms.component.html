@@ -1,0 +1,72 @@
+<div class="p-4 max-w-6xl mx-auto">
+  <h2 class="text-2xl font-bold mb-6">Available Games</h2>
+
+  <div *ngIf="games!.length > 0; else noGames" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let game of games" class="bg-white shadow rounded-2xl p-4 hover:shadow-md transition flex flex-col justify-between">
+      <!-- Game Info -->
+      <div>
+        <div class="flex justify-between mb-2">
+          <span class="text-sm font-medium text-gray-500">Game ID: {{ game.gameId }}</span>
+          <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+            {{ game.gameType }}
+          </span>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="font-semibold">{{ game.user1Username }} ({{ game.user1Color }})</span>
+              <span class="text-sm text-gray-600">Rating: {{ game.user1Rating }}</span>
+              <span class="text-xs text-gray-500">⏱️ {{ game.user1TimeLeft }}s</span>
+            </div>
+            <span class="text-gray-400">vs</span>
+            <div class="flex flex-col text-right">
+              <span class="font-semibold">
+                {{ game.user2Username || 'Waiting...' }} ({{ game.user2Color }})
+              </span>
+              <span class="text-sm text-gray-600" *ngIf="game.user2Username">Rating: {{ game.user2Rating }}</span>
+              <span class="text-xs text-gray-500" *ngIf="game.user2Username">⏱️ {{ game.user2TimeLeft }}s</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-sm text-gray-500 mb-2">
+          Status: <strong>{{ game.gameStatus }}</strong>
+        </div>
+
+        <div class="flex justify-between text-sm text-gray-400 mb-4">
+          <span>Moves: {{ game.moves!.length }}</span>
+          <span>Turn: {{ game.currentTurnColor }}</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-4 flex space-x-2">
+        <!-- Join button: only enabled if there's a free slot and game is open -->
+        <button
+          class="flex-1 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition cursor-pointer"
+          [ngClass]="{
+            'bg-green-500': canJoin(game),
+            'bg-gray-300 cursor-not-allowed': !canJoin(game)
+          }"
+          [disabled]="!canJoin(game)"
+          (click)="joinGame(game.gameId)"
+        >
+          Join
+        </button>
+
+        <!-- Spectate button: always enabled -->
+        <button
+          class="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:opacity-90 transition cursor-pointer"
+          (click)="spectateGame(game.gameId)"
+        >
+          Spectate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noGames>
+    <div class="text-gray-500 text-center mt-8">No available games at the moment.</div>
+  </ng-template>
+</div>

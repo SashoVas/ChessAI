@@ -19,6 +19,7 @@ export class RoomServiceService {
         body: JSON.stringify({ gameType:isBotMode? 'BOT':'MULTIPLAYER', gameTimeSeconds: 60 })
       }).then(res => res.json())
   }
+
   public joinRoom(roomId:string){
     return fetch('http://localhost:8080/game/'+roomId, {
         method: 'POST',
@@ -28,11 +29,15 @@ export class RoomServiceService {
         },
         body: JSON.stringify({ })
       }).then(res => res.json())
-    //return this.httpClient.patch('http://localhost:8080/game/'+roomId,{
-    //  headers: {
-    //      'Content-Type': 'application/json',
-    //      Authorization: `Bearer ${this.authService.getToken()}`
-    //    },
-    //})
+  }
+
+  public getFreeRooms(){
+    return fetch('http://localhost:8080/getFreeRooms', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${this.authService.getToken()}`
+            }
+          }).then(res => res.json())
   }
 }
