@@ -37,7 +37,7 @@ public class GameController {
         return gameService.getGameState(roomId);
     }
 
-    @PatchMapping("game/{roomId}")
+    @PostMapping("game/{roomId}")
     public GameResultDTO joinRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetails userDetails){
         return gameService.joinRoom(roomId,userDetails.getUsername());
     }

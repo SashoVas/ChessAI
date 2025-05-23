@@ -7,6 +7,8 @@ import { ChessBoardServiceService } from '../../services/chess-board-service.ser
 import { WebSocketsServiceService } from '../../services/web-sockets-service.service';
 import { Subscription } from 'rxjs';
 import { RoomServiceService } from '../../services/room-service.service';
+import { Game } from '../../models/game';
+import { Move } from '../../models/move';
 
 @Component({
   selector: 'app-chess-board',
@@ -38,7 +40,7 @@ export class ChessBoardComponent {
   private to = 0;
 
   // config
-  isBotMode = true;
+  isBotMode = false;
   readonly squareSize = 60;
 
   constructor(
@@ -69,14 +71,27 @@ export class ChessBoardComponent {
   }
 
   joinRoomOnClick(): void {
-    this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
-      next: (msg) => this.parseMessage(msg),
-      error: (err) => console.error('WebSocket error:', err)
-    });
+    this.roomService.joinRoom(this.currentRoomId).then((data:Game)=>{
+      this.currentRoomId = data.gameId;
+      this.currentColor = data.user2Color;
+      this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
+        next: (msg) => this.parseMessage(msg),
+        error: (err) => console.error('WebSocket error:', err)
+      });
+    })
+    //this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
+    //  next: (msg) => this.parseMessage(msg),
+    //  error: (err) => console.error('WebSocket error:', err)
+    //});
   }
 
-  private parseMessage(msg: any):void{
+  private parseMessage(msg: Move):void{
+    if(this.currentColor === msg.currentColor){  
       this.possibleMoves = msg.nextMoves;
+    }
+    else{
+      this.possibleMoves=[]
+    }
       this.fen = msg.fen;
       this.loadFen(this.fen);
       console.log('Received', msg);
@@ -85,7 +100,7 @@ export class ChessBoardComponent {
 
   createRoom(): void {
     this.roomService.createRoom(this.isBotMode)
-      .then(json => {
+      .then((json:Game) => {
         this.currentRoomId = json.gameId;
         this.currentColor = json.user1Color;
         this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
