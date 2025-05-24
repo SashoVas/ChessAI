@@ -11,11 +11,10 @@ import { FormsModule } from '@angular/forms';
 })
 export class CreateGameComponent {
 
-  // Slider state: time per move in seconds
-  timeMinutes=1
-  timeSeconds = 10;
+  timeMinutes=5;
+  timeSeconds = 0;
   isOpen=false;
-  // Dropdown options (game time in minutes)
+
   gameModes = ['MULTIPLAYER','BOT'];
   selectedGameTime = 'MULTIPLAYER';
   gameColors=["RANDOM","WHITE","BLACK"]

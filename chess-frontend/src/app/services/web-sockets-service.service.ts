@@ -5,6 +5,7 @@ import { share } from 'rxjs/operators';
 
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { Move } from '../models/move';
 
 @Injectable({
   providedIn: 'root'
@@ -33,14 +34,14 @@ export class WebSocketsServiceService {
     };
   }
 
-   public joinRoom(roomId: string): Observable<any> {
+   public joinRoom(roomId: string): Observable<Move> {
     if (!this.roomObservables[roomId]) {
       this.roomObservables[roomId] = this.createRoomObservable(roomId).pipe(share());
     }
     return this.roomObservables[roomId];
   }
 
- private createRoomObservable(roomId: string): Observable<any> {
+ private createRoomObservable(roomId: string): Observable<Move> {
     return new Observable(observer => {
       const subscription = this.stompClient.subscribe(
         `/room/game.${roomId}`,

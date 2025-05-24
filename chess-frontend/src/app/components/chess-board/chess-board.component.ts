@@ -40,7 +40,7 @@ export class ChessBoardComponent {
   private to = 0;
 
   // config
-  isBotMode = false;
+  isBotMode = true;
   readonly squareSize = 60;
 
   constructor(
@@ -71,7 +71,7 @@ export class ChessBoardComponent {
   }
 
   joinRoomOnClick(): void {
-    this.roomService.joinRoom(this.currentRoomId).then((data:Game)=>{
+    this.roomService.joinRoom(this.currentRoomId).subscribe((data:Game)=>{
       this.currentRoomId = data.gameId;
       this.currentColor = data.user2Color;
       this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
@@ -97,15 +97,14 @@ export class ChessBoardComponent {
 
   createRoom(): void {
     this.roomService.createRoom(this.isBotMode)
-      .then((json:Game) => {
+      .subscribe((json:Game) => {
         this.currentRoomId = json.gameId;
         this.currentColor = json.user1Color;
         this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
           next: (msg) => this.parseMessage(msg),
           error: (err) => console.error('WebSocket error:', err)
         });
-      })
-      .catch(console.error);
+      });
   }
 
   private handleMouseDown(e: MouseEvent): void {

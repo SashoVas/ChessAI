@@ -20,7 +20,7 @@ export class AvailableRoomsComponent {
   }
 
   loadAvailableGames(): void {
-    this.roomService.getFreeRooms().then(rooms=>{
+    this.roomService.getFreeRooms().subscribe(rooms=>{
       this.games=rooms;
     })
   }
