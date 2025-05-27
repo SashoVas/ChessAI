@@ -140,7 +140,13 @@ public class GameService {
 
         updateGameAfterMove(game,nextMove,currentFen,bitBoard);
 
-        return new MoveResultDTO(bitBoard.getFen(),nextMove,bitBoard.getPossibleNextMoves(),bitBoard.getState(),game.getCurrentTurnColor());
+        return new MoveResultDTO(
+                bitBoard.getFen(),
+                nextMove,
+                bitBoard.getPossibleNextMoves(),
+                bitBoard.getState(),
+                game.getCurrentTurnColor(),
+                game.getUser1Color());
     }
     public MoveResultDTO getBotMove(String roomId,String username){
         Game game=getGame(roomId);
@@ -169,7 +175,13 @@ public class GameService {
             throw new GameEndedException();
 
         BitBoard bitboard=makeAMove(game,move);
-        return new MoveResultDTO(bitboard.getFen(),move.move,Collections.emptyList(),bitboard.getState(),game.getCurrentTurnColor());
+        return new MoveResultDTO(
+                bitboard.getFen(),
+                move.move,
+                Collections.emptyList(),
+                bitboard.getState(),
+                game.getCurrentTurnColor(),
+                game.getUser1Color());
     }
 
     public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
@@ -188,7 +200,13 @@ public class GameService {
 
         BitBoard bitBoard= makeAMove(game,move);
 
-        return new MoveResultDTO(bitBoard.getFen(),move.move,bitBoard.getPossibleNextMoves(),bitBoard.getState(),game.getCurrentTurnColor());
+        return new MoveResultDTO(
+                bitBoard.getFen(),
+                move.move,
+                bitBoard.getPossibleNextMoves(),
+                bitBoard.getState(),
+                game.getCurrentTurnColor(),
+                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color());
     }
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         Game game=getGame(input.getRoomId());
@@ -202,6 +220,12 @@ public class GameService {
             return makeBotMove(game,bitboard);
         }
 
-        return new MoveResultDTO(currentFen,null,bitboard.getPossibleNextMoves(),bitboard.getState(),game.getCurrentTurnColor());
+        return new MoveResultDTO(
+                currentFen,
+                null,
+                bitboard.getPossibleNextMoves(),
+                bitboard.getState(),
+                game.getCurrentTurnColor(),
+                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color());
     }
 }

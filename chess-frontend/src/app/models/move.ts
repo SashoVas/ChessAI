@@ -5,5 +5,5 @@ export interface Move {
     nextMoves: string[];
     gameState:string;
     currentColor:string;
-
+    colorOfRequestUser:string;
 }

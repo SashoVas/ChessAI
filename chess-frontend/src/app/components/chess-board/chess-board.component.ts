@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
 import { RoomServiceService } from '../../services/room-service.service';
 import { Game } from '../../models/game';
 import { Move } from '../../models/move';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-chess-board',
@@ -44,9 +45,15 @@ export class ChessBoardComponent {
   readonly squareSize = 60;
 
   constructor(
+    private route: ActivatedRoute,
     private chessService: ChessBoardServiceService,
     private roomService:RoomServiceService,
     private webSocketService:WebSocketsServiceService) {
+      
+      let room=this.route.snapshot.paramMap.get('roomId');
+      console.log(room)
+      if(room)
+        this.currentRoomId=room
   }
 
   ngAfterViewInit():void{
@@ -83,6 +90,9 @@ export class ChessBoardComponent {
   }
 
   private parseMessage(msg: Move):void{
+    if(this.currentColor === ''){
+      this.currentColor = msg.colorOfRequestUser;
+    }
     if(this.currentColor === msg.currentColor){  
       this.possibleMoves = msg.nextMoves;
     }

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Room } from '../../models/room';
 import { RoomServiceService } from '../../services/room-service.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-available-rooms',
@@ -13,7 +14,10 @@ import { RoomServiceService } from '../../services/room-service.service';
 export class AvailableRoomsComponent {
     games: Room[] = [];
 
-  constructor(private roomService: RoomServiceService) {}
+  constructor(
+    private roomService: RoomServiceService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadAvailableGames();
@@ -26,7 +30,7 @@ export class AvailableRoomsComponent {
   }
 
   joinGame(gameId: number): void {
-
+      this.router.navigate(['/game/' + gameId]);
   }
 
   spectateGame(gameId: number): void {

@@ -16,7 +16,7 @@ export const routes: Routes = [
         title: 'Chess Home Page'
     },
     {
-        path:'game',
+        path:'game/:roomId',
         component: ChessBoardComponent,
         title: 'Chess Game',
         canActivate: [authGuard]
