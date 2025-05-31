@@ -146,7 +146,8 @@ public class GameService {
                 bitBoard.getPossibleNextMoves(),
                 bitBoard.getState(),
                 game.getCurrentTurnColor(),
-                game.getUser1Color());
+                game.getUser1Color(),
+                game.getGameType());
     }
     public MoveResultDTO getBotMove(String roomId,String username){
         Game game=getGame(roomId);
@@ -165,6 +166,9 @@ public class GameService {
     }
     public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
+        if(game.getGameType()!=GameType.BOT){
+            throw new UnauthorizedGameAccessException();
+        }
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
             throw new UnauthorizedGameAccessException();
         }
@@ -181,11 +185,15 @@ public class GameService {
                 Collections.emptyList(),
                 bitboard.getState(),
                 game.getCurrentTurnColor(),
-                game.getUser1Color());
+                game.getUser1Color(),
+                game.getGameType());
     }
 
     public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
+        if (game.getGameType()!=GameType.MULTIPLAYER){
+            throw new UnauthorizedGameAccessException();
+        }
         if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
             throw new UnauthorizedGameAccessException();
         }
@@ -206,7 +214,8 @@ public class GameService {
                 bitBoard.getPossibleNextMoves(),
                 bitBoard.getState(),
                 game.getCurrentTurnColor(),
-                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color());
+                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
+                game.getGameType());
     }
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         Game game=getGame(input.getRoomId());
@@ -226,6 +235,7 @@ public class GameService {
                 bitboard.getPossibleNextMoves(),
                 bitboard.getState(),
                 game.getCurrentTurnColor(),
-                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color());
+                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
+                game.getGameType());
     }
 }

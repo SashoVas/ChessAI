@@ -6,8 +6,6 @@ import { CommonModule } from '@angular/common';
 import { ChessBoardServiceService } from '../../services/chess-board-service.service';
 import { WebSocketsServiceService } from '../../services/web-sockets-service.service';
 import { Subscription } from 'rxjs';
-import { RoomServiceService } from '../../services/room-service.service';
-import { Game } from '../../models/game';
 import { Move } from '../../models/move';
 import { ActivatedRoute } from '@angular/router';
 
@@ -23,31 +21,25 @@ import { ActivatedRoute } from '@angular/router';
 export class ChessBoardComponent {
 
   @ViewChild('chessboard',{static:true}) chessBoardEl?:ElementRef<HTMLDivElement>
- // two-way bindings
   fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   private roomSubscription!: Subscription;
 
-  // board state
   initialPosition: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
   possibleMoves: string[] = [];
   currentRoomId = '';
   currentColor = '';
 
-  // drag/drop
   private draggedPiece: HTMLElement | null = null;
   private offsetX = 0;
   private offsetY = 0;
   private from = 0;
   private to = 0;
 
-  // config
-  isBotMode = true;
   readonly squareSize = 60;
-
+  mode:string='BOT'
   constructor(
     private route: ActivatedRoute,
     private chessService: ChessBoardServiceService,
-    private roomService:RoomServiceService,
     private webSocketService:WebSocketsServiceService) {
       
       let room=this.route.snapshot.paramMap.get('roomId');
@@ -63,8 +55,12 @@ export class ChessBoardComponent {
           .addEventListener('mousedown', (e) => this.handleMouseDown(e));
   }
   
-  ngOnInit(): void {
-    this.webSocketService.activate();
+  async ngOnInit() {
+    await this.webSocketService.activate();
+    this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
+        next: (msg) => this.parseMessage(msg),
+        error: (err) => console.error('WebSocket error:', err)
+      });
   }
 
   loadFen(fen: string): void {
@@ -73,24 +69,9 @@ export class ChessBoardComponent {
       this.chessService.createChessboard(this.chessBoardEl?.nativeElement,this.initialPosition,this.currentColor);
   }
 
-  loadFenButtonClick(): void {
-    this.loadFen(this.fen);
-  }
-
-  joinRoomOnClick(): void {
-    this.roomService.joinRoom(this.currentRoomId).subscribe((data:Game)=>{
-      this.currentRoomId = data.gameId;
-      this.currentColor = data.user2Color;
-      this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
-        next: (msg) => this.parseMessage(msg),
-        error: (err) => console.error('WebSocket error:', err)
-      });
-    })
-
-  }
-
   private parseMessage(msg: Move):void{
     if(this.currentColor === ''){
+      console.log("change color")
       this.currentColor = msg.colorOfRequestUser;
     }
     if(this.currentColor === msg.currentColor){  
@@ -99,22 +80,10 @@ export class ChessBoardComponent {
     else{
       this.possibleMoves=[]
     }
+      this.mode=msg.gameType;
       this.fen = msg.fen;
       this.loadFen(this.fen);
       console.log('Received', msg);
-  }
-
-
-  createRoom(): void {
-    this.roomService.createRoom(this.isBotMode)
-      .subscribe((json:Game) => {
-        this.currentRoomId = json.gameId;
-        this.currentColor = json.user1Color;
-        this.roomSubscription=this.webSocketService.joinRoom(this.currentRoomId).subscribe({
-          next: (msg) => this.parseMessage(msg),
-          error: (err) => console.error('WebSocket error:', err)
-        });
-      });
   }
 
   private handleMouseDown(e: MouseEvent): void {
@@ -188,7 +157,7 @@ export class ChessBoardComponent {
     if (valid) {
       if (targetSq.hasChildNodes()) targetSq.removeChild(targetSq.lastChild!);
       targetSq.appendChild(this.draggedPiece);
-      this.webSocketService.sendMessage(fromAlg + toAlg, this.currentRoomId,this.isBotMode);
+      this.webSocketService.sendMessage(fromAlg + toAlg, this.currentRoomId,this.mode==='BOT');
     } else {
       board.children[this.from].appendChild(this.draggedPiece);
     }

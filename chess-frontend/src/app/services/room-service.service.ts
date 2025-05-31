@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Game } from '../models/game';
 import { Room } from '../models/room';
+import { CreateRoomModel } from '../models/createRoomModel';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +12,9 @@ export class RoomServiceService {
 
   constructor(private authService:AuthService,private httpClient:HttpClient) { }
 
-  public createRoom(isBotMode:boolean){
+  public createRoom(room:CreateRoomModel){
       return this.httpClient.post<Game>('http://localhost:8080/createGame',
-        { gameType:isBotMode? 'BOT':'MULTIPLAYER', gameTimeSeconds: 60 },
+        room,
         {headers: {
           'Authorization': `Bearer ${this.authService.getToken()}`,
         }});

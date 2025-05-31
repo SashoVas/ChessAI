@@ -1,11 +1,20 @@
 package com.ChessAI.dto;
 
 import com.ChessAI.models.GameStatus;
+import com.ChessAI.models.GameType;
 import com.ChessAI.models.PlayerColor;
 
 import java.util.List;
 
 public class MoveResultDTO {
+    public GameType getGameType() {
+        return gameType;
+    }
+
+    public void setGameType(GameType gameType) {
+        this.gameType = gameType;
+    }
+
     public PlayerColor getColorOfRequestUser() {
         return colorOfRequestUser;
     }
@@ -14,13 +23,14 @@ public class MoveResultDTO {
         this.colorOfRequestUser = colorOfRequestUser;
     }
 
-    public MoveResultDTO(String fen, String move, List<String> nextMoves, GameStatus gameState, PlayerColor currentColor,PlayerColor colorOfRequestUser) {
+    public MoveResultDTO(String fen, String move, List<String> nextMoves, GameStatus gameState, PlayerColor currentColor,PlayerColor colorOfRequestUser,GameType gameType) {
         this.fen = fen;
         this.move = move;
         this.nextMoves = nextMoves;
         this.gameState=gameState;
         this.currentColor=currentColor;
         this.colorOfRequestUser=colorOfRequestUser;
+        this.gameType=gameType;
     }
 
     String fen;
@@ -29,6 +39,7 @@ public class MoveResultDTO {
     GameStatus gameState;
     PlayerColor currentColor;
     PlayerColor colorOfRequestUser;
+    GameType gameType;
 
     public String getFen() {
         return fen;

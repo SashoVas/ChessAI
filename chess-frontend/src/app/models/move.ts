@@ -6,4 +6,5 @@ export interface Move {
     gameState:string;
     currentColor:string;
     colorOfRequestUser:string;
+    gameType:string;
 }

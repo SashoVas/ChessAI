@@ -32,7 +32,9 @@ export class CreateGameComponent {
     this.isOpen=!this.isOpen;
   }
   onCreate() {
-    this.roomService.createRoom(this.selectedGameType == 'BOT')
+    this.roomService.createRoom({    
+      gameType: this.selectedGameType,
+      gameTimeSeconds:this.timeMinutes*60 + this.timeSeconds})
       .subscribe((json:Game) => {
         this.router.navigate(['/game/' + json.gameId]);
       });

@@ -13,13 +13,16 @@ import { Move } from '../models/move';
 export class WebSocketsServiceService {
   private stompClient: Client;
   private roomObservables: { [roomId: string]: Observable<any> } = {};
-  
+  private isConnected=false;
   constructor(private authService:AuthService) { 
     this.stompClient = new Client({
           webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
           connectHeaders: this.getHeaders(),
           debug: (msg: string) => console.log('[STOMP]', msg),
-          onConnect: () => console.log('STOMP connected'),
+          onConnect: () => {
+            console.log('STOMP connected');
+            this.isConnected=true;
+          },
           onStompError: (frame) => {
             console.error('Broker reported error: ' + frame.headers['message']);
             console.error('Additional details: ' + frame.body);
@@ -85,7 +88,11 @@ export class WebSocketsServiceService {
     });
   }
   public activate(){
-    this.stompClient.activate();
-
+    return new Promise<void>((resolve, reject) => {
+      this.stompClient.onConnect=()=>{
+        resolve();
+      }
+      this.stompClient.activate();
+    })
   }
 }
