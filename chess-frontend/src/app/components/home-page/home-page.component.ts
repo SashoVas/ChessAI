@@ -2,6 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { CreateGameComponent } from '../create-game/create-game.component';
+import { RoomServiceService } from '../../services/room-service.service';
+import { Router } from '@angular/router';
+import { Game } from '../../models/game';
 
 @Component({
   selector: 'app-home-page',
@@ -13,13 +16,18 @@ import { CreateGameComponent } from '../create-game/create-game.component';
 export class HomePageComponent {
 
   timeControls = [
-    { name: 'UltraBullet', time: '½ + 0' },
-    { name: 'Bullet', time: '1 + 0' },
-    { name: 'Blitz', time: '3 + 2' },
-    { name: 'Rapid', time: '10 + 0' },
-    { name: 'Classical', time: '30 + 20' }
+    { name: 'Bullet', time: 1 },
+    { name: 'Blitz', time: 3 },
+    { name: 'Rapid', time: 10 },
+    { name: 'Classical', time: 30 },
+
   ];
 
+  constructor(    
+    private roomService:RoomServiceService,
+    private router: Router){
+
+  }
   hoverEffect(timeControl: any) {
    }
 
@@ -28,4 +36,14 @@ export class HomePageComponent {
 
   startCustomGame() {
    }
+
+  createGameFromPredefinedTimeControls(timeControl:any){
+    console.log('hi')
+    this.roomService.createRoom({    
+      gameType: 'MULTIPLAYER',
+      gameTimeSeconds:timeControl.time * 60})
+      .subscribe((json:Game) => {
+        this.router.navigate(['/game/' + json.gameId]);
+      });
+  }
 }
