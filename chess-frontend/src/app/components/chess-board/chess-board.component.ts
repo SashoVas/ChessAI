@@ -169,7 +169,8 @@ export class ChessBoardComponent {
   }
 
   ngOnDestroy(): void {
-    this.roomSubscription?.unsubscribe();
+    this.roomSubscription.unsubscribe();
+    this.webSocketService.deactivate();
   }
 
 }

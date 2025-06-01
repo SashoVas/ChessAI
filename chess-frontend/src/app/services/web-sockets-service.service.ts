@@ -63,7 +63,7 @@ export class WebSocketsServiceService {
       this.initialConnect(roomId);
 
       return () => {
-        subscription.unsubscribe();
+        subscription.unsubscribe(this.getHeaders());
         delete this.roomObservables[roomId];
       };
     });
@@ -94,5 +94,8 @@ export class WebSocketsServiceService {
       }
       this.stompClient.activate();
     })
+  }
+  public deactivate(){
+    this.stompClient.deactivate()
   }
 }

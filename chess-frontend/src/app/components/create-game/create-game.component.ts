@@ -14,12 +14,15 @@ import { Game } from '../../models/game';
 })
 export class CreateGameComponent {
 
+  @Input() selectedGameType:string='NONE' ;
+  @Input() buttonName:string='Create Game';
+  @Input() bgColor:string='bg-blue';
+
   timeMinutes=5;
   timeSeconds = 0;
   isOpen=false;
 
   gameModes = ['MULTIPLAYER','BOT'];
-  selectedGameType = 'MULTIPLAYER';
   gameColors=["RANDOM","WHITE","BLACK"]
   selectedColor = 'RANDOM';
 

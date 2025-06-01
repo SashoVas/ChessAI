@@ -35,6 +35,14 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
         //StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         StompHeaderAccessor accessor = MessageHeaderAccessor
                 .getAccessor(message, StompHeaderAccessor.class);
+
+        if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+            System.out.println("DISCONNECT");
+            return message;
+        }
+        if (StompCommand.UNSUBSCRIBE.equals(accessor.getCommand())) {
+            System.out.println("UNSUBSCRIBE");
+        }
         String authHeader = accessor.getFirstNativeHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new JWTTokenException("Missing or invalid Authorization header");
@@ -55,6 +63,7 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities()
         );
+
         SecurityContextHolder.getContext().setAuthentication(authToken);
         accessor.setUser(authToken);
         logger.debug("Authenticated user: {}", username);
