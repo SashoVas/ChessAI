@@ -1,6 +1,7 @@
 package com.ChessAI.config;
 
 import com.ChessAI.services.ApplicationUserDetailsService;
+import com.ChessAI.services.GameService;
 import com.ChessAI.services.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
@@ -24,6 +25,9 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
     private JWTService jwtService;
 
     @Autowired
+    private GameService gameService;
+
+    @Autowired
     private ApplicationUserDetailsService userDetailsService;
 
     @Autowired
@@ -40,9 +44,7 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
             System.out.println("DISCONNECT");
             return message;
         }
-        if (StompCommand.UNSUBSCRIBE.equals(accessor.getCommand())) {
-            System.out.println("UNSUBSCRIBE");
-        }
+
         String authHeader = accessor.getFirstNativeHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new JWTTokenException("Missing or invalid Authorization header");
@@ -67,6 +69,17 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
         SecurityContextHolder.getContext().setAuthentication(authToken);
         accessor.setUser(authToken);
         logger.debug("Authenticated user: {}", username);
+
+        if (StompCommand.UNSUBSCRIBE.equals(accessor.getCommand())) {
+            String destination = accessor.getDestination();
+
+            if (destination != null) {
+                String[] parts = destination.split("/");
+                String roomId = parts[parts.length - 1].split(".")[0];
+                System.out.println("User: "+username+" Leaves room: "+roomId);
+                gameService.leaveGame(roomId,username);
+            }
+        }
 
         return message;
     }

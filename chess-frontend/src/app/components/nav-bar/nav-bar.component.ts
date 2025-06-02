@@ -25,4 +25,5 @@ export class NavBarComponent {
   isLoggedIn(){
     return this.authService.isLoggedIn()
   }
+
 }

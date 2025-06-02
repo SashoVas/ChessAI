@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { CreateGameComponent } from '../create-game/create-game.component';
 import { RoomServiceService } from '../../services/room-service.service';
 import { Router } from '@angular/router';

@@ -25,9 +25,20 @@ export class AuthService {
 
   }
 
+  public getUsername():string{
+
+    const token = localStorage.getItem('authToken');
+    if(token){
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub;
+    }
+    return '';
+  }
+
   public getToken(){
     return localStorage.getItem('authToken');
   }
+
   public logout() {
     localStorage.removeItem('authToken');
   }

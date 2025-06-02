@@ -2,6 +2,7 @@ package com.ChessAI.services;
 
 import com.ChessAI.Chess.BitBoard;
 import com.ChessAI.dto.*;
+import com.ChessAI.exceptions.AuthenticationFailedException;
 import com.ChessAI.exceptions.InvalidActionException.*;
 import com.ChessAI.models.*;
 import com.ChessAI.repos.GameRepository;
@@ -166,6 +167,8 @@ public class GameService {
     }
     public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
+
+        //Validation that the user can make the move
         if(game.getGameType()!=GameType.BOT){
             throw new UnauthorizedGameAccessException();
         }
@@ -178,6 +181,7 @@ public class GameService {
         if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
             throw new GameEndedException();
 
+        // Make the move
         BitBoard bitboard=makeAMove(game,move);
         return new MoveResultDTO(
                 bitboard.getFen(),
@@ -191,6 +195,8 @@ public class GameService {
 
     public MoveResultDTO makeAMoveToPlayer(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
+
+        //Validation that the user can make the move
         if (game.getGameType()!=GameType.MULTIPLAYER){
             throw new UnauthorizedGameAccessException();
         }
@@ -206,6 +212,7 @@ public class GameService {
         if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
             throw new GameEndedException();
 
+        //Make the move
         BitBoard bitBoard= makeAMove(game,move);
 
         return new MoveResultDTO(
@@ -237,5 +244,51 @@ public class GameService {
                 game.getCurrentTurnColor(),
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
+    }
+    public void leaveGame(String roomId,String username){
+        Game game=getGame(roomId);
+
+        //A spectator leaves the game
+        if((game.getUser1() == null ||  !game.getUser1().getUsername().equals(username)) &&
+                (game.getUser2() == null ||  !game.getUser2().getUsername().equals(username))){
+            return;
+        }
+
+        //The game is ended, so there is no problem with leaving
+        if(game.getGameStatus() == GameStatus.WINNER_WHITE || game.getGameStatus() == GameStatus.WINNER_BLACK || game.getGameStatus() == GameStatus.DRAW){
+            return;
+        }
+        // Left from game against bot
+        if(game.getGameType() == GameType.BOT){
+            if (game.getUser1Color() == PlayerColor.WHITE){
+                game.setGameStatus(GameStatus.WINNER_BLACK);
+            }
+            else{
+                game.setGameStatus(GameStatus.WINNER_WHITE);
+            }
+        }
+        // Left from Multiplayer game
+        if (game.getGameType() == GameType.MULTIPLAYER){
+            PlayerColor userThatLeftColor;
+            if(game.getUser1() != null ||  game.getUser1().getUsername().equals(username)){
+                userThatLeftColor=game.getUser1Color();
+            }
+            else if(game.getUser2() != null ||  game.getUser2().getUsername().equals(username)){
+                userThatLeftColor=game.getUser2Color();
+            }
+            else {
+                throw new AuthenticationFailedException();
+            }
+            if (userThatLeftColor == PlayerColor.WHITE){
+                game.setGameStatus(GameStatus.WINNER_BLACK);
+            }
+            else{
+                game.setGameStatus(GameStatus.WINNER_WHITE);
+            }
+            // Update the elo of the winner
+            eloCalculatorService.updateElo(game);
+        }
+        // Update db
+        gameRepository.save(game);
     }
 }
