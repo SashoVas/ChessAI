@@ -53,5 +53,10 @@ export const routes: Routes = [
         path:"error",
         component: ErrorPageComponent,
         title:"Error"
-    }
+    },
+    {
+        path:"**",
+        component: ErrorPageComponent,
+        title:"Error"
+    },
 ];

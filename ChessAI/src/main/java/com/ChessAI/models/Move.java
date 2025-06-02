@@ -3,6 +3,8 @@ package com.ChessAI.models;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "moves")
 public class Move {
@@ -73,5 +75,18 @@ public class Move {
 
     public void setTurn(Integer turn) {
         this.turn = turn;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Move move = (Move) o;
+        return Objects.equals(id, move.id) && Objects.equals(game, move.game) && Objects.equals(initialFen, move.initialFen) && Objects.equals(finalFen, move.finalFen) && Objects.equals(moveNr, move.moveNr) && Objects.equals(turn, move.turn);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, game, initialFen, finalFen, moveNr, turn);
     }
 }
