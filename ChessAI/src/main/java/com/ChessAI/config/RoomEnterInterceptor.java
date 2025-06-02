@@ -71,14 +71,8 @@ public class RoomEnterInterceptor implements ChannelInterceptor {
         logger.debug("Authenticated user: {}", username);
 
         if (StompCommand.UNSUBSCRIBE.equals(accessor.getCommand())) {
-            String destination = accessor.getDestination();
-
-            if (destination != null) {
-                String[] parts = destination.split("/");
-                String roomId = parts[parts.length - 1].split(".")[0];
-                System.out.println("User: "+username+" Leaves room: "+roomId);
-                gameService.leaveGame(roomId,username);
-            }
+            System.out.println("UNSUBSCRIBE");
+            gameService.leaveGame(username);
         }
 
         return message;

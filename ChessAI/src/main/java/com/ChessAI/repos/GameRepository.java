@@ -24,9 +24,12 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
     @Query("SELECT g FROM Game g LEFT JOIN FETCH g.moves m WHERE g.gameId = :id")
     Optional<Game> findByGameIdWithMoves(Integer id); //Solves n+1 problem
 
-    @Query("SELECT g FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
+    @Query("SELECT g FROM Game g LEFT JOIN g.user1 u1 LEFT JOIN g.user2 u2 WHERE (u1.username = :username OR u2.username = :username) AND g.gameType = :gameType")
     List<Game> findByUsernameAndGameType(String username, GameType gameType);
 
-    @Query("SELECT COUNT(g) FROM Game g WHERE (g.user1.username = :username OR g.user2.username = :username) AND g.gameType = :gameType")
+    @Query("SELECT COUNT(g) FROM Game g LEFT JOIN g.user1 u1 LEFT JOIN g.user2 u2 WHERE (u1.username = :username OR u2.username = :username) AND g.gameType = :gameType")
     Integer findGameCount(String username, GameType gameType);
+    @Query("SELECT g FROM Game g LEFT JOIN g.user1 u1 LEFT JOIN g.user2 u2 WHERE (u1.username = :username OR u2.username = :username) AND g.gameStatus = :gameStatus")
+
+    List<Game> findByUsernameAndGameStatus(String username, GameStatus gameStatus);
 }

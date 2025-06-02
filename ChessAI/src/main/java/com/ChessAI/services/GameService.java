@@ -48,9 +48,11 @@ public class GameService {
         game.setUser1TimeLeft(createGameDTO.getGameTimeSeconds());
         if (game.getGameType() == GameType.MULTIPLAYER) {
             game.setUser2TimeLeft(createGameDTO.getGameTimeSeconds());
+            game.setGameStatus(GameStatus.NOT_STARTED);
         }
-
-        game.setGameStatus(GameStatus.NOT_STARTED);
+        else{
+            game.setGameStatus(GameStatus.IN_PROGRESS);
+        }
         game.setGameTimeSeconds(createGameDTO.getGameTimeSeconds());
 
         return GameResultDTO.fromEntity(gameRepository.save(game));
@@ -73,6 +75,7 @@ public class GameService {
         //User is authorized, so he exists
         User user=userRepository.findByUsername(username).orElseThrow();
         game.setUser2(user);
+        game.setGameStatus(GameStatus.IN_PROGRESS);
         gameRepository.save(game);
         return GameResultDTO.fromEntity(game);
     }
@@ -206,7 +209,7 @@ public class GameService {
         if(game.getUser1().getUsername().equals(username) && game.getCurrentTurnColor()!=game.getUser1Color()){
             throw new NotUserTurnException();
         }
-        else if(game.getUser2().getUsername().equals(username) && game.getCurrentTurnColor()!=game.getUser2Color()){
+        else if((game.getUser2()!=null && game.getUser2().getUsername().equals(username)) && game.getCurrentTurnColor()!=game.getUser2Color()){
             throw new NotUserTurnException();
         }
         if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
@@ -225,14 +228,12 @@ public class GameService {
                 game.getGameType());
     }
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
+        //Everyone can get the game state. Used for the spectate mode
         Game game=getGame(input.getRoomId());
-        if(!game.getUser1().getUsername().equals(username) && !game.getUser2().getUsername().equals(username)){
-            throw new UnauthorizedGameAccessException();
-        }
         String currentFen=game.getCurrentFen();
         BitBoard bitboard=BitBoard.createBoardFromFen(currentFen);
 
-        if(game.getGameType()==GameType.BOT && game.getUser1Color()==PlayerColor.BLACK && game.getCurrentTurn()==0){
+        if(game.getUser1().getUsername().equals(username) && game.getGameType()==GameType.BOT && game.getUser1Color()==PlayerColor.BLACK && game.getCurrentTurn()==0){
             return makeBotMove(game,bitboard);
         }
 
@@ -245,50 +246,56 @@ public class GameService {
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
     }
-    public void leaveGame(String roomId,String username){
-        Game game=getGame(roomId);
+    private GameStatus getGameStatusAfterLeave(Game game, String username){
+        PlayerColor userThatLeftColor;
+        if(game.getUser1() != null ||  game.getUser1().getUsername().equals(username)){
+            userThatLeftColor=game.getUser1Color();
+        }
+        else if(game.getUser2() != null ||  game.getUser2().getUsername().equals(username)){
+            userThatLeftColor=game.getUser2Color();
+        }
+        else {
+            throw new AuthenticationFailedException();
+        }
+        if (userThatLeftColor == PlayerColor.WHITE){
+            return GameStatus.WINNER_BLACK;
+        }
+        return GameStatus.WINNER_WHITE;
+    }
+    private void leaveGameByStatus(String username,GameStatus status){
 
-        //A spectator leaves the game
-        if((game.getUser1() == null ||  !game.getUser1().getUsername().equals(username)) &&
-                (game.getUser2() == null ||  !game.getUser2().getUsername().equals(username))){
-            return;
-        }
+        List<Game> games = gameRepository.findByUsernameAndGameStatus(username, status);
+        // The user should be in only one game, so the for is not a problem
+        // If the user could be in many games at a time, we could process all the game in batches,
+        // so we maximize the performance
+        for (Game game :
+                games) {
 
-        //The game is ended, so there is no problem with leaving
-        if(game.getGameStatus() == GameStatus.WINNER_WHITE || game.getGameStatus() == GameStatus.WINNER_BLACK || game.getGameStatus() == GameStatus.DRAW){
-            return;
+            // Left from game against bot
+            if (game.getGameType() == GameType.BOT) {
+                if (game.getUser1Color() == PlayerColor.WHITE) {
+                    game.setGameStatus(GameStatus.WINNER_BLACK);
+                } else {
+                    game.setGameStatus(GameStatus.WINNER_WHITE);
+                }
+            }
+            //The user leaves the game, before any opponent joins
+            if(game.getUser1() == null || game.getUser2() == null){
+                game.setGameStatus(GameStatus.UNKNOWN);
+            }
+            // Left from Multiplayer game
+            else if (game.getGameType() == GameType.MULTIPLAYER) {
+                //Update game status
+                game.setGameStatus(getGameStatusAfterLeave(game, username));
+                // Update the elo of the winner
+                eloCalculatorService.updateElo(game);
+            }
+            // Update db
+            gameRepository.save(game);
         }
-        // Left from game against bot
-        if(game.getGameType() == GameType.BOT){
-            if (game.getUser1Color() == PlayerColor.WHITE){
-                game.setGameStatus(GameStatus.WINNER_BLACK);
-            }
-            else{
-                game.setGameStatus(GameStatus.WINNER_WHITE);
-            }
-        }
-        // Left from Multiplayer game
-        if (game.getGameType() == GameType.MULTIPLAYER){
-            PlayerColor userThatLeftColor;
-            if(game.getUser1() != null ||  game.getUser1().getUsername().equals(username)){
-                userThatLeftColor=game.getUser1Color();
-            }
-            else if(game.getUser2() != null ||  game.getUser2().getUsername().equals(username)){
-                userThatLeftColor=game.getUser2Color();
-            }
-            else {
-                throw new AuthenticationFailedException();
-            }
-            if (userThatLeftColor == PlayerColor.WHITE){
-                game.setGameStatus(GameStatus.WINNER_BLACK);
-            }
-            else{
-                game.setGameStatus(GameStatus.WINNER_WHITE);
-            }
-            // Update the elo of the winner
-            eloCalculatorService.updateElo(game);
-        }
-        // Update db
-        gameRepository.save(game);
+    }
+    public void leaveGame(String username) {
+        leaveGameByStatus(username,GameStatus.IN_PROGRESS);
+        leaveGameByStatus(username,GameStatus.NOT_STARTED);
     }
 }

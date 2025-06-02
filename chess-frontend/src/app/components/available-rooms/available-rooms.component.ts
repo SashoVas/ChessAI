@@ -30,7 +30,11 @@ export class AvailableRoomsComponent {
   }
 
   joinGame(gameId: number): void {
-      this.router.navigate(['/game/' + gameId]);
+      this.roomService.joinRoom(gameId.toString()).subscribe({
+        next: (msg:any) => {
+           this.router.navigate(['/game/' + gameId]);
+        }
+      })
   }
 
   spectateGame(gameId: number): void {
