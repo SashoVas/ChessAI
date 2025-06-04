@@ -1,14 +1,24 @@
-<div class="center">
-  <div #chessboard id="chessboard" class="chessboard"></div>
 
-  <div class="settings">
-      <section>
-      <h5 for="FEN">FEN</h5>
-      <input class="form-control" id="FEN" [(ngModel)]="fen" />
-    </section>
-    <section>
-      <h5 for="Room">Room</h5>
-      <input class="form-control" id="Room" [(ngModel)]="currentRoomId" />
-    </section>
+<div class="parrent">
+    <div class="center">
+      <div #chessboard id="chessboard" class="chessboard"></div>
+
+      <div class="settings">
+          <section>
+          <h5 for="FEN">FEN</h5>
+          <input class="form-control" id="FEN" [(ngModel)]="fen" />
+        </section>
+        <section>
+          <h5 for="Room">Room</h5>
+          <input class="form-control" id="Room" [(ngModel)]="currentRoomId" />
+        </section>
+      </div>
+    </div>
+  <div class="right">
+    <ul>
+      <li class=" hover:bg-indigo-50" *ngFor="let state of history">
+        <button (click)="goToState(state)" class="cursor-pointer">{{state.move}}</button>
+      </li>
+    </ul>
   </div>
 </div>

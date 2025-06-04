@@ -23,9 +23,15 @@ export class ChessBoardComponent {
   @ViewChild('chessboard',{static:true}) chessBoardEl?:ElementRef<HTMLDivElement>
   fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   private roomSubscription!: Subscription;
+  
 
   initialPosition: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
   possibleMoves: string[] = [];
+  history = [{
+    fen: this.fen,
+    move: 'Start Position',
+    color: 'WHITE'
+  }];
   currentRoomId = '';
   currentColor = '';
 
@@ -83,6 +89,11 @@ export class ChessBoardComponent {
       this.mode=msg.gameType;
       this.fen = msg.fen;
       this.loadFen(this.fen);
+      this.history.push({
+        fen: msg.fen,
+        move: msg.move,
+        color: msg.colorOfRequestUser
+      });
       console.log('Received', msg);
   }
 
@@ -166,6 +177,10 @@ export class ChessBoardComponent {
     document.removeEventListener('mouseup', this.handleMouseUp);
     this.chessService.getAttackedPositions(this.from,this.currentColor,this.possibleMoves).forEach(pos => this.chessService.unhighlightSquare(this.chessBoardEl!.nativeElement,pos));
     this.draggedPiece = null;
+  }
+
+  goToState(state:any){
+
   }
 
   ngOnDestroy(): void {

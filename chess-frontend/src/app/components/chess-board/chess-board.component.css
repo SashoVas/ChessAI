@@ -1,13 +1,63 @@
-.center {
-  margin: 20px auto;
-  max-width: 526px; 
-  width: 95%;
-  border: 3px solid green;
-  padding: 10px;
-  text-align: center;
+.parrent {
+  display: flex;
+  justify-content: center;  /* horizontally center .center */
+  position: relative;       /* so that .right can be absolute in wide layouts */
+  width: 100%;
+  height: 100vh;
   box-sizing: border-box;
 }
 
+/* “Center” box */
+.center {
+    margin:10px;
+  max-width: 526px;
+  width: 95%;
+  padding: 10px;
+  border: 3px solid green;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* “Right” box (default: absolute on the right side) */
+.right {
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  right: 1rem;
+  width: 300px;
+  padding: 1rem;
+  border: 3px solid green;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* ============================================== */
+/* Responsive: “stack” .center and .right below ~600px */
+/* ============================================== */
+@media (max-width: 600px) {
+  .parrent {
+    flex-direction: column;
+    justify-content: flex-start; /* let items stack from the top */
+    align-items: center;         /* center them horizontally */
+    height: auto;                /* allow parent to grow */
+    padding: 1rem 0;             /* optional vertical spacing */
+  }
+
+  .center {
+    /* keep it roughly the same fluid width */
+    width: 95%;
+    max-width: 526px;
+    margin: 0 auto; /* center within parent */
+  }
+
+  .right {
+    position: static;   /* “release” it from absolute positioning */
+    width: 95%;
+    max-width: 526px;   /* match the center’s max-width (or choose 300px) */
+    margin-top: 1rem;   /* gap between .center and .right */
+    /* Keep padding/border as before */
+  }
+}
 
 ::ng-deep.chessboard {
     display: grid;
@@ -59,12 +109,7 @@
     transition: none;
     font-family: Arial, Helvetica, sans-serif;
 }
-@media (hover: none) { 
-    ::ng-deep.piece {
-        font-size: min(8vw, 70px);
-        touch-action: manipulation;
-    }
-}
+
 ::ng-deep.piece:active {
     cursor: grabbing;
 }
