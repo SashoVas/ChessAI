@@ -24,9 +24,9 @@ export class ChessBoardComponent {
   fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
   private roomSubscription!: Subscription;
   
-
   initialPosition: string[][] = Array(8).fill(null).map(() => Array(8).fill(''));
   possibleMoves: string[] = [];
+  canMakeMove = true;
   history = [{
     fen: this.fen,
     move: 'Start Position',
@@ -34,7 +34,8 @@ export class ChessBoardComponent {
   }];
   currentRoomId = '';
   currentColor = '';
-
+  gameState='Not Started';
+  currentIndex = 0;
   private draggedPiece: HTMLElement | null = null;
   private offsetX = 0;
   private offsetY = 0;
@@ -86,20 +87,24 @@ export class ChessBoardComponent {
     else{
       this.possibleMoves=[]
     }
+      this.gameState = msg.gameState;
       this.mode=msg.gameType;
       this.fen = msg.fen;
       this.loadFen(this.fen);
-      this.history.push({
-        fen: msg.fen,
-        move: msg.move,
-        color: msg.colorOfRequestUser
-      });
+      if (msg.move ) {
+        this.history.push({
+          fen: msg.fen,
+          move: msg.move,
+          color: msg.colorOfRequestUser
+        });
+      }
+      this.currentIndex= this.history.length - 1;
       console.log('Received', msg);
   }
 
   private handleMouseDown(e: MouseEvent): void {
     const target = e.target as HTMLElement;
-    if (!target.classList.contains('piece')) return;
+    if (!target.classList.contains('piece') || !this.canMakeMove) return;
 
     this.draggedPiece = target;
     const parentSquare = target.parentNode as HTMLElement;
@@ -179,13 +184,35 @@ export class ChessBoardComponent {
     this.draggedPiece = null;
   }
 
-  goToState(state:any){
-
+  goToState(state_index:number){
+    this.currentIndex = state_index;
+    let state= this.history[state_index];
+    this.canMakeMove = state.fen === this.fen;
+    this.loadFen(state.fen);
   }
 
   ngOnDestroy(): void {
     this.roomSubscription.unsubscribe();
     this.webSocketService.deactivate();
   }
+  goToStart() {
+    this.goToState(0);
+  }
 
+  goBack() {
+    if (this.currentIndex <= 0) return;
+    this.goToState(this.currentIndex - 1);
+
+  }
+
+  goForward() {
+    if (this.currentIndex >= this.history.length - 1) return;
+    this.goToState(this.currentIndex + 1);
+  }
+
+  goToEnd() {
+    this.goToState(this.history.length - 1);
+  }
+  surrender() {
+  }
 }

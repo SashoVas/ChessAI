@@ -1,4 +1,3 @@
-
 <div class="parrent">
     <div class="center">
       <div #chessboard id="chessboard" class="chessboard"></div>
@@ -14,11 +13,32 @@
         </section>
       </div>
     </div>
-  <div class="right">
-    <ul>
-      <li class=" hover:bg-indigo-50" *ngFor="let state of history">
-        <button (click)="goToState(state)" class="cursor-pointer">{{state.move}}</button>
-      </li>
-    </ul>
-  </div>
+    <div>
+      <div class="right">
+        <div>
+          <ul>
+            <li [class]=" 'hover:bg-indigo-50 font-mono ' + (i==this.currentIndex ?'bg-indigo-50':'')" *ngFor="let state of history; index as i">
+              <button (click)="goToState(i)" class="btn-control cursor-pointer ">{{state.move +' [' + i + ']'}}</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="controls">
+        <div  class="flex flex-wrap gap-8 p-1 bg-gray-100 rounded-xl justify-center items-center font-mono text-2xl">
+          <p>
+              {{gameState.replace('_', ' ')}}
+          </p>
+        </div>
+          <div class="flex flex-wrap gap-8 p-1 bg-gray-100 rounded-xl justify-center items-center font-mono text-2xl">
+            <button (click)="goToStart()" class=" cursor-pointer  hover:text-gray-600 p-1 ">⏮ </button>
+            <button (click)="goBack()" class="btn-control cursor-pointer p-1  hover:text-gray-600">◀ </button>
+            <button (click)="surrender()" class="btn-control group text-lg font-bold flex items-center gap-2 cursor-pointer"><span class="transition group-hover:text-rose-600">🏳</span></button>
+            <button (click)="goForward()" class="btn-control cursor-pointer p-1  hover:text-gray-600">▶ </button>
+            <button (click)="goToEnd()" class="btn-control cursor-pointer p-1 hover:text-gray-600">⏭ </button>
+          </div>
+      </div>
+
+    </div>
+  
+
 </div>
