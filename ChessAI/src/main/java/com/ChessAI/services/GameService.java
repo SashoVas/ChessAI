@@ -298,4 +298,43 @@ public class GameService {
         leaveGameByStatus(username,GameStatus.IN_PROGRESS);
         leaveGameByStatus(username,GameStatus.NOT_STARTED);
     }
+
+    public MoveResultDTO surrender(String username,String roomId){
+        Game game=getGame(roomId);
+        if(game.getGameStatus() != GameStatus.IN_PROGRESS){
+            throw new NotUserTurnException();
+        }
+        //User 1 surrenders
+        if (game.getUser1()!=null && game.getUser1().getUsername().equals(username)){
+            if (game.getUser1Color() == PlayerColor.WHITE){
+                game.setGameStatus(GameStatus.WINNER_BLACK);
+            }
+            else{
+                game.setGameStatus(GameStatus.WINNER_WHITE);
+            }
+        }
+        //User 2 surrenders
+        else if (game.getUser2()!=null && game.getUser2().getUsername().equals(username)){
+            if (game.getUser2Color() == PlayerColor.WHITE){
+                game.setGameStatus(GameStatus.WINNER_BLACK);
+            }
+            else{
+                game.setGameStatus(GameStatus.WINNER_WHITE);
+            }
+        }
+        //A spectator tries to surrender
+        else {
+            throw new UnauthorizedGameAccessException();
+        }
+        eloCalculatorService.updateElo(game);
+        gameRepository.save(game);
+        return new MoveResultDTO(
+                game.getCurrentFen(),
+                null,
+                Collections.emptyList(),
+                game.getGameStatus(),
+                game.getCurrentTurnColor(),
+                game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
+                game.getGameType());
+    }
 }

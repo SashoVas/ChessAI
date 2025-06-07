@@ -3,18 +3,13 @@ package com.ChessAI.controllers.WebSockets;
 import com.ChessAI.dto.InitialConnectDTO;
 import com.ChessAI.dto.MoveInputDTO;
 import com.ChessAI.dto.MoveResultDTO;
+import com.ChessAI.dto.SurrenderGameDTO;
 import com.ChessAI.models.GameStatus;
-import com.ChessAI.models.UserPrincipal;
 import com.ChessAI.services.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -56,7 +51,6 @@ public class MoveWebSocketController {
 
     }
     @MessageMapping("/game.makeMoveToPlayer")
-
     public void moveOnPlayer(Principal principal,@Payload MoveInputDTO move){
         System.out.println(move.move);
         System.out.println(move.roomId);
@@ -65,6 +59,18 @@ public class MoveWebSocketController {
         MoveResultDTO result=gameService.makeAMoveToPlayer(move,username);
 
         String destination = "/room/game." + move.roomId;
+        messagingTemplate.convertAndSend(destination, result);
+    }
+
+    @MessageMapping("/game.surrender")
+    public void surrender(Principal principal,@Payload SurrenderGameDTO surrenderDTO){
+
+        String username=principal.getName();
+
+        MoveResultDTO result = gameService.surrender(username,surrenderDTO.getRoomId());
+
+        String destination = "/room/game." + surrenderDTO.getRoomId();
+
         messagingTemplate.convertAndSend(destination, result);
     }
 }
