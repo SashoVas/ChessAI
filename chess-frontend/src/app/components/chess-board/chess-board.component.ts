@@ -214,5 +214,7 @@ export class ChessBoardComponent {
     this.goToState(this.history.length - 1);
   }
   surrender() {
+    if (this.gameState !== 'IN_PROGRESS') return;
+    this.webSocketService.surrender(this.currentRoomId);
   }
 }

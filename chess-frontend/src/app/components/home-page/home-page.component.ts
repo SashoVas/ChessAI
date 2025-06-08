@@ -4,6 +4,7 @@ import { CreateGameComponent } from '../create-game/create-game.component';
 import { RoomServiceService } from '../../services/room-service.service';
 import { Router } from '@angular/router';
 import { Game } from '../../models/game';
+import { TimeControl } from '../../models/timeControl';
 
 @Component({
   selector: 'app-home-page',
@@ -14,7 +15,7 @@ import { Game } from '../../models/game';
 })
 export class HomePageComponent {
 
-  timeControls = [
+  timeControls: TimeControl[] = [
     { name: 'Bullet', time: 1 },
     { name: 'Blitz', time: 3 },
     { name: 'Rapid', time: 10 },
@@ -27,7 +28,7 @@ export class HomePageComponent {
     private router: Router){
 
   }
-  hoverEffect(timeControl: any) {
+  hoverEffect(timeControl: TimeControl) {
    }
 
   startAIGame() {
@@ -36,7 +37,7 @@ export class HomePageComponent {
   startCustomGame() {
    }
 
-  createGameFromPredefinedTimeControls(timeControl:any){
+  createGameFromPredefinedTimeControls(timeControl:TimeControl){
     console.log('hi')
     this.roomService.createRoom({    
       gameType: 'MULTIPLAYER',

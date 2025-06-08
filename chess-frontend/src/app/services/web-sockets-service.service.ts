@@ -12,7 +12,7 @@ import { Move } from '../models/move';
 })
 export class WebSocketsServiceService {
   private stompClient: Client;
-  private roomObservables: { [roomId: string]: Observable<any> } = {};
+  private roomObservables: { [roomId: string]: Observable<Move> } = {};
   private isConnected=false;
   constructor(private authService:AuthService) { 
     this.stompClient = new Client({
@@ -85,6 +85,14 @@ export class WebSocketsServiceService {
         : '/app/game.makeMoveToPlayer',
       headers: this.getHeaders(),
       body: JSON.stringify({ move, roomId })
+    });
+  }
+
+  public surrender(roomId: string): void {
+    this.stompClient.publish({
+      destination: '/app/game.surrender',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ roomId })
     });
   }
   public activate(){

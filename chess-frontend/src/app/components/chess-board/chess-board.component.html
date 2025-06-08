@@ -1,4 +1,4 @@
-<div class="parrent">
+<div class="parent">
     <div class="center">
       <div #chessboard id="chessboard" class="chessboard"></div>
 
@@ -18,7 +18,7 @@
         <div>
           <ul>
             <li [class]=" 'hover:bg-indigo-50 font-mono ' + (i==this.currentIndex ?'bg-indigo-50':'')" *ngFor="let state of history; index as i">
-              <button (click)="goToState(i)" class="btn-control cursor-pointer ">{{state.move +' [' + i + ']'}}</button>
+              <button (click)="goToState(i)" class="btn-control cursor-pointer">{{state.move +' [' + i + ']'}}</button>
             </li>
           </ul>
         </div>

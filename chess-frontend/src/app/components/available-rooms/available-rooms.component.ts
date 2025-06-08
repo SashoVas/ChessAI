@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { Room } from '../../models/room';
 import { RoomServiceService } from '../../services/room-service.service';
 import { Router } from '@angular/router';
+import { Game } from '../../models/game';
 
 @Component({
   selector: 'app-available-rooms',
@@ -31,7 +32,7 @@ export class AvailableRoomsComponent {
 
   joinGame(gameId: number): void {
       this.roomService.joinRoom(gameId.toString()).subscribe({
-        next: (msg:any) => {
+        next: (msg: Game) => {
            this.router.navigate(['/game/' + gameId]);
         }
       })
