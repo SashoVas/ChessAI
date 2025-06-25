@@ -22,7 +22,7 @@ export class RoomServiceService {
   }
 
   public joinRoom(roomId:string){
-      return this.httpClient.post<Game>('http://localhost:8080/games/'+roomId+'/join',
+      return this.httpClient.post<Game>('http://localhost:8080/games/'+roomId,
         {  },
         {headers: {
           'Authorization': `Bearer ${this.authService.getToken()}`,

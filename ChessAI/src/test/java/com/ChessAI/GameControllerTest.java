@@ -107,7 +107,7 @@ public class GameControllerTest {
         userService.register(new UserDTO("user2", "Pass1234", "myemail@gmail.com"));
         String roomId = String.valueOf(game.getGameId());
 
-        mockMvc.perform(post("/games/42069/join")
+        mockMvc.perform(post("/games/42069")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -119,7 +119,7 @@ public class GameControllerTest {
 
         assertNull(game.getUser2Username());
 
-        mockMvc.perform(post("/games/" + roomId + "/join")
+        mockMvc.perform(post("/games/" + roomId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

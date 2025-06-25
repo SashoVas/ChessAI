@@ -40,7 +40,7 @@ public class GameController {
         return gameService.getGameState(roomId);
     }
 
-    @PostMapping("/games/{roomId}/join")
+    @PostMapping("/games/{roomId}")
     public GameResultDTO joinRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetails userDetails){
         return gameService.joinRoom(roomId,userDetails.getUsername());
     }
