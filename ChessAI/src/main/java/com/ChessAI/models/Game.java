@@ -78,7 +78,7 @@ public class Game {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "game_status")
-    private GameStatus gameStatus;
+    private GameStatus gameStatus = GameStatus.UNKNOWN;
     @Enumerated(EnumType.STRING)
     @Column(name = "current_turn_color")
     private PlayerColor currentTurnColor;
@@ -241,5 +241,18 @@ public class Game {
 
     public void setCurrentTurnColor(PlayerColor currentTurnColor) {
         this.currentTurnColor = currentTurnColor;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Game game = (Game) o;
+        return gameId != null && gameId.equals(game.gameId);
+    }
+
+    @Override
+    public int hashCode() {
+        return gameId != null ? gameId.hashCode() : 0;
     }
 }

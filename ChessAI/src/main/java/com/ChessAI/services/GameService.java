@@ -268,8 +268,7 @@ public class GameService {
         // The user should be in only one game, so the for is not a problem
         // If the user could be in many games at a time, we could process all the game in batches,
         // so we maximize the performance
-        for (Game game :
-                games) {
+        for (Game game : games) {
 
             // Left from game against bot
             if (game.getGameType() == GameType.BOT) {
@@ -336,5 +335,10 @@ public class GameService {
                 game.getCurrentTurnColor(),
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
+    }
+
+    public Set<GameResultDTO> getGamesByUser(String username) {
+        List<Game> games = gameRepository.findAllByUsername(username);        
+        return games.stream().map(GameResultDTO::fromEntity).collect(Collectors.toSet());
     }
 }

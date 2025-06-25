@@ -13,19 +13,9 @@
         
         <!-- Main Navigation -->
         <div class="hidden md:ml-6 md:flex md:space-x-8">
-          <a href="#" routerLink="game" class="text-gray-700 hover:text-blue-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
+          <a href="#" routerLink="availableRooms" class="text-gray-700 hover:text-blue-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
             Play
             <span class="ml-2 bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Live</span>
-          </a>
-          <a href="#" class="text-gray-700 hover:text-blue-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
-            Puzzles
-            <span class="ml-2 bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full">New</span>
-          </a>
-          <a href="#" class="text-gray-700 hover:text-blue-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
-            Learn
-          </a>
-          <a href="" routerLink="availableRooms" class="text-gray-700 hover:text-blue-600 inline-flex items-center px-1 pt-1 text-sm font-medium transition-colors">
-            Open Games
           </a>
         </div>
       </div>
@@ -59,7 +49,7 @@
         </div>
 
         <!-- User Menu -->
-        <div *ngIf="isLoggedIn()" class="ml-4 relative flex-shrink-0">
+        <div *ngIf="isLoggedIn()" class="ml-4 relative flex-shrink-0 user-menu-container">
           <div class="flex items-center">
             <button (click)="toggleUserMenu()" class="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
               <span class="sr-only">Open user menu</span>
@@ -72,8 +62,6 @@
             <!-- User Dropdown -->
           <div *ngIf="isUserMenuOpen" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div class="py-1">
-              <a href="#"  routerLink="profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-              <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
               <a href="#"  routerLink="gameHistory" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">History</a>
               <div class="border-t border-gray-100"></div>
               <a (click)="signOut()" href="" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>

@@ -161,7 +161,7 @@ public class GameResultDTO {
         gameDTO.setCurrentFen(game.getCurrentFen());
         gameDTO.setUser1TimeLeft(game.getUser1TimeLeft());
         gameDTO.setUser2TimeLeft(game.getUser2TimeLeft());
-        gameDTO.setGameStatus(game.getGameStatus());
+        gameDTO.setGameStatus(game.getGameStatus() != null ? game.getGameStatus() : GameStatus.NOT_STARTED);
         gameDTO.setCurrentTurn(game.getCurrentTurn());
         gameDTO.setGameTimeSeconds(game.getGameTimeSeconds());
         gameDTO.setCurrentTurnColor(game.getCurrentTurnColor());

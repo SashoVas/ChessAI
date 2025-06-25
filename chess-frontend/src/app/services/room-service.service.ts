@@ -35,4 +35,11 @@ export class RoomServiceService {
           'Authorization': `Bearer ${this.authService.getToken()}`,
         }});
   }
+
+  public getUserGames(username: string){
+    return this.httpClient.get<Game[]>(`http://localhost:8080/games?user=${encodeURIComponent(username)}`,
+        {headers: {
+          'Authorization': `Bearer ${this.authService.getToken()}`,
+        }});
+  }
 }

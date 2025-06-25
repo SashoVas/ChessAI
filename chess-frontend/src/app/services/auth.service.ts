@@ -42,4 +42,8 @@ export class AuthService {
   public logout() {
     localStorage.removeItem('authToken');
   }
+
+  public register(credentials: { email: string; username: string; password: string }): Observable<any> {
+    return this.httpClient.post<any>('http://localhost:8080/register', credentials);
+  }
 }

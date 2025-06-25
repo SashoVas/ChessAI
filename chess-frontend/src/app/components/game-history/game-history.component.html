@@ -1,1 +1,93 @@
-<p>game-history works!</p>
+<div class="max-w-4xl mx-auto py-8 px-4">
+  <h1 class="text-3xl font-bold mb-6 text-center">Game History</h1>
+
+  <div *ngIf="isLoading" class="text-center text-gray-500">Loading...</div>
+  <div *ngIf="errorMessage" class="text-center text-red-500 mb-4">{{errorMessage}}</div>
+
+  <div *ngIf="!isLoading && games.length === 0" class="text-center text-gray-500">
+    You have not played any games yet.
+  </div>
+
+  <div *ngIf="games.length > 0" class="space-y-4">
+    <div *ngFor="let game of games" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <!-- Game Info Section -->
+        <div class="flex-1">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-3">
+            <!-- Opponent -->
+            <div class="flex items-center mb-2 sm:mb-0">
+              <span class="text-sm font-medium text-gray-600 mr-2">Opponent:</span>
+              <span class="font-semibold text-gray-900 text-lg">
+                <span *ngIf="game.user1Username === username ? game.user2Username : game.user1Username; else waitingForOpponent">
+                  {{ game.user1Username === username ? game.user2Username : game.user1Username }}
+                </span>
+                <ng-template #waitingForOpponent>
+                  <span class="text-gray-500 italic">Waiting for opponent...</span>
+                </ng-template>
+              </span>
+            </div>
+          </div>
+          
+          <!-- Game Type -->
+          <div class="flex items-center mb-3">
+            <span class="text-sm font-medium text-gray-600 mr-2">Type:</span>
+            <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                  [ngClass]="{
+                    'bg-blue-100 text-blue-800': game.gameType === 'MULTIPLAYER',
+                    'bg-purple-100 text-purple-800': game.gameType === 'BOT'
+                  }">
+              {{ game.gameType === 'MULTIPLAYER' ? 'Multiplayer' : 'vs Bot' }}
+            </span>
+          </div>
+          
+          <!-- Game Status and Result -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+            <div class="flex items-center mb-2 sm:mb-0">
+              <span class="text-sm font-medium text-gray-600 mr-2">Status:</span>
+              <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': game.gameStatus === 'WINNER_WHITE' || game.gameStatus === 'WINNER_BLACK',
+                      'bg-yellow-100 text-yellow-800': game.gameStatus === 'IN_PROGRESS',
+                      'bg-gray-100 text-gray-800': game.gameStatus === 'NOT_STARTED' || game.gameStatus === 'UNKNOWN',
+                      'bg-red-100 text-red-800': game.gameStatus === 'DRAW'
+                    }">
+                {{ getGameStatusDisplay(game.gameStatus) }}
+              </span>
+            </div>
+            
+            <!-- Game Result (if completed) -->
+            <div *ngIf="game.gameStatus === 'WINNER_WHITE' || game.gameStatus === 'WINNER_BLACK'" 
+                 class="flex items-center">
+              <span class="text-sm font-medium text-gray-600 mr-2">Result:</span>
+              <span class="font-semibold" 
+                    [ngClass]="{
+                      'text-green-600': isWinner(game),
+                      'text-red-600': !isWinner(game)
+                    }">
+                {{ isWinner(game) ? 'Victory' : 'Defeat' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Game Details Section -->
+        <div class="mt-4 lg:mt-0 lg:ml-6">
+          <div class="flex flex-col space-y-2 text-sm text-gray-600">
+            <div class="flex items-center">
+              <span class="font-medium mr-2">Game ID:</span>
+              <span class="font-mono">{{ game.gameId }}</span>
+            </div>
+            <div class="flex items-center">
+              <span class="font-medium mr-2">Moves:</span>
+              <span>{{ game.moves?.length || 0 }}</span>
+            </div>
+            <div class="flex items-center">
+              <span class="font-medium mr-2">Time Control:</span>
+              <span>{{ game.gameTimeSeconds }}s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

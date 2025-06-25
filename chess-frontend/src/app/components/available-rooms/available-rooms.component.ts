@@ -4,6 +4,7 @@ import { Room } from '../../models/room';
 import { RoomServiceService } from '../../services/room-service.service';
 import { Router } from '@angular/router';
 import { Game } from '../../models/game';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-available-rooms',
@@ -17,7 +18,8 @@ export class AvailableRoomsComponent {
 
   constructor(
     private roomService: RoomServiceService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -34,15 +36,29 @@ export class AvailableRoomsComponent {
       this.roomService.joinRoom(gameId.toString()).subscribe({
         next: (msg: Game) => {
            this.router.navigate(['/game/' + gameId]);
+        },
+        error: (error) => {
+          console.error('Failed to join game:', error);
+          if (error.status === 401) {
+            alert('You cannot join this game. You may be trying to join your own game or the game is no longer available.');
+          } else {
+            alert('Failed to join game. Please try again.');
+          }
         }
       })
   }
 
-  spectateGame(gameId: number): void {
-
+  canJoin(game: Room): boolean {
+    const currentUsername = this.authService.getUsername();
+    return !game.user2Username && game.user1Username !== currentUsername;
   }
 
-  canJoin(game: Room): boolean {
-    return  !game.user2Username;
+  isOwnGame(game: Room): boolean {
+    const currentUsername = this.authService.getUsername();
+    return game.user1Username === currentUsername;
+  }
+
+  goToCreateGame(): void {
+    this.router.navigate(['/create-game'], { queryParams: { showForm: 'true' } });
   }
 }

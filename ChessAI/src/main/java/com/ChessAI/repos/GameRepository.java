@@ -32,4 +32,7 @@ public interface GameRepository extends JpaRepository<Game, Integer> {
     @Query("SELECT g FROM Game g LEFT JOIN g.user1 u1 LEFT JOIN g.user2 u2 WHERE (u1.username = :username OR u2.username = :username) AND g.gameStatus = :gameStatus")
 
     List<Game> findByUsernameAndGameStatus(String username, GameStatus gameStatus);
+
+    @Query("SELECT g FROM Game g LEFT JOIN g.user1 u1 LEFT JOIN g.user2 u2 WHERE u1.username = :username OR u2.username = :username")
+    List<Game> findAllByUsername(String username);
 }

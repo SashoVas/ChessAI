@@ -1,6 +1,16 @@
 <div class="p-4 max-w-6xl mx-auto">
   <h2 class="text-2xl font-bold mb-6">Available Games</h2>
 
+  <!-- Create Game Button -->
+  <div class="mb-6 flex justify-end">
+    <button
+      class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold shadow hover:bg-indigo-700 transition"
+      (click)="goToCreateGame()"
+    >
+      + Create Game
+    </button>
+  </div>
+
   <div *ngIf="games!.length > 0; else noGames" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let game of games" class="bg-white shadow rounded-2xl p-4 hover:shadow-md transition flex flex-col justify-between">
       <!-- Game Info -->
@@ -41,26 +51,19 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="mt-4 flex space-x-2">
+      <div class="mt-4">
         <!-- Join button: only enabled if there's a free slot and game is open -->
         <button
-          class="flex-1 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition cursor-pointer"
+          class="w-full px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition cursor-pointer"
           [ngClass]="{
             'bg-green-500': canJoin(game),
-            'bg-gray-300 cursor-not-allowed': !canJoin(game)
+            'bg-blue-500': isOwnGame(game),
+            'bg-gray-300 cursor-not-allowed': !canJoin(game) && !isOwnGame(game)
           }"
-          [disabled]="!canJoin(game)"
+          [disabled]="!canJoin(game) && !isOwnGame(game)"
           (click)="joinGame(game.gameId)"
         >
-          Join
-        </button>
-
-        <!-- Spectate button: always enabled -->
-        <button
-          class="flex-1 px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:opacity-90 transition cursor-pointer"
-          (click)="spectateGame(game.gameId)"
-        >
-          Spectate
+          {{ isOwnGame(game) ? 'Your Game' : 'Join' }}
         </button>
       </div>
     </div>

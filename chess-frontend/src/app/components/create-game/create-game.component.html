@@ -1,4 +1,5 @@
 <button 
+*ngIf="!showFormDirectly"
 [class]="'w-full px-6 py-4 hover:bg-blue-100 rounded-lg transition-colors flex items-center space-x-3 cursor-pointer ' + bgColor+'-50'"
 (click)="startCustomGame()"
 >
@@ -11,83 +12,90 @@
 </button>
 
 <div
-  *ngIf="isOpen"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-20 backdrop-blur-sm"
+  *ngIf="isOpen || showFormDirectly"
+  [class]="showFormDirectly ? 'max-w-md mx-auto p-6' : 'fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-20 backdrop-blur-sm'"
 >
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-    <h2 class="text-xl font-semibold mb-4">Create Chess Game</h2>
+  <div [class]="showFormDirectly ? '' : 'bg-white rounded-2xl shadow-xl w-full max-w-md p-6'">
+    <h2 class="text-xl font-semibold mb-6">Create Chess Game</h2>
 
-    <!-- Time per Move Slider -->
+    <!-- Game Time Slider -->
     <div class="mb-6">
-      <label class="block text-sm font-medium mb-2" for="timePerMove">
-        Game Time Minutes: {{ timeMinutes }} min
+      <label class="block text-sm font-medium mb-3 text-gray-700">
+        Game Time: {{ formatTime() }}
       </label>
-      <input
-        id="timePerMove"
-        type="range"
-        min="0"
-        max="180"
-        [(ngModel)]="timeMinutes"
-        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-      />
+      <div class="text-xs text-gray-500 mb-3">Drag the slider or type the time manually</div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="flex-1">
+          <input
+            type="range"
+            min="30"
+            max="3600"
+            [(ngModel)]="gameTimeSeconds"
+            (input)="onSliderChange()"
+            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          />
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <input
+            type="text"
+            [(ngModel)]="manualTimeInput"
+            (input)="onManualInputChange()"
+            placeholder="5"
+            class="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <span class="text-sm text-gray-600">min</span>
+        </div>
+      </div>
+      
+      <div class="text-xs text-gray-500 mt-2">
+        Enter time in minutes (e.g., 5 for 5 minutes, 2.5 for 2 minutes 30 seconds)
+      </div>
     </div>
 
-    <!-- Time per Move Slider -->
+    <!-- Game Mode Selection -->
     <div class="mb-6">
-      <label class="block text-sm font-medium mb-2" for="timePerMove">
-        Game Time Seconds: {{ timeSeconds }}s
-      </label>
-      <input
-        id="timePerMove"
-        type="range"
-        min="0"
-        max="59"
-        [(ngModel)]="timeSeconds"
-        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-      />
-    </div>
-
-    <!-- Game Time Dropdown -->
-    <div class="mb-6">
-      <label class="block text-sm font-medium mb-2" for="gameTime">
+      <label class="block text-sm font-medium mb-2 text-gray-700">
         Game Mode:
       </label>
       <select
-        id="gameTime"
         [(ngModel)]="selectedGameType"
-        class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        class="block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition-colors"
       >
-        <option *ngFor="let t of gameModes" [value]="t">
-          {{ t }} 
+        <option *ngFor="let mode of gameModes" [value]="mode">
+          {{ mode === 'MULTIPLAYER' ? 'Multiplayer' : 'Bot Game' }}
         </option>
       </select>
     </div>
 
+    <!-- Color Selection -->
     <div class="mb-6">
-        <label class="block text-sm font-medium mb-2" for="gameTime">
-            Color:
-        </label>
-        <select
-            id="gameTime"
-            [(ngModel)]="selectedColor"
-            class="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-        >
-            <option *ngFor="let t of gameColors" [value]="t">
-            {{ t }} 
-            </option>
-        </select>
+      <label class="block text-sm font-medium mb-2 text-gray-700">
+        Preferred Color:
+      </label>
+      <select
+        [(ngModel)]="selectedColor"
+        class="block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none transition-colors"
+      >
+        <option *ngFor="let color of gameColors" [value]="color">
+          {{ color === 'RANDOM' ? 'Random' : color === 'WHITE' ? 'White' : 'Black' }}
+        </option>
+      </select>
     </div>
+
     <!-- Buttons -->
     <div class="flex justify-end space-x-3">
       <button
+        *ngIf="!showFormDirectly"
         (click)="onClose()"
-        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer"
+        class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 cursor-pointer transition-colors"
       >
         Cancel
       </button>
       <button
         (click)="onCreate()"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 cursor-pointer"
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors font-medium"
       >
         Create Game
       </button>
