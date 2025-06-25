@@ -26,14 +26,14 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/createGame",
+					"raw": "http://localhost:8080/games",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"createGame"
+						"games"
 					]
 				}
 			},
@@ -58,15 +58,16 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/getFreeRooms",
+					"raw": "http://localhost:8080/games?free=true",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"getFreeRooms"
-					]
+						"games"
+					],
+					"query": [{"key": "free", "value": "true"}]
 				}
 			},
 			"response": []
@@ -267,15 +268,16 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:8080/getFreeRooms",
+					"raw": "http://localhost:8080/games?free=true",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"getFreeRooms"
-					]
+						"games"
+					],
+					"query": [{"key": "free", "value": "true"}]
 				}
 			},
 			"response": []
@@ -315,14 +317,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/createGame",
+					"raw": "http://localhost:8080/games",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"createGame"
+						"games"
 					]
 				}
 			},
@@ -356,15 +358,16 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:8080/getFreeRooms",
+					"raw": "http://localhost:8080/games?free=true",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"getFreeRooms"
-					]
+						"games"
+					],
+					"query": [{"key": "free", "value": "true"}]
 				}
 			},
 			"response": []
@@ -411,14 +414,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/createGame",
+					"raw": "http://localhost:8080/games",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"createGame"
+						"games"
 					]
 				}
 			},
@@ -459,14 +462,14 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/createGame",
+					"raw": "http://localhost:8080/games",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"createGame"
+						"games"
 					]
 				}
 			},
@@ -497,15 +500,16 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:8080/getFreeRooms",
+					"raw": "http://localhost:8080/games?free=true",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"getFreeRooms"
-					]
+						"games"
+					],
+					"query": [{"key": "free", "value": "true"}]
 				}
 			},
 			"response": []

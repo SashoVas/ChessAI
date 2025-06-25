@@ -13,7 +13,7 @@ export class RoomServiceService {
   constructor(private authService:AuthService,private httpClient:HttpClient) { }
 
   public createRoom(room:CreateRoomModel){
-      return this.httpClient.post<Game>('http://localhost:8080/createGame',
+      return this.httpClient.post<Game>('http://localhost:8080/games',
         room,
         {headers: {
           'Authorization': `Bearer ${this.authService.getToken()}`,
@@ -22,7 +22,7 @@ export class RoomServiceService {
   }
 
   public joinRoom(roomId:string){
-      return this.httpClient.post<Game>('http://localhost:8080/game/'+roomId,
+      return this.httpClient.post<Game>('http://localhost:8080/games/'+roomId+'/join',
         {  },
         {headers: {
           'Authorization': `Bearer ${this.authService.getToken()}`,
@@ -30,7 +30,7 @@ export class RoomServiceService {
   }
 
   public getFreeRooms(){
-    return this.httpClient.get<Room[]>('http://localhost:8080/getFreeRooms',
+    return this.httpClient.get<Room[]>('http://localhost:8080/games?free=true',
         {headers: {
           'Authorization': `Bearer ${this.authService.getToken()}`,
         }});
