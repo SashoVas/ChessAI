@@ -7,8 +7,6 @@ import com.ChessAI.repos.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -122,7 +120,7 @@ public class EloCalculatorService {
             return eloConfig.getBigKFactor();
         }
         Integer elo = userRepository.getEloByUsername(username);
-        if (elo < 2400) {
+        if (elo < 2400) { //TODO: export in config - update tests as well
             return eloConfig.getMidKFactor();
         }
         return eloConfig.getSmallKFactor();

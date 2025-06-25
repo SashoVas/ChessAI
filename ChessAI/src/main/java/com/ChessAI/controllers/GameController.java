@@ -2,7 +2,6 @@ package com.ChessAI.controllers;
 
 import com.ChessAI.dto.CreateGameDTO;
 import com.ChessAI.dto.GameResultDTO;
-import com.ChessAI.models.Game;
 import com.ChessAI.services.GameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +19,28 @@ public class GameController {
     @Autowired
     private GameService gameService;
 
-    @PostMapping("/createGame")
+    @PostMapping("/games")
     public ResponseEntity<GameResultDTO> createGame(@RequestBody @Valid CreateGameDTO createGameDTO,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         GameResultDTO game = gameService.createGame(createGameDTO, userDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(game);
     }
 
-    @GetMapping("/getFreeRooms")
-    public Set<GameResultDTO> getFreeRooms() {
-        return gameService.getFreeRooms();
+    @GetMapping("/games")
+    public Set<GameResultDTO> getGames(@RequestParam(required = false, defaultValue = "false") boolean free) {
+        if (free) {
+            return gameService.getFreeRooms();
+        }
+        //TODO: implement logic to return all games if needed
+        return null;
     }
 
-    @GetMapping("/{roomId}")
+    @GetMapping("/games/{roomId}")
     public GameResultDTO getGame(@PathVariable String roomId){
         return gameService.getGameState(roomId);
     }
 
-    @PostMapping("game/{roomId}")
+    @PostMapping("/games/{roomId}")
     public GameResultDTO joinRoom(@PathVariable String roomId, @AuthenticationPrincipal UserDetails userDetails){
         return gameService.joinRoom(roomId,userDetails.getUsername());
     }

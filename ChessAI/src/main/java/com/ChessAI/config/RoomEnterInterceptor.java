@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.ChessAI.exceptions.JWTException.JWTTokenException;
-import com.ChessAI.exceptions.HTTPException.HTTPHeaderException;
 import org.slf4j.Logger;
 
 @Component

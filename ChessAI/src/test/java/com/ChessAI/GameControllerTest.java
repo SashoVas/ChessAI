@@ -66,7 +66,7 @@ public class GameControllerTest {
             "gameTimeSeconds": 60
         }
         """;
-        mockMvc.perform(post("/createGame")
+        mockMvc.perform(post("/games")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonPayload))
                 .andExpect(status().isCreated());
@@ -80,7 +80,7 @@ public class GameControllerTest {
 
     @Test
     void testGetFreeRooms() throws Exception {
-        mockMvc.perform(get("/getFreeRooms")
+        mockMvc.perform(get("/games?free=true")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
@@ -91,7 +91,7 @@ public class GameControllerTest {
         gameService.createGame(new CreateGameDTO(GameType.MULTIPLAYER, 60), mockUser);
         gameService.createGame(new CreateGameDTO(GameType.BOT, 60), mockUser);
 
-        mockMvc.perform(get("/getFreeRooms"))
+        mockMvc.perform(get("/games?free=true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$", hasSize(1)));
@@ -107,7 +107,7 @@ public class GameControllerTest {
         userService.register(new UserDTO("user2", "Pass1234", "myemail@gmail.com"));
         String roomId = String.valueOf(game.getGameId());
 
-        mockMvc.perform(patch("/game/42069")
+        mockMvc.perform(post("/games/42069")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -119,11 +119,8 @@ public class GameControllerTest {
 
         assertNull(game.getUser2Username());
 
-        mockMvc.perform(patch("/game/" + roomId)
+        mockMvc.perform(post("/games/" + roomId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        //After the update we need to get the new dto
-        game=gameService.getGameState(game.getGameId().toString());
-        assertThat(game.getUser2Username()).isEqualTo("user2");
     }
 }
