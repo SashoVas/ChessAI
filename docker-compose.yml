@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_chess
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: "123456/"
+      POSTGRES_DB: "chess-application"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chessnet
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./ChessAI
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chess-application
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: "123456/"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - chessnet
+
+  frontend:
+    build:
+      context: ./chess-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    networks:
+      - chessnet
+
+volumes:
+  postgres_data:
+
+networks:
+  chessnet:
+    driver: bridge
