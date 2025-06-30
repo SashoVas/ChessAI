@@ -4,6 +4,7 @@ import com.ChessAI.dto.LeaderboardUserDTO;
 import com.ChessAI.dto.UserStatisticsDTO;
 import com.ChessAI.models.Game;
 import com.ChessAI.models.GameStatus;
+import com.ChessAI.models.GameType;
 import com.ChessAI.models.User;
 import com.ChessAI.repos.GameRepository;
 import com.ChessAI.repos.UserRepository;
@@ -27,8 +28,9 @@ public class UserStatisticsService {
         User user = userRepository.findByUsername(username).orElseThrow();
         List<Game> userGames = gameRepository.findAllByUsername(username);
         
-        // Filter for finished games only
+        // Filter for finished multiplayer games only (exclude bot games)
         List<Game> finishedGames = userGames.stream()
+                .filter(game -> game.getGameType() == GameType.MULTIPLAYER)
                 .filter(game -> game.getGameStatus() == GameStatus.WINNER_WHITE || 
                                game.getGameStatus() == GameStatus.WINNER_BLACK || 
                                game.getGameStatus() == GameStatus.DRAW)

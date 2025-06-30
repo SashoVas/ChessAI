@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { RoomServiceService } from '../../services/room-service.service';
 import { AuthService } from '../../services/auth.service';
 import { Game } from '../../models/game';
@@ -18,7 +19,11 @@ export class GameHistoryComponent implements OnInit {
   username = '';
   filteredGames: Game[] = [];
 
-  constructor(private roomService: RoomServiceService, private authService: AuthService) {}
+  constructor(
+    private roomService: RoomServiceService, 
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.username = this.authService.getUsername();
@@ -27,7 +32,6 @@ export class GameHistoryComponent implements OnInit {
       next: (games) => {
         this.games = games;
         this.filteredGames = games;
-        this.updateGameStatuses();
         this.isLoading = false;
       },
       error: (error) => {
@@ -35,18 +39,6 @@ export class GameHistoryComponent implements OnInit {
         this.errorMessage = 'Failed to load game history.';
         this.games = [];
         this.isLoading = false;
-      }
-    });
-  }
-
-  private updateGameStatuses(): void {
-    this.games.forEach(game => {
-      if (game.gameStatus === 'FINISHED') {
-        game.gameStatus = 'Finished';
-      } else if (game.gameStatus === 'IN_PROGRESS') {
-        game.gameStatus = 'In Progress';
-      } else if (game.gameStatus === 'WAITING') {
-        game.gameStatus = 'Waiting';
       }
     });
   }

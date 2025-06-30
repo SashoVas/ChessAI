@@ -78,7 +78,7 @@ public class Game {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "game_status")
-    private GameStatus gameStatus = GameStatus.UNKNOWN;
+    private GameStatus gameStatus = GameStatus.NOT_STARTED;
     @Enumerated(EnumType.STRING)
     @Column(name = "current_turn_color")
     private PlayerColor currentTurnColor;
