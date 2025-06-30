@@ -43,8 +43,8 @@ public class BitBoard {
         if(isTie()){
             return GameStatus.DRAW;
         }
-        if (currentTurn==1) return GameStatus.WINNER_WHITE;
-        return GameStatus.WINNER_BLACK;
+        if (currentTurn==1) return GameStatus.WINNER_BLACK;
+        return GameStatus.WINNER_WHITE;
     }
     public boolean isTie(){
         return getPossibleNextMoves().isEmpty() && !isInCheck();
