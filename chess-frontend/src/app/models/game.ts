@@ -15,4 +15,6 @@ export interface Game {
   currentTurn: number;
   user1Rating?: number;
   user2Rating?: number;
+  user1IsEloProvisional?: boolean;
+  user2IsEloProvisional?: boolean;
 }

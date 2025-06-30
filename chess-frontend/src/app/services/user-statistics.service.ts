@@ -23,6 +23,10 @@ export interface LeaderboardUser {
   isEloProvisional: boolean;
 }
 
+export interface EloConfig {
+  minimumGamesForElo: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,19 +43,16 @@ export class UserStatisticsService {
     return this.http.get<UserStatistics>(`${this.apiUrl}/profile`, { 
       headers: headers 
     }).pipe(
-      tap({
-        next: (stats) => {
-          this.userStatsSubject.next(stats);
-        },
-        error: (error) => {
-          // Error handling without console logs
-        }
-      })
+      tap(stats => this.userStatsSubject.next(stats))
     );
   }
 
   getLeaderboard(limit: number = 5): Observable<LeaderboardUser[]> {
     return this.http.get<LeaderboardUser[]>(`${this.apiUrl}/leaderboard?limit=${limit}`);
+  }
+
+  getEloConfig(): Observable<EloConfig> {
+    return this.http.get<EloConfig>(`${this.apiUrl}/elo-config`);
   }
 
   refreshUserStatistics(): void {

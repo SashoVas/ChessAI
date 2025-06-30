@@ -93,6 +93,7 @@ public class UserStatisticsService {
     public List<LeaderboardUserDTO> getTopUsers(int limit) {
         List<User> users = userRepository.findTopUsersByElo(limit);
         return users.stream()
+                .filter(user -> !user.IsEloProvisional())
                 .map(LeaderboardUserDTO::fromUser)
                 .collect(Collectors.toList());
     }

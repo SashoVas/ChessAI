@@ -10,9 +10,37 @@
           <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
             <span class="text-2xl font-bold text-blue-600">{{ username.charAt(0).toUpperCase() }}</span>
           </div>
-          <div>
+          <div class="flex-1">
             <h3 class="font-semibold text-gray-900">{{ username }}</h3>
-            <p class="text-sm text-gray-600">Rating: {{ userStats?.eloRating || 1300 }}</p>
+            <p class="text-sm text-gray-600" *ngIf="!userStats?.isEloProvisional">Rating: {{ userStats?.eloRating || 1300 }}</p>
+            
+            <!-- Remaining Games Progress for Provisional Users -->
+            <div *ngIf="userStats?.isEloProvisional && remainingGamesForRealElo > 0" class="mt-2">
+              <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+                <span>Progress to ELO Rating</span>
+                <span>{{ userStats?.totalGames || 0 }}/{{ eloConfig?.minimumGamesForElo || 5 }}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                     [style.width.%]="getEloProgressPercentage()"></div>
+              </div>
+              <p class="text-xs font-medium text-gray-700">
+                {{ remainingGamesForRealElo }} more game{{ remainingGamesForRealElo !== 1 ? 's' : '' }} until ELO rating
+              </p>
+            </div>
+            
+            <!-- Progress Complete Message -->
+            <div *ngIf="userStats?.isEloProvisional && remainingGamesForRealElo === 0" class="mt-2">
+              <div class="flex items-center space-x-2">
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full"></div>
+                </div>
+                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <p class="text-xs font-medium text-green-600 mt-1">ELO rating unlocked!</p>
+            </div>
           </div>
         </div>
         <div class="grid grid-cols-3 gap-4 mt-6">
@@ -132,7 +160,8 @@
                     'text-orange-700': i === 2,
                     'text-gray-600': i > 2
                   }">
-              {{ user.eloRating }}
+              <span *ngIf="!user.isEloProvisional">{{ user.eloRating }}</span>
+              <span *ngIf="user.isEloProvisional" class="text-gray-500">Provisional</span>
             </span>
           </div>
           

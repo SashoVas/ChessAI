@@ -26,7 +26,8 @@
           <div class="flex items-center justify-between">
             <div class="flex flex-col">
               <span class="font-semibold">{{ game.user1Username }} ({{ game.user1Color }})</span>
-              <span class="text-sm text-gray-600">Rating: {{ game.user1Rating }}</span>
+              <span class="text-sm text-gray-600" *ngIf="!game.user1IsEloProvisional">Rating: {{ game.user1Rating }}</span>
+              <span class="text-sm text-gray-500" *ngIf="game.user1IsEloProvisional">Rating: Provisional</span>
               <span class="text-xs text-gray-500">⏱️ {{ game.user1TimeLeft }}s</span>
             </div>
             <span class="text-gray-400">vs</span>
@@ -34,7 +35,8 @@
               <span class="font-semibold">
                 {{ game.user2Username || 'Waiting...' }} ({{ game.user2Color }})
               </span>
-              <span class="text-sm text-gray-600" *ngIf="game.user2Username">Rating: {{ game.user2Rating }}</span>
+              <span class="text-sm text-gray-600" *ngIf="game.user2Username && !game.user2IsEloProvisional">Rating: {{ game.user2Rating }}</span>
+              <span class="text-sm text-gray-500" *ngIf="game.user2Username && game.user2IsEloProvisional">Rating: Provisional</span>
               <span class="text-xs text-gray-500" *ngIf="game.user2Username">⏱️ {{ game.user2TimeLeft }}s</span>
             </div>
           </div>

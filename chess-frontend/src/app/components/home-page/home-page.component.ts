@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { RoomServiceService } from '../../services/room-service.service';
-import { UserStatisticsService, UserStatistics, LeaderboardUser } from '../../services/user-statistics.service';
+import { UserStatisticsService, UserStatistics, LeaderboardUser, EloConfig } from '../../services/user-statistics.service';
 import { CreateGameComponent } from '../create-game/create-game.component';
 import { filter } from 'rxjs/operators';
 
@@ -18,6 +18,7 @@ export class HomePageComponent implements OnInit {
   username: string = '';
   userStats: UserStatistics | null = null;
   leaderboard: LeaderboardUser[] = [];
+  eloConfig: EloConfig | null = null;
   timeControls = [
     { name: 'Bullet', time: 1 },
     { name: 'Blitz', time: 3 },
@@ -44,11 +45,23 @@ export class HomePageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadEloConfig();
     this.loadLeaderboard();
     if (this.authService.isLoggedIn()) {
       this.username = this.authService.getUsername();
       this.loadUserStatistics();
     }
+  }
+
+  loadEloConfig() {
+    this.userStatisticsService.getEloConfig().subscribe({
+      next: (config) => {
+        this.eloConfig = config;
+      },
+      error: (err) => {
+        console.error('Error loading ELO config:', err);
+      }
+    });
   }
 
   loadUserStatistics() {
@@ -111,5 +124,29 @@ export class HomePageComponent implements OnInit {
 
   get opponentName(): string {
     return this.userStats?.lastGameOpponent || '';
+  }
+
+  get remainingGamesForRealElo(): number {
+    if (!this.userStats?.isEloProvisional) {
+      return 0; // Already has real ELO
+    }
+    
+    const totalGames = this.userStats?.totalGames || 0;
+    const minimumGamesForElo = this.eloConfig?.minimumGamesForElo || 5; // Use config value or fallback
+    const remaining = minimumGamesForElo - totalGames;
+    
+    return Math.max(0, remaining);
+  }
+
+  getEloProgressPercentage(): number {
+    if (!this.userStats?.isEloProvisional) {
+      return 100; // Already has real ELO
+    }
+    
+    const totalGames = this.userStats?.totalGames || 0;
+    const minimumGamesForElo = this.eloConfig?.minimumGamesForElo || 5;
+    const percentage = (totalGames / minimumGamesForElo) * 100;
+    
+    return Math.min(100, Math.max(0, percentage));
   }
 }

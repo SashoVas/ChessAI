@@ -25,6 +25,8 @@ public class GameResultDTO {
     private Integer currentTurn ;
     private Integer user1Rating;
     private Integer user2Rating;
+    private Boolean user1IsEloProvisional;
+    private Boolean user2IsEloProvisional;
 
 
     public Integer getGameId() {
@@ -144,10 +146,12 @@ public class GameResultDTO {
         if (game.getUser1()!=null) {
             gameDTO.setUser1Username(game.getUser1().getUsername());
             gameDTO.setUser1Rating(game.getUser1Elo());
+            gameDTO.setUser1IsEloProvisional(game.getIsUser1EloProvisional());
         }
         if (game.getUser2()!=null) {
             gameDTO.setUser2Username(game.getUser2().getUsername());
             gameDTO.setUser2Rating(game.getUser2Elo());
+            gameDTO.setUser2IsEloProvisional(game.getIsUser2EloProvisional());
         }
         gameDTO.setUser1Color(game.getUser1Color());
         gameDTO.setUser2Color(game.getUser2Color());
@@ -183,5 +187,21 @@ public class GameResultDTO {
 
     public void setUser2Rating(Integer user2Rating) {
         this.user2Rating = user2Rating;
+    }
+
+    public Boolean getUser1IsEloProvisional() {
+        return user1IsEloProvisional;
+    }
+
+    public void setUser1IsEloProvisional(Boolean user1IsEloProvisional) {
+        this.user1IsEloProvisional = user1IsEloProvisional;
+    }
+
+    public Boolean getUser2IsEloProvisional() {
+        return user2IsEloProvisional;
+    }
+
+    public void setUser2IsEloProvisional(Boolean user2IsEloProvisional) {
+        this.user2IsEloProvisional = user2IsEloProvisional;
     }
 }

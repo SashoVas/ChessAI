@@ -1,5 +1,6 @@
 package com.ChessAI.controllers;
 
+import com.ChessAI.config.EloCalculatorConfig;
 import com.ChessAI.dto.LeaderboardUserDTO;
 import com.ChessAI.dto.UserDTO;
 import com.ChessAI.dto.UserLoginDTO;
@@ -21,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -29,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserStatisticsService userStatisticsService;
+
+    @Autowired
+    private EloCalculatorConfig eloCalculatorConfig;
 
     //tested by postman collection
     @PostMapping("/register")
@@ -59,5 +64,13 @@ public class UserController {
     public ResponseEntity<UserStatisticsDTO> getUserProfile(@AuthenticationPrincipal UserDetails userDetails) {
         UserStatisticsDTO profile = userService.getUserStatistics(userDetails.getUsername());
         return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping("/elo-config")
+    public ResponseEntity<Map<String, Integer>> getEloConfig() {
+        Map<String, Integer> config = Map.of(
+            "minimumGamesForElo", eloCalculatorConfig.getMinimumGamesForElo()
+        );
+        return ResponseEntity.ok(config);
     }
 }
