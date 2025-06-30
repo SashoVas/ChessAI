@@ -1,7 +1,5 @@
 package com.ChessAI.Chess.Moves;
 
-import com.ChessAI.Chess.Moves.MoveUtilities;
-
 import java.util.ArrayList;
 import java.util.List;
 

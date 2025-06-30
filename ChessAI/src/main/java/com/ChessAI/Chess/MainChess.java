@@ -1,8 +1,5 @@
 package com.ChessAI.Chess;
 
-import com.ChessAI.ChessAiApplication;
-import org.springframework.boot.SpringApplication;
-
 public class MainChess {
     public static void main(String[] args) {
 

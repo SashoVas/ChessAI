@@ -3,10 +3,7 @@ package com.ChessAI.repos;
 import com.ChessAI.models.Game;
 import com.ChessAI.models.GameStatus;
 import com.ChessAI.models.GameType;
-import com.ChessAI.models.User;
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 

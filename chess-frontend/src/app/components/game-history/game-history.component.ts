@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import { RoomServiceService } from '../../services/room-service.service';
 import { AuthService } from '../../services/auth.service';
 import { Game } from '../../models/game';
@@ -23,8 +22,7 @@ export class GameHistoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private roomService: RoomServiceService, 
-    private authService: AuthService,
-    private router: Router
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
