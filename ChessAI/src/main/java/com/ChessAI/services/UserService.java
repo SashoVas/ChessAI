@@ -7,6 +7,7 @@ import com.ChessAI.exceptions.AuthenticationFailedException;
 import com.ChessAI.exceptions.UserException.UserNotFoundException;
 import com.ChessAI.models.User;
 import com.ChessAI.repos.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +37,7 @@ public class UserService {
         return repo.findByUsername(userDTO.getUsername()).isPresent();
     }
 
+    @Transactional
     public UserDTO register(UserDTO userDTO) {
         User user = new User(userDTO);
         user.setPassword(encoder.encode(userDTO.getPassword()));

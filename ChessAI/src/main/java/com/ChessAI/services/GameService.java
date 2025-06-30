@@ -29,6 +29,7 @@ public class GameService {
     @Autowired
     private MoveRepository moveRepository;
 
+    @Transactional
     public GameResultDTO createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
@@ -66,6 +67,7 @@ public class GameService {
                 .collect(Collectors.toSet());
     }
 
+    @Transactional
     public GameResultDTO joinRoom(String roomId, String username){
         Game game=getGame(roomId);
         if(game.getUser2() != null || game.getGameType() != GameType.MULTIPLAYER || username.equals(game.getUser1().getUsername())){
@@ -101,6 +103,7 @@ public class GameService {
         return GameResultDTO.fromEntity(getGameWithMoves(roomId));
     }
 
+    @Transactional
     private void updateGameAfterMove(Game game, String moveNr, String currentFen, BitBoard bitboard){
         String fenAfterMove=bitboard.getFen();
         game.setCurrentFen(fenAfterMove);
@@ -300,11 +303,13 @@ public class GameService {
         }
     }
 
+    @Transactional
     public void leaveGame(String username) {
         leaveGameByStatus(username,GameStatus.IN_PROGRESS);
         leaveGameByStatus(username,GameStatus.NOT_STARTED);
     }
 
+    @Transactional
     public MoveResultDTO surrender(String username,String roomId){
         Game game=getGame(roomId);
         if(game.getGameStatus() != GameStatus.IN_PROGRESS){
@@ -356,6 +361,7 @@ public class GameService {
         return games.stream().map(GameResultDTO::fromEntity).collect(Collectors.toSet());
     }
 
+    @Transactional
     public void updateGameStatus(String username) {
         List<Game> games = gameRepository.findByUsernameAndGameStatus(username, GameStatus.IN_PROGRESS);
         for (Game game : games) {
