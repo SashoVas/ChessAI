@@ -37,8 +37,11 @@ export class LoginComponent {
       password: this.loginForm.value.password!
     };
     this.authService.login(credentials).subscribe({
-    next: value =>this.router.navigate(['/']),
-    error: err => this.errorMessage = err instanceof Error ? err.message : 'Login failed'
+    next: value => this.router.navigate(['/']),
+    error: err => {
+      this.isLoading = false;
+      this.errorMessage = err instanceof Error ? err.message : 'Invalid Credentials. Please try again.';
+    }
   });
   }
 }

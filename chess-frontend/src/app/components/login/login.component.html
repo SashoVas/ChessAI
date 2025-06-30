@@ -84,6 +84,10 @@
           </button>
         </div>
 
+        <div *ngIf="errorMessage" class="text-red-600 text-center mt-2">
+          {{ errorMessage }}
+        </div>
+
         <div class="mt-6">
           <div class="relative">
             <div class="absolute inset-0 flex items-center">
