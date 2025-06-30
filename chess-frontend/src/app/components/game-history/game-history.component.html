@@ -84,6 +84,10 @@
               <span class="font-medium mr-2">Time Control:</span>
               <span>{{ game.gameTimeSeconds }}s</span>
             </div>
+            <div class="flex items-center">
+              <span class="font-medium mr-2">Started:</span>
+              <span>{{ game.createdAt | date:'medium' }}</span>
+            </div>
           </div>
         </div>
       </div>

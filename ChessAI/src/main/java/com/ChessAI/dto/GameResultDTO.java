@@ -27,7 +27,7 @@ public class GameResultDTO {
     private Integer user2Rating;
     private Boolean user1IsEloProvisional;
     private Boolean user2IsEloProvisional;
-
+    private java.time.LocalDateTime createdAt;
 
     public Integer getGameId() {
         return gameId;
@@ -140,38 +140,6 @@ public class GameResultDTO {
     public void setCurrentTurn(Integer currentTurn) {
         this.currentTurn = currentTurn;
     }
-    public static GameResultDTO fromEntity(Game game){
-        GameResultDTO gameDTO=new GameResultDTO();
-        gameDTO.setGameId(game.getGameId());
-        if (game.getUser1()!=null) {
-            gameDTO.setUser1Username(game.getUser1().getUsername());
-            gameDTO.setUser1Rating(game.getUser1Elo());
-            gameDTO.setUser1IsEloProvisional(game.getIsUser1EloProvisional());
-        }
-        if (game.getUser2()!=null) {
-            gameDTO.setUser2Username(game.getUser2().getUsername());
-            gameDTO.setUser2Rating(game.getUser2Elo());
-            gameDTO.setUser2IsEloProvisional(game.getIsUser2EloProvisional());
-        }
-        gameDTO.setUser1Color(game.getUser1Color());
-        gameDTO.setUser2Color(game.getUser2Color());
-
-        gameDTO.setMoves(
-                game.getMoves().stream()
-                        .sorted(Comparator.comparing(Move::getTurn))
-                        .map(Move::getMoveNr)
-                        .toList());
-
-        gameDTO.setCurrentFen(game.getCurrentFen());
-        gameDTO.setUser1TimeLeft(game.getUser1TimeLeft());
-        gameDTO.setUser2TimeLeft(game.getUser2TimeLeft());
-        gameDTO.setGameStatus(game.getGameStatus() != null ? game.getGameStatus() : GameStatus.NOT_STARTED);
-        gameDTO.setCurrentTurn(game.getCurrentTurn());
-        gameDTO.setGameTimeSeconds(game.getGameTimeSeconds());
-        gameDTO.setCurrentTurnColor(game.getCurrentTurnColor());
-        gameDTO.setGameType(game.getGameType());
-        return gameDTO;
-    }
 
     public Integer getUser1Rating() {
         return user1Rating;
@@ -203,5 +171,47 @@ public class GameResultDTO {
 
     public void setUser2IsEloProvisional(Boolean user2IsEloProvisional) {
         this.user2IsEloProvisional = user2IsEloProvisional;
+    }
+
+    public java.time.LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public static GameResultDTO fromEntity(Game game){
+        GameResultDTO gameDTO=new GameResultDTO();
+        gameDTO.setGameId(game.getGameId());
+        if (game.getUser1()!=null) {
+            gameDTO.setUser1Username(game.getUser1().getUsername());
+            gameDTO.setUser1Rating(game.getUser1Elo());
+            gameDTO.setUser1IsEloProvisional(game.getIsUser1EloProvisional());
+        }
+        if (game.getUser2()!=null) {
+            gameDTO.setUser2Username(game.getUser2().getUsername());
+            gameDTO.setUser2Rating(game.getUser2Elo());
+            gameDTO.setUser2IsEloProvisional(game.getIsUser2EloProvisional());
+        }
+        gameDTO.setUser1Color(game.getUser1Color());
+        gameDTO.setUser2Color(game.getUser2Color());
+
+        gameDTO.setMoves(
+                game.getMoves().stream()
+                        .sorted(Comparator.comparing(Move::getTurn))
+                        .map(Move::getMoveNr)
+                        .toList());
+
+        gameDTO.setCurrentFen(game.getCurrentFen());
+        gameDTO.setUser1TimeLeft(game.getUser1TimeLeft());
+        gameDTO.setUser2TimeLeft(game.getUser2TimeLeft());
+        gameDTO.setGameStatus(game.getGameStatus() != null ? game.getGameStatus() : GameStatus.NOT_STARTED);
+        gameDTO.setCurrentTurn(game.getCurrentTurn());
+        gameDTO.setGameTimeSeconds(game.getGameTimeSeconds());
+        gameDTO.setCurrentTurnColor(game.getCurrentTurnColor());
+        gameDTO.setGameType(game.getGameType());
+        gameDTO.setCreatedAt(game.getCreatedAt());
+        return gameDTO;
     }
 }

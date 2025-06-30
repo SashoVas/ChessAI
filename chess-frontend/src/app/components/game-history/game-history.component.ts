@@ -45,8 +45,17 @@ export class GameHistoryComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (games) => {
-        this.games = games;
-        this.filteredGames = games;
+        console.log('Received games:', games); // Debug log
+        // Filter out NOT_STARTED games and sort by createdAt in descending order (newest first)
+        this.games = games
+          .filter(game => game.gameStatus !== 'NOT_STARTED')
+          .sort((a, b) => {
+            if (!a.createdAt && !b.createdAt) return 0;
+            if (!a.createdAt) return 1;
+            if (!b.createdAt) return -1;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+        this.filteredGames = this.games;
         this.isLoading = false;
       },
       error: (error) => {

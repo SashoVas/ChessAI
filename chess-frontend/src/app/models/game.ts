@@ -17,4 +17,5 @@ export interface Game {
   user2Rating?: number;
   user1IsEloProvisional?: boolean;
   user2IsEloProvisional?: boolean;
+  createdAt?: string;
 }

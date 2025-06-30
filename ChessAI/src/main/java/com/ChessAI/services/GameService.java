@@ -55,6 +55,9 @@ public class GameService {
             game.setGameStatus(GameStatus.IN_PROGRESS);
         }
         game.setGameTimeSeconds(createGameDTO.getGameTimeSeconds());
+        
+        // Set creation timestamp
+        game.setCreatedAt(java.time.LocalDateTime.now());
 
         return GameResultDTO.fromEntity(gameRepository.save(game));
     }
@@ -115,9 +118,8 @@ public class GameService {
         currentMove.setTurn(game.getCurrentTurn());
         game.setCurrentTurn(game.getCurrentTurn() + 1);
         game.setCurrentTurnColor(PlayerColor.getOpponentColor(game.getCurrentTurnColor()));
-        //game.getMoves().add(currentMove);
         game.setGameStatus(bitboard.getState());
-
+        
         gameRepository.save(game);
         moveRepository.save(currentMove);
         if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
@@ -358,7 +360,10 @@ public class GameService {
             }
         });
         
-        return games.stream().map(GameResultDTO::fromEntity).collect(Collectors.toSet());
+        return games.stream()
+                .filter(game -> game.getGameStatus() != GameStatus.NOT_STARTED)
+                .map(GameResultDTO::fromEntity)
+                .collect(Collectors.toSet());
     }
 
     @Transactional
