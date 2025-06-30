@@ -345,7 +345,38 @@ public class GameService {
     }
 
     public Set<GameResultDTO> getGamesByUser(String username) {
-        List<Game> games = gameRepository.findAllByUsername(username);        
+        List<Game> games = gameRepository.findAllByUsername(username);
+        
+        games.forEach(game -> {
+            if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
+                game.setGameStatus(getGameStatusAfterLeave(game, username));
+            }
+        });
+        
         return games.stream().map(GameResultDTO::fromEntity).collect(Collectors.toSet());
     }
+
+    public void updateGameStatus(String username) {
+        List<Game> games = gameRepository.findByUsernameAndGameStatus(username, GameStatus.IN_PROGRESS);
+        for (Game game : games) {
+            if (game.getUser1() != null && game.getUser1().getUsername().equals(username)) {
+                // User1 disconnected
+                if (game.getUser1Color() == PlayerColor.WHITE) {
+                    game.setGameStatus(GameStatus.WINNER_BLACK);
+                } else {
+                    game.setGameStatus(GameStatus.WINNER_WHITE);
+                }
+            } else if (game.getUser2() != null && game.getUser2().getUsername().equals(username)) {
+                // User2 disconnected
+                if (game.getUser2Color() == PlayerColor.WHITE) {
+                    game.setGameStatus(GameStatus.WINNER_BLACK);
+                } else {
+                    game.setGameStatus(GameStatus.WINNER_WHITE);
+                }
+            }
+            gameRepository.save(game);
+            eloCalculatorService.updateElo(game);
+        }
+    }
+
 }

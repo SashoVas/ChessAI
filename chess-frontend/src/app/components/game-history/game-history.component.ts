@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoomServiceService } from '../../services/room-service.service';
 import { AuthService } from '../../services/auth.service';
 import { Game } from '../../models/game';
 import { CommonModule } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-game-history',
@@ -12,12 +13,13 @@ import { CommonModule } from '@angular/common';
   templateUrl: './game-history.component.html',
   styleUrl: './game-history.component.css'
 })
-export class GameHistoryComponent implements OnInit {
+export class GameHistoryComponent implements OnInit, OnDestroy {
   games: Game[] = [];
   isLoading = false;
   errorMessage = '';
   username = '';
   filteredGames: Game[] = [];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private roomService: RoomServiceService, 
@@ -27,8 +29,21 @@ export class GameHistoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.username = this.authService.getUsername();
+    this.loadGames();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadGames(): void {
     this.isLoading = true;
-    this.roomService.getUserGames(this.username).subscribe({
+    this.errorMessage = '';
+    
+    this.roomService.getUserGames(this.username).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (games) => {
         this.games = games;
         this.filteredGames = games;
@@ -38,6 +53,7 @@ export class GameHistoryComponent implements OnInit {
         console.error('Error fetching games:', error);
         this.errorMessage = 'Failed to load game history.';
         this.games = [];
+        this.filteredGames = [];
         this.isLoading = false;
       }
     });
