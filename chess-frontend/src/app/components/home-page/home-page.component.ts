@@ -31,23 +31,23 @@ export class HomePageComponent implements OnInit {
     private userStatisticsService: UserStatisticsService,
     private router: Router
   ) {
-    // Listen for navigation events to refresh data when returning to home page
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      if (event.url === '/' && this.authService.isLoggedIn()) {
-        //refresh data
-        this.loadUserStatistics();
+      if (event.url === '/') {
         this.loadLeaderboard();
+        if (this.authService.isLoggedIn()) {
+          this.loadUserStatistics();
+        }
       }
     });
   }
 
   ngOnInit() {
+    this.loadLeaderboard();
     if (this.authService.isLoggedIn()) {
       this.username = this.authService.getUsername();
       this.loadUserStatistics();
-      this.loadLeaderboard();
     }
   }
 
@@ -89,7 +89,6 @@ export class HomePageComponent implements OnInit {
     });
   }
 
-  // Getters for template
   get wins(): number {
     return this.userStats?.wins || 0;
   }
