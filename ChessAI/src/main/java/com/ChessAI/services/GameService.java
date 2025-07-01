@@ -29,6 +29,7 @@ public class GameService {
     @Autowired
     private MoveRepository moveRepository;
 
+    @Transactional
     public GameResultDTO createGame(CreateGameDTO createGameDTO, UserDetails userDetails) {
         Game game = new Game();
 
@@ -54,6 +55,9 @@ public class GameService {
             game.setGameStatus(GameStatus.IN_PROGRESS);
         }
         game.setGameTimeSeconds(createGameDTO.getGameTimeSeconds());
+        
+        // Set creation timestamp
+        game.setCreatedAt(java.time.LocalDateTime.now());
 
         return GameResultDTO.fromEntity(gameRepository.save(game));
     }
@@ -66,6 +70,7 @@ public class GameService {
                 .collect(Collectors.toSet());
     }
 
+    @Transactional
     public GameResultDTO joinRoom(String roomId, String username){
         Game game=getGame(roomId);
         if(game.getUser2() != null || game.getGameType() != GameType.MULTIPLAYER || username.equals(game.getUser1().getUsername())){
@@ -88,6 +93,7 @@ public class GameService {
         }
         return currentGame.get();
     }
+
     private Game getGameWithMoves(String roomId){
         Optional<Game> currentGame=gameRepository.findByGameIdWithMoves(Integer.parseInt(roomId));
         if (currentGame.isEmpty()){
@@ -95,9 +101,12 @@ public class GameService {
         }
         return currentGame.get();
     }
+
     public GameResultDTO getGameState(String roomId){
         return GameResultDTO.fromEntity(getGameWithMoves(roomId));
     }
+
+    @Transactional
     private void updateGameAfterMove(Game game, String moveNr, String currentFen, BitBoard bitboard){
         String fenAfterMove=bitboard.getFen();
         game.setCurrentFen(fenAfterMove);
@@ -109,15 +118,15 @@ public class GameService {
         currentMove.setTurn(game.getCurrentTurn());
         game.setCurrentTurn(game.getCurrentTurn() + 1);
         game.setCurrentTurnColor(PlayerColor.getOpponentColor(game.getCurrentTurnColor()));
-        //game.getMoves().add(currentMove);
         game.setGameStatus(bitboard.getState());
-
+        
         gameRepository.save(game);
         moveRepository.save(currentMove);
         if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
             eloCalculatorService.updateElo(game);
         }
     }
+
     @Transactional
     private BitBoard makeAMove(Game game, MoveInputDTO move){
         String currentFen=game.getCurrentFen();
@@ -135,6 +144,7 @@ public class GameService {
 
         return bitboard;
     }
+
     @Transactional
     private MoveResultDTO makeBotMove(Game game,BitBoard bitBoard){
         String currentFen=bitBoard.getFen();
@@ -153,6 +163,7 @@ public class GameService {
                 game.getUser1Color(),
                 game.getGameType());
     }
+
     public MoveResultDTO getBotMove(String roomId,String username){
         Game game=getGame(roomId);
         if(!game.getUser1().getUsername().equals(username)){
@@ -168,6 +179,7 @@ public class GameService {
 
         return makeBotMove(game,bitBoard);
     }
+
     public MoveResultDTO makeAMoveToBot(MoveInputDTO move,String username){
         Game game=getGame(move.roomId);
 
@@ -181,7 +193,7 @@ public class GameService {
         if(game.getUser1().getUsername().equals(username) && game.getCurrentTurnColor()!=game.getUser1Color()){
             throw new NotUserTurnException();
         }
-        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
+        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED)
             throw new GameEndedException();
 
         // Make the move
@@ -212,7 +224,7 @@ public class GameService {
         else if((game.getUser2()!=null && game.getUser2().getUsername().equals(username)) && game.getCurrentTurnColor()!=game.getUser2Color()){
             throw new NotUserTurnException();
         }
-        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED && game.getGameStatus() != GameStatus.UNKNOWN)
+        if(game.getGameStatus() != GameStatus.IN_PROGRESS && game.getGameStatus() != GameStatus.NOT_STARTED)
             throw new GameEndedException();
 
         //Make the move
@@ -227,6 +239,7 @@ public class GameService {
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
     }
+
     public MoveResultDTO getCurrentGameState(InitialConnectDTO input,String username){
         //Everyone can get the game state. Used for the spectate mode
         Game game=getGame(input.getRoomId());
@@ -246,12 +259,13 @@ public class GameService {
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
     }
+
     private GameStatus getGameStatusAfterLeave(Game game, String username){
         PlayerColor userThatLeftColor;
-        if(game.getUser1() != null ||  game.getUser1().getUsername().equals(username)){
+        if(game.getUser1() != null && game.getUser1().getUsername().equals(username)){
             userThatLeftColor=game.getUser1Color();
         }
-        else if(game.getUser2() != null ||  game.getUser2().getUsername().equals(username)){
+        else if(game.getUser2() != null && game.getUser2().getUsername().equals(username)){
             userThatLeftColor=game.getUser2Color();
         }
         else {
@@ -262,15 +276,13 @@ public class GameService {
         }
         return GameStatus.WINNER_WHITE;
     }
-    private void leaveGameByStatus(String username,GameStatus status){
 
+    private void leaveGameByStatus(String username,GameStatus status){
         List<Game> games = gameRepository.findByUsernameAndGameStatus(username, status);
         // The user should be in only one game, so the for is not a problem
         // If the user could be in many games at a time, we could process all the game in batches,
         // so we maximize the performance
-        for (Game game :
-                games) {
-
+        for (Game game : games) {
             // Left from game against bot
             if (game.getGameType() == GameType.BOT) {
                 if (game.getUser1Color() == PlayerColor.WHITE) {
@@ -278,27 +290,28 @@ public class GameService {
                 } else {
                     game.setGameStatus(GameStatus.WINNER_WHITE);
                 }
+                gameRepository.save(game);
+                continue;
             }
-            //The user leaves the game, before any opponent joins
+            //The user leaves the game before any opponent joins
             if(game.getUser1() == null || game.getUser2() == null){
-                game.setGameStatus(GameStatus.UNKNOWN);
+                gameRepository.delete(game);
+                continue;
             }
-            // Left from Multiplayer game
-            else if (game.getGameType() == GameType.MULTIPLAYER) {
-                //Update game status
-                game.setGameStatus(getGameStatusAfterLeave(game, username));
-                // Update the elo of the winner
-                eloCalculatorService.updateElo(game);
-            }
-            // Update db
+            // Left from in-progress multiplayer game
+            game.setGameStatus(getGameStatusAfterLeave(game, username));
+            eloCalculatorService.updateElo(game);
             gameRepository.save(game);
         }
     }
+
+    @Transactional
     public void leaveGame(String username) {
         leaveGameByStatus(username,GameStatus.IN_PROGRESS);
         leaveGameByStatus(username,GameStatus.NOT_STARTED);
     }
 
+    @Transactional
     public MoveResultDTO surrender(String username,String roomId){
         Game game=getGame(roomId);
         if(game.getGameStatus() != GameStatus.IN_PROGRESS){
@@ -337,4 +350,44 @@ public class GameService {
                 game.getUser1().getUsername().equals(username)?game.getUser1Color():game.getUser2Color(),
                 game.getGameType());
     }
+
+    public Set<GameResultDTO> getGamesByUser(String username) {
+        List<Game> games = gameRepository.findAllByUsername(username);
+        
+        games.forEach(game -> {
+            if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
+                game.setGameStatus(getGameStatusAfterLeave(game, username));
+            }
+        });
+        
+        return games.stream()
+                .filter(game -> game.getGameStatus() != GameStatus.NOT_STARTED)
+                .map(GameResultDTO::fromEntity)
+                .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public void updateGameStatus(String username) {
+        List<Game> games = gameRepository.findByUsernameAndGameStatus(username, GameStatus.IN_PROGRESS);
+        for (Game game : games) {
+            if (game.getUser1() != null && game.getUser1().getUsername().equals(username)) {
+                // User1 disconnected
+                if (game.getUser1Color() == PlayerColor.WHITE) {
+                    game.setGameStatus(GameStatus.WINNER_BLACK);
+                } else {
+                    game.setGameStatus(GameStatus.WINNER_WHITE);
+                }
+            } else if (game.getUser2() != null && game.getUser2().getUsername().equals(username)) {
+                // User2 disconnected
+                if (game.getUser2Color() == PlayerColor.WHITE) {
+                    game.setGameStatus(GameStatus.WINNER_BLACK);
+                } else {
+                    game.setGameStatus(GameStatus.WINNER_WHITE);
+                }
+            }
+            gameRepository.save(game);
+            eloCalculatorService.updateElo(game);
+        }
+    }
+
 }

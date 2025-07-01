@@ -14,6 +14,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,7 +79,7 @@ public class Game {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "game_status")
-    private GameStatus gameStatus;
+    private GameStatus gameStatus = GameStatus.NOT_STARTED;
     @Enumerated(EnumType.STRING)
     @Column(name = "current_turn_color")
     private PlayerColor currentTurnColor;
@@ -88,6 +89,9 @@ public class Game {
 
     @Column(name = "currentTurn")
     private Integer currentTurn = 0;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public Game() {}
 
@@ -101,6 +105,7 @@ public class Game {
         this.gameType = gameType;
         this.gameTimeSeconds = gameTimeSeconds;
     }
+
     public Integer getCurrentTurn() {
         return currentTurn;
     }
@@ -108,6 +113,7 @@ public class Game {
     public void setCurrentTurn(Integer currentTurn) {
         this.currentTurn = currentTurn;
     }
+
     public Integer getGameId() {
         return gameId;
     }
@@ -235,11 +241,33 @@ public class Game {
     public void setIsUser2EloProvisional(Boolean isUser2EloProvisional) {
         this.isUser2EloProvisional = isUser2EloProvisional;
     }
+
     public PlayerColor getCurrentTurnColor() {
         return currentTurnColor;
     }
 
     public void setCurrentTurnColor(PlayerColor currentTurnColor) {
         this.currentTurnColor = currentTurnColor;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Game game = (Game) o;
+        return gameId != null && gameId.equals(game.gameId);
+    }
+
+    @Override
+    public int hashCode() {
+        return gameId != null ? gameId.hashCode() : 0;
     }
 }

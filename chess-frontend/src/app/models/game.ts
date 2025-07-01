@@ -1,17 +1,21 @@
 export interface Game {
-  gameId: string;
+  gameId: number;
   user1Color: string;
   user2Color: string;
-  user1Username: string ;
+  user1Username: string;
   user2Username: string;
   currentFen: string;
-  moves:string[];
+  moves: string[];
   user1TimeLeft: number;
   user2TimeLeft: number;
-  gameType: string ;
+  gameType: string;
   gameStatus: string;
   currentTurnColor: string;
   gameTimeSeconds: number;
-  currentTurn:number ;
-
+  currentTurn: number;
+  user1Rating?: number;
+  user2Rating?: number;
+  user1IsEloProvisional?: boolean;
+  user2IsEloProvisional?: boolean;
+  createdAt?: string;
 }

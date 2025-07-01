@@ -35,6 +35,11 @@ public class GameController {
         return null;
     }
 
+    @GetMapping(value = "/games", params = "user")
+    public Set<GameResultDTO> getUserGames(@RequestParam("user") String username) {
+        return gameService.getGamesByUser(username);
+    }
+
     @GetMapping("/games/{roomId}")
     public GameResultDTO getGame(@PathVariable String roomId){
         return gameService.getGameState(roomId);

@@ -97,6 +97,7 @@ public class EloCalculatorService {
     }
 
 
+    @Transactional
     private void updateProvisionalElo(User user) {
         //NOTE: This list is always non-empty, because the user has played at least the current game
         List<Game> games = gameRepository.findByUsernameAndGameType(user.getUsername(), GameType.MULTIPLAYER);
@@ -126,6 +127,7 @@ public class EloCalculatorService {
         return eloConfig.getSmallKFactor();
     }
 
+    @Transactional
     private void updateActualElo(User user, User opponent,  double score) {
         int K_factor = getEloKFactor(user.getUsername());
         int userElo = user.getEloRating();

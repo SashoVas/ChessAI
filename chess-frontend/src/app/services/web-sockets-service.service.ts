@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import SockJS from 'sockjs-client';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Client, IMessage } from '@stomp/stompjs';
 import { share } from 'rxjs/operators';
 
 import { Observable } from 'rxjs';
