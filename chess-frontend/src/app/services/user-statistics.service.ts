@@ -52,7 +52,11 @@ export class UserStatisticsService {
   }
 
   getEloConfig(): Observable<EloConfig> {
-    return this.http.get<EloConfig>(`${this.apiUrl}/elo-config`);
+    const headers = this.getAuthHeaders();
+
+    return this.http.get<EloConfig>(`${this.apiUrl}/elo-config`, { 
+      headers: headers 
+    });
   }
 
   refreshUserStatistics(): void {
